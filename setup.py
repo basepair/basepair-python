@@ -1,4 +1,4 @@
-'''package'''
+'''basepair package'''
 import re
 from setuptools import setup
 
