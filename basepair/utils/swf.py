@@ -16,7 +16,7 @@ class SWF(object):
     def __init__(self, config_file):
         self.conf = json.load(open(config_file))
         try:
-            region = self.conf['aws']['swf']['region']
+            region = boto.config.get('SWF', 'region', self.conf['aws']['swf']['region'])
         except KeyError:
             region = None
 
