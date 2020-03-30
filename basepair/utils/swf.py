@@ -15,9 +15,20 @@ from boto.swf.exceptions import SWFDomainAlreadyExistsError, \
 class SWF(object):
     def __init__(self, config_file):
         self.conf = json.load(open(config_file))
+        try:
+            for reg in boto.swf.regions():
+                if reg.name == self.conf['aws']['swf']['region']:
+                    region = reg
+                    break
+
+        except KeyError:
+            region = None
+
         self.layer = boto.swf.layer1.Layer1(
             aws_access_key_id=self.conf['aws']['aws_id'],
-            aws_secret_access_key=self.conf['aws']['aws_secret'])
+            aws_secret_access_key=self.conf['aws']['aws_secret'],
+            region=region
+            )
 
         # self.s3conn = boto.connect_s3(
         #         aws_access_key_id=self.conf['aws']['aws_id'],

@@ -17,8 +17,7 @@ import requests
 
 class BpSQS(object):
     '''wrapper for boto AWS SQS'''
-    def __init__(self, conf, config_file=None, queue='decider',
-                 timeout=120, wait_time=20):
+    def __init__(self, conf, config_file=None, queue='decider', timeout=120, wait_time=20):
         if config_file:
             self.conf = json.load(open(config_file))
         else:
@@ -33,10 +32,21 @@ class BpSQS(object):
             print('warning: no internet', file=sys.stderr)
             internet = False
 
+
+        try:
+            for reg in boto.sqs.regions():
+                if reg.name == self.conf['aws']['sqs']['region']:
+                    region = reg
+                    break
+        except KeyError:
+            region = None
+
         if internet:
             self.conn = boto.connect_sqs(
                 aws_access_key_id=self.conf['aws']['aws_id'],
-                aws_secret_access_key=self.conf['aws']['aws_secret'])
+                aws_secret_access_key=self.conf['aws']['aws_secret'],
+                region=region
+                )
 
             self.q = self.conn.create_queue(queue, timeout)
             self.q.set_message_class(JSONMessage)
@@ -85,13 +95,13 @@ def main():
     # test_decider_queue(args)
     # test_instance_queue(args)
     if args.clear:
-        sqs = BpSQS(args.config_file)
-        sqs.clear(args.wetrun)
+        sqs = BpSQS(conf=None, config_file=args.config_file)
+        sqs.clear()
 
 
 def test_decider_queue(args):
     '''test decider queue'''
-    sqs = BpSQS(args.config_file)
+    sqs = BpSQS(conf=None, config_file=args.config_file)
     msg = {
         "message": "completed",
         "analysis-id": 1481,
@@ -105,7 +115,7 @@ def test_decider_queue(args):
 def test_instance_queue(args):
     '''test instance queue'''
     analysis_id = int(1000000 * random.random())
-    sqs = BpSQS(args.config_file, 'instance', 600)
+    sqs = BpSQS(conf=None, config_file=args.config_file, queue='instance', timeout=600)
     msg = {
         'action': 'start-instance',
         'name': 'bp-%s' % analysis_id,
@@ -121,8 +131,10 @@ def test_instance_queue(args):
 def read_args():
     '''user args'''
     parser = argparse.ArgumentParser(description='cmd line instance control')
-    parser.add_argument('-c', '--config-file')
     parser.add_argument('-a', '--action')
+    parser.add_argument('-c', '--config-file')
+    parser.add_argument('-C', '--clear')
+    parser.set_defaults(clear=False)
     parser.set_defaults(
         config_file='setup/config.dev.json'
     )
