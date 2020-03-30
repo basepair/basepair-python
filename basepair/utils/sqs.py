@@ -95,13 +95,13 @@ def main():
     # test_decider_queue(args)
     # test_instance_queue(args)
     if args.clear:
-        sqs = BpSQS(None, config_file=args.config_file)
+        sqs = BpSQS(conf=None, config_file=args.config_file)
         sqs.clear(args.wetrun)
 
 
 def test_decider_queue(args):
     '''test decider queue'''
-    sqs = BpSQS(None, config_file=args.config_file)
+    sqs = BpSQS(conf=None, config_file=args.config_file)
     msg = {
         "message": "completed",
         "analysis-id": 1481,
@@ -115,7 +115,7 @@ def test_decider_queue(args):
 def test_instance_queue(args):
     '''test instance queue'''
     analysis_id = int(1000000 * random.random())
-    sqs = BpSQS(None, config_file=args.config_file, 'instance', 600)
+    sqs = BpSQS(conf=None, config_file=args.config_file, 'instance', 600)
     msg = {
         'action': 'start-instance',
         'name': 'bp-%s' % analysis_id,
