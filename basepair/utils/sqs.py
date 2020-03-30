@@ -115,7 +115,7 @@ def test_decider_queue(args):
 def test_instance_queue(args):
     '''test instance queue'''
     analysis_id = int(1000000 * random.random())
-    sqs = BpSQS(conf=None, config_file=args.config_file, 'instance', 600)
+    sqs = BpSQS(conf=None, config_file=args.config_file, queue='instance', timeout=600)
     msg = {
         'action': 'start-instance',
         'name': 'bp-%s' % analysis_id,
