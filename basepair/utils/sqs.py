@@ -96,7 +96,7 @@ def main():
     # test_instance_queue(args)
     if args.clear:
         sqs = BpSQS(conf=None, config_file=args.config_file)
-        sqs.clear(args.wetrun)
+        sqs.clear()
 
 
 def test_decider_queue(args):
