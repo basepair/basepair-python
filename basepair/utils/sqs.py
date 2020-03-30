@@ -35,7 +35,10 @@ class BpSQS(object):
 
 
         try:
-            region = self.conf['aws']['sqs']['region']
+            for reg in boto.sqs.regions():
+                if reg.name == self.conf['aws']['sqs']['region']:
+                    region = reg
+                    break
         except KeyError:
             region = None
 
