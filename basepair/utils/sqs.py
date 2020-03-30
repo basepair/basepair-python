@@ -17,8 +17,7 @@ import requests
 
 class BpSQS(object):
     '''wrapper for boto AWS SQS'''
-    def __init__(self, conf, config_file=None, queue='decider',
-                 timeout=120, wait_time=20):
+    def __init__(self, conf, config_file=None, queue='decider', timeout=120, wait_time=20):
         if config_file:
             self.conf = json.load(open(config_file))
         else:
@@ -96,13 +95,13 @@ def main():
     # test_decider_queue(args)
     # test_instance_queue(args)
     if args.clear:
-        sqs = BpSQS(config_file=args.config_file)
+        sqs = BpSQS(None, config_file=args.config_file)
         sqs.clear(args.wetrun)
 
 
 def test_decider_queue(args):
     '''test decider queue'''
-    sqs = BpSQS(config_file=args.config_file)
+    sqs = BpSQS(None, config_file=args.config_file)
     msg = {
         "message": "completed",
         "analysis-id": 1481,
@@ -116,7 +115,7 @@ def test_decider_queue(args):
 def test_instance_queue(args):
     '''test instance queue'''
     analysis_id = int(1000000 * random.random())
-    sqs = BpSQS(args.config_file, 'instance', 600)
+    sqs = BpSQS(None, config_file=args.config_file, 'instance', 600)
     msg = {
         'action': 'start-instance',
         'name': 'bp-%s' % analysis_id,
