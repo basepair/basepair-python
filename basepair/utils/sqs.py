@@ -96,13 +96,13 @@ def main():
     # test_decider_queue(args)
     # test_instance_queue(args)
     if args.clear:
-        sqs = BpSQS(args.config_file)
+        sqs = BpSQS(config_file=args.config_file)
         sqs.clear(args.wetrun)
 
 
 def test_decider_queue(args):
     '''test decider queue'''
-    sqs = BpSQS(args.config_file)
+    sqs = BpSQS(config_file=args.config_file)
     msg = {
         "message": "completed",
         "analysis-id": 1481,
@@ -132,8 +132,10 @@ def test_instance_queue(args):
 def read_args():
     '''user args'''
     parser = argparse.ArgumentParser(description='cmd line instance control')
-    parser.add_argument('-c', '--config-file')
     parser.add_argument('-a', '--action')
+    parser.add_argument('-c', '--config-file')
+    parser.add_argument('-C', '--clear')
+    parser.set_defaults(clear=False)
     parser.set_defaults(
         config_file='setup/config.dev.json'
     )
