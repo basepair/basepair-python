@@ -33,10 +33,18 @@ class BpSQS(object):
             print('warning: no internet', file=sys.stderr)
             internet = False
 
+
+        try:
+            region = self.conf['aws']['sqs']['region']
+        except KeyError:
+            region = None
+
         if internet:
             self.conn = boto.connect_sqs(
                 aws_access_key_id=self.conf['aws']['aws_id'],
-                aws_secret_access_key=self.conf['aws']['aws_secret'])
+                aws_secret_access_key=self.conf['aws']['aws_secret'],
+                region=region
+                )
 
             self.q = self.conn.create_queue(queue, timeout)
             self.q.set_message_class(JSONMessage)
