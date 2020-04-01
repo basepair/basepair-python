@@ -15,6 +15,7 @@ from boto.swf.exceptions import SWFDomainAlreadyExistsError, \
 class SWF(object):
     def __init__(self, config_file):
         self.conf = json.load(open(config_file))
+        region = None
         try:
             for reg in boto.swf.regions():
                 if reg.name == self.conf['aws']['swf']['region']:

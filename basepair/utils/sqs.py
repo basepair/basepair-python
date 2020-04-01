@@ -32,7 +32,7 @@ class BpSQS(object):
             print('warning: no internet', file=sys.stderr)
             internet = False
 
-
+        region = None
         try:
             for reg in boto.sqs.regions():
                 if reg.name == self.conf['aws']['sqs']['region']:

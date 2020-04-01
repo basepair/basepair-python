@@ -11,9 +11,20 @@ from boto.s3.key import Key
 class BpS3(object):
     def __init__(self, conf):
         self.conf = conf
+
+        region = None
+        try:
+            for reg in boto.sqs.regions():
+                if reg.name == self.conf['aws']['s3']['region']:
+                    region = reg
+                    break
+        except KeyError:
+            region = None
+
         self.conn = boto.connect_s3(
             aws_access_key_id=self.conf['aws']['aws_id'],
             aws_secret_access_key=self.conf['aws']['aws_secret'],
+            region=region,
         )
 
     def save_data(self, data, bucket_name, key_name):
