@@ -314,7 +314,7 @@ class BpApi(object):
         info = self.get_all_info(kind='workflows')
 
         workflows = []
-        for i in info:
+        for i in info['objects']:
             workflows.append(self.get_workflow(i['id']))
 
         return workflows
@@ -1697,7 +1697,7 @@ class BpApi(object):
                     i['datatype'],
                     i['genome'],
                     i['date_created'],
-                    i['meta']['num_reads']] for i in data]
+                    i['meta']['num_reads']] for i in data['objects']]
                 print(
                     tabulate(
                         data,
@@ -1747,7 +1747,7 @@ class BpApi(object):
                     i['completed_on'],
                     i['status'],
                     i['meta']['num_files'],
-                    i['tags']] for i in data]
+                    i['tags']] for i in data['objects']]
                 print(
                     tabulate(
                         data,
@@ -1765,7 +1765,7 @@ class BpApi(object):
                     i['name'],
                     i['datatype'],
                     i['description'],
-                    i['tags']] for i in data]
+                    i['tags']] for i in data['objects']]
                 print(
                     tabulate(
                         data,
