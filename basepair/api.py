@@ -1634,11 +1634,14 @@ class BpApi(object):
         if data_type == 'genomes':
             data = self.get_genomes()
         elif data_type == 'workflows':
-            data = self.get_workflows()
+            res = self.get_all_info(kind='workflows')
+            data = res.get('objects')
         elif data_type == 'samples':
-            data = self.get_samples()
+            res = self.get_samples()
+            data = res.get('objects')
         elif data_type == 'analyses':
-            data = self.get_analyses()
+            res = self.get_analyses()
+            data = res.get('objects')
         elif data_type == 'analysis':
 
             # get detailed info about one or more analysis
