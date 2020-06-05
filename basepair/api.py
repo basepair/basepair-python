@@ -376,7 +376,7 @@ class BpApi(object):
         analysis_id = None
         url = self.get_analysis_url()
         data = {
-            'workflow': '/api/v1/workflows/{}'.format(workflow_id),
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id),
             'samples': [],
             'controls': [],
         }
@@ -615,7 +615,7 @@ class BpApi(object):
         url = self.get_sample_url()
 
         if data.get('default_workflow'):
-            data['default_workflow'] = '/api/v1/workflows/{}'.format(
+            data['default_workflow'] = '/api/v1/pipelines/{}'.format(
                 data['default_workflow'])
 
         sample_id = None
@@ -774,7 +774,7 @@ class BpApi(object):
         analysis_id = None
         url = self.get_analysis_url()
         data = {
-            'workflow': '/api/v1/workflows/{}'.format(workflow_id),
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id),
             'samples': [],
             'controls': [],
         }
