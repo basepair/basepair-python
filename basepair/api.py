@@ -1675,6 +1675,21 @@ class BpApi(object):
                 else:
                     print('Sample with uid {} invalid!'.format(uid_i))
 
+        elif data_type == 'genome':
+            if uid is None:
+                print('Your uid is invalid: {}'.format(uid))
+                return
+
+            data = []
+
+            for uid_i in uid:
+                data_tmp = self.get_genome(uid_i)
+
+                if data_tmp is not None:
+                    data.append(data_tmp)
+                else:
+                    print('Genome with uid {} invalid!'.format(uid_i))
+
         if data is None or len(data) == 0:
             print('Nothing found for the parameters you gave!')
             return
@@ -1688,15 +1703,15 @@ class BpApi(object):
             return
         else:
             if data_type == 'genomes':
-                data = [[i['id'], i['name'], i['date_created']] for i in data]
-                print(tabulate(data, headers=['id', 'name', 'date_created']))
+                data = [[i['id'], i['name'], i['created_on']] for i in data]
+                print(tabulate(data, headers=['id', 'name', 'created_on']))
             elif data_type == 'samples':
                 data = [[
                     i['id'],
                     i['name'],
                     i['datatype'],
                     i['genome'],
-                    i['date_created'],
+                    i['created_on'],
                     i['meta']['num_reads']] for i in data]
                 print(
                     tabulate(
@@ -1836,3 +1851,7 @@ class BpApi(object):
 
                     print()
                     print()
+
+            elif data_type == 'genome':
+                data = [[i['id'], i['name'], i['created_on']] for i in data]
+                print(tabulate(data, headers=['id', 'name', 'created_on']))
