@@ -434,9 +434,9 @@ def read_args():
     create_analysis_p.add_argument(
         '-w', '--workflow', help='Workflow id')
     create_analysis_p.add_argument(
-        '-s', '--sample', nargs='+', help='Sample id')
+        '--sample', nargs='+', help='Sample id')
     create_analysis_p.add_argument(
-        '-C', '--control', nargs='+', help='Control id')
+        '--control', nargs='+', help='Control id')
     create_analysis_p.add_argument('--params', nargs='+')
 
     # update project parser
