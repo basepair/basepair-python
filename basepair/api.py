@@ -98,10 +98,10 @@ class BpApi(object):
                 }
             }
 
+        aws_cfg = self.conf.get('aws', {})
         if 'AWS_CONFIG_FILE' not in os.environ and 'aws' in self.conf:
-            os.environ['AWS_ACCESS_KEY_ID'] = self.conf['aws']['aws_id']
-            os.environ['AWS_SECRET_ACCESS_KEY'] = \
-                self.conf['aws']['aws_secret']
+            os.environ['AWS_ACCESS_KEY_ID'] = aws_cfg.get('aws_id', '')
+            os.environ['AWS_SECRET_ACCESS_KEY'] = aws_cfg.get('aws_secret', '')
 
         if not scratch:
             scratch = '.'
