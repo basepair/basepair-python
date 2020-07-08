@@ -1607,7 +1607,7 @@ class BpApi(object):
                 kind=tagkind,
                 dirname=outdir)
 
-    def print_data(self, data_type='', uid=None, json=False):
+    def print_data(self, data_type='', uid=None, to_json=False):
         """
         Print data associated with genomes, samples, etc..
 
@@ -1620,7 +1620,7 @@ class BpApi(object):
         uid - list
             One or more ids of the objects you want.
 
-        json - bool
+        to_json - bool
             By default, data is printed in a human-readable format. With json
             set to True, it prints out all data in JSON format.
 
@@ -1699,9 +1699,9 @@ class BpApi(object):
 
         # print the data in either whole or pretty format
 
-        if json:
+        if to_json:
             for i in data:
-                print(i)
+                print(json.dumps(i))
                 print()
             return
         else:
@@ -1856,5 +1856,8 @@ class BpApi(object):
                     print()
 
             elif data_type == 'genome':
-                data = [[i['id'], i['name'], i['created_on']] for i in data]
-                print(tabulate(data, headers=['id', 'name', 'created_on']))
+                for data_i in data:
+                    print('Genome id: {}'.format(data_i['id']))
+                    print('Genome name: {}'.format(data_i['name']))
+                    print('Genome date created: {}'.format(data_i['created_on']))
+                    print()
