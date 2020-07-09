@@ -1361,6 +1361,13 @@ class BpApi(object):
                 print('analysis ended in error, skipping!')
                 continue
 
+            # dont even look if not the right type of analysis
+            if analysis_tags:
+                if not analysis['tags']:
+                    continue
+                if not set(analysis_tags) <= set(analysis['tags']):
+                    continue
+
             if analysis['params'] and 'info' in analysis['params']:
                 if analysis['params']['info'].get('genome', None) is None:
                     print('Could not find genome for analysis {}'.format(
@@ -1373,14 +1380,9 @@ class BpApi(object):
                     ), file=sys.stderr)
                     continue
                 if analysis['params']['info']['genome'] != sample['genome']:
-                    print('analysis genome different from sample genome!',
+                    print(f'analysis genome {analysis["params"]["info"]["genome"]}',
+                          'different from sample genome {sample["genome"]}!',
                           file=sys.stderr)
-                    continue
-
-            if analysis_tags:
-                if not analysis['tags']:
-                    continue
-                if not set(analysis_tags) <= set(analysis['tags']):
                     continue
 
             for tags_sub in tags:
