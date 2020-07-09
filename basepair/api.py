@@ -98,10 +98,10 @@ class BpApi(object):
                 }
             }
 
+        aws_cfg = self.conf.get('aws', {})
         if 'AWS_CONFIG_FILE' not in os.environ and 'aws' in self.conf:
-            os.environ['AWS_ACCESS_KEY_ID'] = self.conf['aws']['aws_id']
-            os.environ['AWS_SECRET_ACCESS_KEY'] = \
-                self.conf['aws']['aws_secret']
+            os.environ['AWS_ACCESS_KEY_ID'] = aws_cfg.get('aws_id', '')
+            os.environ['AWS_SECRET_ACCESS_KEY'] = aws_cfg.get('aws_secret', '')
 
         if not scratch:
             scratch = '.'
@@ -376,7 +376,7 @@ class BpApi(object):
         analysis_id = None
         url = self.get_analysis_url()
         data = {
-            'workflow': '/api/v1/workflows/{}'.format(workflow_id),
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id),
             'samples': [],
             'controls': [],
         }
@@ -615,7 +615,7 @@ class BpApi(object):
         url = self.get_sample_url()
 
         if data.get('default_workflow'):
-            data['default_workflow'] = '/api/v1/workflows/{}'.format(
+            data['default_workflow'] = '/api/v1/pipelines/{}'.format(
                 data['default_workflow'])
 
         sample_id = None
@@ -774,7 +774,7 @@ class BpApi(object):
         analysis_id = None
         url = self.get_analysis_url()
         data = {
-            'workflow': '/api/v1/workflows/{}'.format(workflow_id),
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id),
             'samples': [],
             'controls': [],
         }
@@ -1680,6 +1680,21 @@ class BpApi(object):
                 else:
                     print('Sample with uid {} invalid!'.format(uid_i))
 
+        elif data_type == 'genome':
+            if uid is None:
+                print('Your uid is invalid: {}'.format(uid))
+                return
+
+            data = []
+
+            for uid_i in uid:
+                data_tmp = self.get_genome(uid_i)
+
+                if data_tmp is not None:
+                    data.append(data_tmp)
+                else:
+                    print('Genome with uid {} invalid!'.format(uid_i))
+
         if data is None or len(data) == 0:
             print('Nothing found for the parameters you gave!')
             return
@@ -1693,15 +1708,15 @@ class BpApi(object):
             return
         else:
             if data_type == 'genomes':
-                data = [[i['id'], i['name'], i['date_created']] for i in data]
-                print(tabulate(data, headers=['id', 'name', 'date_created']))
+                data = [[i['id'], i['name'], i['created_on']] for i in data]
+                print(tabulate(data, headers=['id', 'name', 'created_on']))
             elif data_type == 'samples':
                 data = [[
                     i['id'],
                     i['name'],
                     i['datatype'],
                     i['genome'],
-                    i['date_created'],
+                    i['created_on'],
                     i['meta']['num_reads']] for i in data]
                 print(
                     tabulate(
@@ -1841,3 +1856,7 @@ class BpApi(object):
 
                     print()
                     print()
+
+            elif data_type == 'genome':
+                data = [[i['id'], i['name'], i['created_on']] for i in data]
+                print(tabulate(data, headers=['id', 'name', 'created_on']))

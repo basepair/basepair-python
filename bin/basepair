@@ -186,6 +186,10 @@ def main():
             bp.print_data(data_type='samples', json=args.json)
         elif args.list_type == 'workflows':
             bp.print_data(data_type='workflows', json=args.json)
+        elif args.list_type == 'genome':
+            for uid in args.uid:
+                bp.print_data(data_type='genome', uid=uid,
+                              json=args.json)
 
 
 def create_project(bp, args):
@@ -570,6 +574,13 @@ def read_args():
         help='List available genomes.')
     list_genomes_p = add_common_args(list_genomes_p)
     list_genomes_p = add_json_parser(list_genomes_p)
+
+    list_genome_p = list_sp.add_parser(
+        'genome',
+        help='List detail info about one or more genomes.')
+    list_genome_p = add_common_args(list_genome_p)
+    list_genome_p = add_uid_parser(list_genome_p)
+    list_genome_p = add_json_parser(list_genome_p)
 
     list_workflows_p = list_sp.add_parser(
         'workflows',
