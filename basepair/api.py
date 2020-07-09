@@ -134,17 +134,25 @@ class BpApi(object):
                    'Basepair! Proceeding anyway...').format(genome=genome),
                   file=sys.stderr)
 
+    def _check_sample(self, uid):
+        """Check if the sample is in the Basepair database"""
+
+        res = self.get_sample(uid, add_analysis=False)
+        if res:
+            return True
+        print('The provided sample id: {id}, does not exist in Basepair!'.format(id=uid)
+              , file=sys.stderr)
+        return False
+
     def _check_workflow(self, uid):
         """Check if the workflow is in the Basepair database"""
 
         res = self.get_workflow(uid)
-
-        if res is None:
-            print(('The provided workflow id, {id}, does not exist ' +
-                   'in Basepair!').format(id=uid), file=sys.stderr)
-            return False
-        else:
+        if res:
             return True
+        print('The provided workflow id: {id}, does not exist in Basepair!'.format(id=uid)
+              , file=sys.stderr)
+        return False
 
     def get_request(self, url, user_params=None, verify=True):
         """Add params to GET request"""
@@ -342,7 +350,7 @@ class BpApi(object):
 
     def create_analysis(self, workflow_id, sample_id=None, sample_ids=None,
                         control_id=None, control_ids=None, project_id=None,
-                        params=None):
+                        params=None, ignore_validation_warnings=False):
         """Start analysis
 
         Parameters
@@ -366,25 +374,33 @@ class BpApi(object):
         params : dict
             Dictionary of parameter values.
 
+        ignore_validation_warnings : boolean (optional)
+            Ignore validation warnings
+
         """
 
-        # input checking
-
+        # check if valid workflow id
         if not self._check_workflow(workflow_id):
             return
-
-        analysis_id = None
-        url = self.get_analysis_url()
-        data = {
-            'workflow': '/api/v1/pipelines/{}'.format(workflow_id),
-            'samples': [],
-            'controls': [],
-        }
 
         if sample_id:
             sample_ids = [sample_id]
         if not sample_ids:
             sample_ids = []
+
+        # check if all sample ids valid
+        if not all([self._check_sample(s_id) for s_id in sample_ids]):
+            return
+
+        analysis_id = None
+        url = self.get_analysis_url()
+        data = {
+            'controls': [],
+            'ignore_validation_warning': ignore_validation_warnings,
+            'samples': [],
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id)
+        }
+
         for sample_id in sample_ids:
             data['samples'].append('/api/v1/samples/{}'.format(sample_id))
 
@@ -410,11 +426,15 @@ class BpApi(object):
             if self.verbose:
                 print('created: analysis {} with sample id(s) {}'.format(
                     analysis_id, ','.join(sample_ids)), file=sys.stderr)
-
         else:
-            print('failed:', ','.join(sample_ids),
-                  res.status_code, file=sys.stderr)
-
+            error_msgs = {
+                401: 'You don\'t have access to this resource.',
+                404: 'Resource not found.',
+                500: 'Error retrieving data from API!'
+            }
+            if res.status_code in error_msgs:
+                print(error_msgs[res.status_code], file=sys.stderr)
+            print(res.json())
         return analysis_id
 
     def add_full_analysis(self, sample):
