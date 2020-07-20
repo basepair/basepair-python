@@ -206,6 +206,10 @@ class BpApi(object):
         """Get URL for accessing 1 project or all projects"""
         return self.get_url('projects', uid)
 
+    def get_genomefile_url(self, uid=None):
+        """Get URL for accessing 1 genomefile or all genomefiles"""
+        return self.get_url('genomefiles', uid)
+
     def get_group_url(self, uid=None):
         """Get URL for accessing 1 group or all groups"""
         return self.get_url('groups', uid)
@@ -1522,6 +1526,16 @@ class BpApi(object):
                 file1['path'], filename=dest, dirname=dirname)
 
         return filepath
+
+    def get_genomefile_by_filters(self, filters=None):
+        if not filters:
+            print('Filters required.', file=sys.stderr)
+            return
+        return self.get_obj_by_filters(url=self.get_genomefile_url(), filters=filters)
+
+    def get_obj_by_filters(self, url, filters=None):
+        res, code = self.get_request(url, user_params=filters)
+        return (res and res[0]) or res
 
     def get_window_score_filename(self, sample, kind=None, flanking=None):
         suffix = 'score-{}-{}Kb'.format(kind, flanking / 1e3)
