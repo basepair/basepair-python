@@ -243,8 +243,8 @@ def create_analysis(bp, args):
               file=sys.stderr)
 
     bp.create_analysis(
-        workflow_id=args.workflow, sample_ids=args.sample,
-        control_ids=args.control, project_id=args.project, params=params)
+        workflow_id=args.workflow, sample_ids=args.sample, control_ids=args.control,
+        project_id=args.project, params=params, ignore_validation_warnings=args.ignore_warning)
 
 
 def update_info(bp, kind, uid, keys, vals):
@@ -438,6 +438,9 @@ def read_args():
     create_analysis_p.add_argument(
         '--control', nargs='+', help='Control id')
     create_analysis_p.add_argument('--params', nargs='+')
+    create_analysis_p.add_argument(
+        '-i', '--ignore_warning', default=False, action='store_true',
+        help='Ignore validation warnings')
 
     # update project parser
 
