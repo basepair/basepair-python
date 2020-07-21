@@ -1531,11 +1531,8 @@ class BpApi(object):
         if not filters:
             print('Filters required.', file=sys.stderr)
             return
-        return self.get_obj_by_filters(url=self.get_genomefile_url(), filters=filters)
-
-    def get_obj_by_filters(self, url, filters=None):
-        res, code = self.get_request(url, user_params=filters)
-        return (res and res[0]) or res
+        res, code = self.get_request(url=self.get_genomefile_url(), user_params=filters)
+        return res
 
     def get_window_score_filename(self, sample, kind=None, flanking=None):
         suffix = 'score-{}-{}Kb'.format(kind, flanking / 1e3)
