@@ -1404,8 +1404,8 @@ class BpApi(object):
                     ), file=sys.stderr)
                     continue
                 if analysis['params']['info']['genome'] != sample['genome']:
-                    print(f'analysis genome {analysis["params"]["info"]["genome"]}',
-                          f'different from sample genome {sample["genome"]}!',
+                    print('analysis genome {}'.format(analysis['params']['info']['genome']),
+                          'different from sample genome {}!'.format(sample['genome']),
                           file=sys.stderr)
                     continue
 
