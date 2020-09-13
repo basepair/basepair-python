@@ -1404,11 +1404,16 @@ class BpApi(object):
                     ), file=sys.stderr)
                     continue
                 if analysis['params']['info']['genome'] != sample['genome']:
-                    print('analysis genome {}'.format(analysis['params']['info']['genome']),
-                          'different from sample genome {}!'.format(sample['genome']),
+                    print('analysis genome {}'.format(
+                        analysis['params']['info']['genome']),
+                          'different from sample genome {}!'.format(
+                              sample['genome']),
                           file=sys.stderr)
                     continue
 
+            if self.verbose:
+                print('looking at', analysis['id'], 'status',
+                    analysis['status'], file=sys.stderr)
             for tags_sub in tags:
                 filtered_files = self.filter_files_by_tags(
                     analysis['files'], tags_sub, kind=kind, exclude=exclude,
@@ -1569,6 +1574,8 @@ class BpApi(object):
             tags = ['expression_count', 'by_gene', 'text']
         else:
             tags = ['expression_count', 'by_transcript', 'text']
+        if self.verbose:
+            print('getting file w tags', tags, file=sys.stderr)
         return self.get_file_by_tags(
             sample, tags, kind='exact', analysis_tags=['alignment'],
             multiple=multiple)
