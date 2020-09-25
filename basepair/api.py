@@ -560,6 +560,15 @@ class BpApi(object):
         info, code = self.get_info(kind='files', uid=uid)
         return info
 
+    def get_host_by_domain(self, domain):
+        url = self.get_url('hosts')
+        url += '?domain={}'.format(domain)
+        response, status = self.get_request(url)
+        try:
+            return response[0]
+        except IndexError:
+            return None
+
     def sample_name_to_id(self, name):
         url = self.get_sample_url()
         info, code = self.get_request(url, user_params={'name': name})
