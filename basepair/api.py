@@ -668,8 +668,14 @@ class BpApi(object):
 
             # failure
             else:
-                print('failed sample creation:', data['name'],
+                print('Failed sample creation:', data['name'],
                       res.status_code, res.reason, file=sys.stderr)
+                try:
+                    res = res.json()
+                    print(res.get('error'))
+                except ValueError:
+                    print('Error occurred.')
+
         else:
             sample_id = data['id']
 
