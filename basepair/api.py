@@ -436,9 +436,14 @@ class BpApi(object):
                 404: 'Resource not found.',
                 500: 'Error retrieving data from API!'
             }
-            if res.status_code in error_msgs:
-                print(error_msgs[res.status_code], file=sys.stderr)
-            print(res.json())
+            try:
+                res = res.json()
+                print(res.get('error'))
+            except ValueError:
+                if res.status_code in error_msgs:
+                    print(error_msgs[res.status_code], file=sys.stderr)
+                else:
+                    print('Error occurred.')
         return analysis_id
 
     def add_full_analysis(self, sample):
@@ -668,8 +673,14 @@ class BpApi(object):
 
             # failure
             else:
-                print('failed sample creation:', data['name'],
+                print('Failed sample creation:', data['name'],
                       res.status_code, res.reason, file=sys.stderr)
+                try:
+                    res = res.json()
+                    print(res.get('error'))
+                except ValueError:
+                    print('Error occurred.')
+
         else:
             sample_id = data['id']
 
