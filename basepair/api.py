@@ -91,10 +91,11 @@ class BpApi(object):
             api_key = os.environ['BP_API_KEY']
             self.conf = {
                 'api': {
-                    'host': 'https://app.basepairtech.com/',
-                    'prefix': 'api/v1/',
+                    'api_key': api_key,
+                    'host': 'app.basepairtech.com',
+                    'prefix': '/api/v1/',
+                    'ssl': True,
                     'username': username,
-                    'api_key': api_key
                 }
             }
 
