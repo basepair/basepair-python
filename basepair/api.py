@@ -923,7 +923,7 @@ class BpApi(object):
 
         """
 
-        src = 's3://{}/{}'.format(self.conf['aws']['s3']['bucket'], src)
+        src = 's3://{}/{}'.format(self.conf['storage']['settings']['bucket'], src)
         cmd = self.get_copy_cmd(src, dest)
         try:
             output = subprocess.check_output(
@@ -937,7 +937,7 @@ class BpApi(object):
 
     def copy_file_to_s3(self, src, dest, params=None):
         """Low level function to copy a file to cloud from disk"""
-        dest = 's3://{}/{}'.format(self.conf['aws']['s3']['bucket'], dest)
+        dest = 's3://{}/{}'.format(self.conf['storage']['settings']['bucket'], dest)
 
         # check if file is current
         # if self.is_file_current(src, dest):
