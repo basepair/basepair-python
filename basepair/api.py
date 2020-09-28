@@ -196,7 +196,8 @@ class BpApi(object):
     def get_url(self, kind=None, uid=None):
         """Create URL for a given object kind, add id if provided"""
         # url = self.conf['api']['url'] + kind
-        url = self.conf['api']['host'] + self.conf['api']['prefix'] + kind
+        protocol = 'https' if self.conf['api'].get('ssl', True) else 'http'
+        url = protocol + '://' + self.conf['api']['host'] + self.conf['api']['prefix'] + kind
         if uid:
             url = '{}/{}'.format(url, uid)
 
