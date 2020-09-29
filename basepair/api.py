@@ -91,17 +91,18 @@ class BpApi(object):
             api_key = os.environ['BP_API_KEY']
             self.conf = {
                 'api': {
-                    'host': 'https://app.basepairtech.com/',
-                    'prefix': 'api/v1/',
+                    'api_key': api_key,
+                    'host': 'app.basepairtech.com',
+                    'prefix': '/api/v1/',
+                    'ssl': True,
                     'username': username,
-                    'api_key': api_key
                 }
             }
 
+        aws_cfg = self.conf.get('aws', {})
         if 'AWS_CONFIG_FILE' not in os.environ and 'aws' in self.conf:
-            os.environ['AWS_ACCESS_KEY_ID'] = self.conf['aws']['aws_id']
-            os.environ['AWS_SECRET_ACCESS_KEY'] = \
-                self.conf['aws']['aws_secret']
+            os.environ['AWS_ACCESS_KEY_ID'] = aws_cfg.get('aws_id', '')
+            os.environ['AWS_SECRET_ACCESS_KEY'] = aws_cfg.get('aws_secret', '')
 
         if not scratch:
             scratch = '.'
@@ -134,17 +135,25 @@ class BpApi(object):
                    'Basepair! Proceeding anyway...').format(genome=genome),
                   file=sys.stderr)
 
+    def _check_sample(self, uid):
+        """Check if the sample is in the Basepair database"""
+
+        res = self.get_sample(uid, add_analysis=False)
+        if res:
+            return True
+        print('The provided sample id: {id}, does not exist in Basepair!'.format(id=uid)
+              , file=sys.stderr)
+        return False
+
     def _check_workflow(self, uid):
         """Check if the workflow is in the Basepair database"""
 
         res = self.get_workflow(uid)
-
-        if res is None:
-            print(('The provided workflow id, {id}, does not exist ' +
-                   'in Basepair!').format(id=uid), file=sys.stderr)
-            return False
-        else:
+        if res:
             return True
+        print('The provided workflow id: {id}, does not exist in Basepair!'.format(id=uid)
+              , file=sys.stderr)
+        return False
 
     def get_request(self, url, user_params=None, verify=True):
         """Add params to GET request"""
@@ -188,7 +197,8 @@ class BpApi(object):
     def get_url(self, kind=None, uid=None):
         """Create URL for a given object kind, add id if provided"""
         # url = self.conf['api']['url'] + kind
-        url = self.conf['api']['host'] + self.conf['api']['prefix'] + kind
+        protocol = 'https' if self.conf['api'].get('ssl', True) else 'http'
+        url = protocol + '://' + self.conf['api']['host'] + self.conf['api']['prefix'] + kind
         if uid:
             url = '{}/{}'.format(url, uid)
 
@@ -205,6 +215,10 @@ class BpApi(object):
     def get_project_url(self, uid=None):
         """Get URL for accessing 1 project or all projects"""
         return self.get_url('projects', uid)
+
+    def get_genomefile_url(self, uid=None):
+        """Get URL for accessing 1 genomefile or all genomefiles"""
+        return self.get_url('genomefiles', uid)
 
     def get_group_url(self, uid=None):
         """Get URL for accessing 1 group or all groups"""
@@ -342,7 +356,7 @@ class BpApi(object):
 
     def create_analysis(self, workflow_id, sample_id=None, sample_ids=None,
                         control_id=None, control_ids=None, project_id=None,
-                        params=None):
+                        params=None, ignore_validation_warnings=False):
         """Start analysis
 
         Parameters
@@ -366,25 +380,33 @@ class BpApi(object):
         params : dict
             Dictionary of parameter values.
 
+        ignore_validation_warnings : boolean (optional)
+            Ignore validation warnings
+
         """
 
-        # input checking
-
+        # check if valid workflow id
         if not self._check_workflow(workflow_id):
             return
-
-        analysis_id = None
-        url = self.get_analysis_url()
-        data = {
-            'workflow': '/api/v1/workflows/{}'.format(workflow_id),
-            'samples': [],
-            'controls': [],
-        }
 
         if sample_id:
             sample_ids = [sample_id]
         if not sample_ids:
             sample_ids = []
+
+        # check if all sample ids valid
+        if not all([self._check_sample(s_id) for s_id in sample_ids]):
+            return
+
+        analysis_id = None
+        url = self.get_analysis_url()
+        data = {
+            'controls': [],
+            'ignore_validation_warning': ignore_validation_warnings,
+            'samples': [],
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id)
+        }
+
         for sample_id in sample_ids:
             data['samples'].append('/api/v1/samples/{}'.format(sample_id))
 
@@ -410,11 +432,15 @@ class BpApi(object):
             if self.verbose:
                 print('created: analysis {} with sample id(s) {}'.format(
                     analysis_id, ','.join(sample_ids)), file=sys.stderr)
-
         else:
-            print('failed:', ','.join(sample_ids),
-                  res.status_code, file=sys.stderr)
-
+            error_msgs = {
+                401: 'You don\'t have access to this resource.',
+                404: 'Resource not found.',
+                500: 'Error retrieving data from API!'
+            }
+            if res.status_code in error_msgs:
+                print(error_msgs[res.status_code], file=sys.stderr)
+            print(res.json())
         return analysis_id
 
     def add_full_analysis(self, sample):
@@ -536,6 +562,15 @@ class BpApi(object):
         info, code = self.get_info(kind='files', uid=uid)
         return info
 
+    def get_host_by_domain(self, domain):
+        url = self.get_url('hosts')
+        url += '?domain={}'.format(domain)
+        response, status = self.get_request(url)
+        try:
+            return response[0]
+        except IndexError:
+            return None
+
     def sample_name_to_id(self, name):
         url = self.get_sample_url()
         info, code = self.get_request(url, user_params={'name': name})
@@ -615,7 +650,7 @@ class BpApi(object):
         url = self.get_sample_url()
 
         if data.get('default_workflow'):
-            data['default_workflow'] = '/api/v1/workflows/{}'.format(
+            data['default_workflow'] = '/api/v1/pipelines/{}'.format(
                 data['default_workflow'])
 
         sample_id = None
@@ -774,7 +809,7 @@ class BpApi(object):
         analysis_id = None
         url = self.get_analysis_url()
         data = {
-            'workflow': '/api/v1/workflows/{}'.format(workflow_id),
+            'workflow': '/api/v1/pipelines/{}'.format(workflow_id),
             'samples': [],
             'controls': [],
         }
@@ -888,7 +923,7 @@ class BpApi(object):
 
         """
 
-        src = 's3://{}/{}'.format(self.conf['aws']['s3']['bucket'], src)
+        src = 's3://{}/{}'.format(self.conf['storage']['settings']['bucket'], src)
         cmd = self.get_copy_cmd(src, dest)
         try:
             output = subprocess.check_output(
@@ -902,7 +937,7 @@ class BpApi(object):
 
     def copy_file_to_s3(self, src, dest, params=None):
         """Low level function to copy a file to cloud from disk"""
-        dest = 's3://{}/{}'.format(self.conf['aws']['s3']['bucket'], dest)
+        dest = 's3://{}/{}'.format(self.conf['storage']['settings']['bucket'], dest)
 
         # check if file is current
         # if self.is_file_current(src, dest):
@@ -1361,6 +1396,13 @@ class BpApi(object):
                 print('analysis ended in error, skipping!')
                 continue
 
+            # dont even look if not the right type of analysis
+            if analysis_tags:
+                if not analysis['tags']:
+                    continue
+                if not set(analysis_tags) <= set(analysis['tags']):
+                    continue
+
             if analysis['params'] and 'info' in analysis['params']:
                 if analysis['params']['info'].get('genome', None) is None:
                     print('Could not find genome for analysis {}'.format(
@@ -1373,16 +1415,16 @@ class BpApi(object):
                     ), file=sys.stderr)
                     continue
                 if analysis['params']['info']['genome'] != sample['genome']:
-                    print('analysis genome different from sample genome!',
+                    print('analysis genome {}'.format(
+                        analysis['params']['info']['genome']),
+                          'different from sample genome {}!'.format(
+                              sample['genome']),
                           file=sys.stderr)
                     continue
 
-            if analysis_tags:
-                if not analysis['tags']:
-                    continue
-                if not set(analysis_tags) <= set(analysis['tags']):
-                    continue
-
+            if self.verbose:
+                print('looking at', analysis['id'], 'status',
+                    analysis['status'], file=sys.stderr)
             for tags_sub in tags:
                 filtered_files = self.filter_files_by_tags(
                     analysis['files'], tags_sub, kind=kind, exclude=exclude,
@@ -1521,6 +1563,13 @@ class BpApi(object):
 
         return filepath
 
+    def get_genomefile_by_filters(self, filters=None):
+        if not filters:
+            print('Filters required.', file=sys.stderr)
+            return
+        res, code = self.get_request(url=self.get_genomefile_url(), user_params=filters)
+        return res
+
     def get_window_score_filename(self, sample, kind=None, flanking=None):
         suffix = 'score-{}-{}Kb'.format(kind, flanking / 1e3)
         suffix = suffix.replace('.0Kb', 'Kb')
@@ -1536,6 +1585,8 @@ class BpApi(object):
             tags = ['expression_count', 'by_gene', 'text']
         else:
             tags = ['expression_count', 'by_transcript', 'text']
+        if self.verbose:
+            print('getting file w tags', tags, file=sys.stderr)
         return self.get_file_by_tags(
             sample, tags, kind='exact', analysis_tags=['alignment'],
             multiple=multiple)
@@ -1678,6 +1729,21 @@ class BpApi(object):
                 else:
                     print('Sample with uid {} invalid!'.format(uid_i))
 
+        elif data_type == 'genome':
+            if uid is None:
+                print('Your uid is invalid: {}'.format(uid))
+                return
+
+            data = []
+
+            for uid_i in uid:
+                data_tmp = self.get_genome(uid_i)
+
+                if data_tmp is not None:
+                    data.append(data_tmp)
+                else:
+                    print('Genome with uid {} invalid!'.format(uid_i))
+
         if data is None or len(data) == 0:
             print('Nothing found for the parameters you gave!')
             return
@@ -1691,15 +1757,15 @@ class BpApi(object):
             return
         else:
             if data_type == 'genomes':
-                data = [[i['id'], i['name'], i['date_created']] for i in data]
-                print(tabulate(data, headers=['id', 'name', 'date_created']))
+                data = [[i['id'], i['name'], i['created_on']] for i in data]
+                print(tabulate(data, headers=['id', 'name', 'created_on']))
             elif data_type == 'samples':
                 data = [[
                     i['id'],
                     i['name'],
                     i['datatype'],
                     i['genome'],
-                    i['date_created'],
+                    i['created_on'],
                     i['meta']['num_reads']] for i in data]
                 print(
                     tabulate(
@@ -1839,3 +1905,7 @@ class BpApi(object):
 
                     print()
                     print()
+
+            elif data_type == 'genome':
+                data = [[i['id'], i['name'], i['created_on']] for i in data]
+                print(tabulate(data, headers=['id', 'name', 'created_on']))

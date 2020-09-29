@@ -186,6 +186,10 @@ def main():
             bp.print_data(data_type='samples', json=args.json)
         elif args.list_type == 'workflows':
             bp.print_data(data_type='workflows', json=args.json)
+        elif args.list_type == 'genome':
+            for uid in args.uid:
+                bp.print_data(data_type='genome', uid=uid,
+                              json=args.json)
 
 
 def create_project(bp, args):
@@ -239,8 +243,8 @@ def create_analysis(bp, args):
               file=sys.stderr)
 
     bp.create_analysis(
-        workflow_id=args.workflow, sample_ids=args.sample,
-        control_ids=args.control, project_id=args.project, params=params)
+        workflow_id=args.workflow, sample_ids=args.sample, control_ids=args.control,
+        project_id=args.project, params=params, ignore_validation_warnings=args.ignore_warning)
 
 
 def update_info(bp, kind, uid, keys, vals):
@@ -434,6 +438,9 @@ def read_args():
     create_analysis_p.add_argument(
         '--control', nargs='+', help='Control id')
     create_analysis_p.add_argument('--params', nargs='+')
+    create_analysis_p.add_argument(
+        '-i', '--ignore_warning', default=False, action='store_true',
+        help='Ignore validation warnings')
 
     # update project parser
 
@@ -570,6 +577,13 @@ def read_args():
         help='List available genomes.')
     list_genomes_p = add_common_args(list_genomes_p)
     list_genomes_p = add_json_parser(list_genomes_p)
+
+    list_genome_p = list_sp.add_parser(
+        'genome',
+        help='List detail info about one or more genomes.')
+    list_genome_p = add_common_args(list_genome_p)
+    list_genome_p = add_uid_parser(list_genome_p)
+    list_genome_p = add_json_parser(list_genome_p)
 
     list_workflows_p = list_sp.add_parser(
         'workflows',
