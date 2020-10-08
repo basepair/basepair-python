@@ -155,6 +155,17 @@ class BpApi(object):
               , file=sys.stderr)
         return False
 
+    def _get_cloud_credentials():
+        '''Get cloud credentials'''
+        credential = ''
+        credentials_cfg = self.conf.get('storage', {}).get('credential', {})
+        if credentials_cfg and not credentials_cfg.get('role'):
+            credential = 'AWS_ACCESS_KEY_ID={} AWS_SECRET_ACCESS_KEY={} '.format(
+                credentials_cfg.get('id'),
+                credentials_cfg.get('secret'),
+            )
+        return credential
+
     def get_request(self, url, user_params=None, verify=True):
         """Add params to GET request"""
         params = self.payload
@@ -984,13 +995,14 @@ class BpApi(object):
             for arg, val in params.items():
                 _params += ' {} "{}"'.format(arg, val)
 
-        cmd = ('aws s3 cp "{}" "{}" {}').format(
-                  src, dest, _params)
+        credential = self._get_cloud_credentials()
+        cmd = ('{}aws s3 cp "{}" "{}" {}').format(credential, src, dest, _params)
 
         return cmd
 
     def is_file_current(self, filepath, key_name):
-        cmd = 'aws s3 ls {}'.format(key_name)
+        credential = self._get_cloud_credentials()
+        cmd = '{} aws s3 ls {}'.format(credential, key_name)
 
         statinfo = os.stat(filepath)
         subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
