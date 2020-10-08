@@ -155,7 +155,7 @@ class BpApi(object):
               , file=sys.stderr)
         return False
 
-    def _get_cloud_credentials():
+    def _get_cloud_credentials(self):
         '''Get cloud credentials'''
         credential = ''
         credentials_cfg = self.conf.get('storage', {}).get('credential', {})
