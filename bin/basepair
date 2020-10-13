@@ -540,7 +540,7 @@ def read_args():
 
     # list parser
 
-    list_p = actions_p.add_parser('list', help='Download items.')
+    list_p = actions_p.add_parser('list', help='List of items.')
 
     list_sp = list_p.add_subparsers(
         help='Type of item to list',
