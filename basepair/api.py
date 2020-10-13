@@ -1612,14 +1612,16 @@ class BpApi(object):
             print('getting file w tags', tags, file=sys.stderr)
         return self.get_file_by_tags(
             sample, tags, kind='exact', analysis_tags=['alignment'],
-            multiple=multiple)
+            multiple=multiple
+        )
 
     def get_bigwig_file(self, sample, multiple=False):
         """Get bigwig file - for ChIP-Seq"""
         tags = ['bigwig']
         return self.get_file_by_tags(
             sample, tags, kind='exact', analysis_tags=['alignment'],
-            multiple=multiple)
+            multiple=multiple
+        )
 
     def get_bam_file(self, sample, tags=None, multiple=False):
         """Get bam file. If you want deduped bam file, call with
@@ -1627,8 +1629,9 @@ class BpApi(object):
         """
         if not tags:
             tags = ['bam']
-        return self.get_file_by_tags(sample, tags, analysis_tags=['alignment'],
-                                     multiple=multiple)
+        return self.get_file_by_tags(
+            sample, tags, analysis_tags=['alignment'], multiple=multiple
+        )
 
     def download_analysis(self, uid, tags=None, tagkind=None, outdir='.'):
         """
@@ -1654,32 +1657,36 @@ class BpApi(object):
         if tagkind not in ['exact', 'diff', 'subset']:
             print(
                 'Invalid tagkind, choose one of: exact, diff, subset',
-                file=sys.stderr)
+                file=sys.stderr
+            )
             return
 
-        if tags is not None:
+        if tags:
             if type(tags) != list:
                 print(
                     'Invald tags argument. Provide a list of list of tags.',
-                    file=sys.stderr)
+                    file=sys.stderr
+                )
                 return
             else:
                 if type(tags[0]) != list:
                     print(
                         'Invald tags argument. Provide a list of list of tags.',
-                        file=sys.stderr)
+                        file=sys.stderr
+                    )
                     return
 
         if type(uid) is not list:
             uid = [uid]
 
-        for i in uid:
-            analysis = self.get_analysis(i)[0]
+        for analysis_id in uid:
+            analysis = self.get_analysis(analysis_id)[0]
             self.get_analysis_files(
                 analysis=analysis,
                 tags=tags,
                 kind=tagkind,
-                dirname=outdir)
+                dirname=outdir
+            )
 
     def print_data(self, data_type='', uid=None, json=False):
         """
@@ -1704,142 +1711,133 @@ class BpApi(object):
             uid = [uid]
 
         # get the appropriate data
-
-        if data_type == 'genomes':
-            data = self.get_genomes()
-        elif data_type == 'workflows':
-            res = self.get_all_info(kind='workflows')
-            data = res.get('objects')
-        elif data_type == 'samples':
-            res = self.get_samples()
-            data = res.get('objects')
-        elif data_type == 'analyses':
-            res = self.get_analyses()
-            data = res.get('objects')
-        elif data_type == 'analysis':
-
+        if data_type == 'analysis':
             # get detailed info about one or more analysis
-
             if uid is None:
                 print('Your uid is invalid: {}'.format(uid))
                 return
 
             data = []
-
             for uid_i in uid:
                 data_tmp = self.get_analysis(uid_i)
 
-                if data_tmp is not None and data_tmp[1] == 200:
+                if data_tmp and data_tmp[1] == 200:
                     data.append(data_tmp[0])
                 else:
                     print('Analysis with uid {} invalid!'.format(uid_i))
-
-        elif data_type == 'sample':
-
-            # get detailed info about one or more sampe
-
-            if uid is None:
-                print('Your uid is invalid: {}'.format(uid))
-                return
-
-            data = []
-
-            for uid_i in uid:
-                data_tmp = self.get_sample(uid_i)
-
-                if data_tmp is not None:
-                    data.append(data_tmp)
-                else:
-                    print('Sample with uid {} invalid!'.format(uid_i))
-
+        elif data_type == 'analyses':
+            res = self.get_analyses()
+            data = res.get('objects')
         elif data_type == 'genome':
             if uid is None:
                 print('Your uid is invalid: {}'.format(uid))
                 return
 
             data = []
-
             for uid_i in uid:
                 data_tmp = self.get_genome(uid_i)
 
-                if data_tmp is not None:
+                if data_tmp:
                     data.append(data_tmp)
                 else:
                     print('Genome with uid {} invalid!'.format(uid_i))
+        elif data_type == 'genomes':
+            data = self.get_genomes()
+        elif data_type == 'sample':
+            # get detailed info about one or more sample
+            if uid is None:
+                print('Your uid is invalid: {}'.format(uid))
+                return
+
+            data = []
+            for uid_i in uid:
+                data_tmp = self.get_sample(uid_i)
+
+                if data_tmp:
+                    data.append(data_tmp)
+                else:
+                    print('Sample with uid {} invalid!'.format(uid_i))
+        elif data_type == 'samples':
+            res = self.get_samples()
+            data = res.get('objects')
+        elif data_type == 'workflows':
+            res = self.get_all_info(kind='workflows')
+            data = res.get('objects')
 
         if data is None or len(data) == 0:
             print('Nothing found for the parameters you gave!')
             return
 
         # print the data in either whole or pretty format
-
         if json:
-            for i in data:
-                print(i)
+            for item in data:
+                print(item)
                 print()
             return
         else:
-            if data_type == 'genomes':
-                data = [[i['id'], i['name'], i['created_on']] for i in data]
-                print(tabulate(data, headers=['id', 'name', 'created_on']))
-            elif data_type == 'samples':
-                data = [[
-                    i['id'],
-                    i['name'],
-                    i['datatype'],
-                    i.get('genome_name') or i.get('genome'),
-                    i['date_created'],
-                    i['meta']['num_reads']] for i in data]
-                print(
-                    tabulate(
-                        data,
-                        headers=[
-                            'id',
-                            'name',
-                            'datatype',
-                            'genome',
-                            'date created',
-                            'num reads']))
-            elif data_type == 'sample':
-                for data_i in data:
-                    print('Sample id: {}'.format(data_i['id']))
-                    print('Sample name: {}'.format(data_i['name']))
-                    print('Sample datatype: {}'.format(data_i['datatype']))
-                    print('Sample genome: {}'.format(data_i.get('genome_name') or data_i.get('genome')))
-                    print('Sample data created: {}'.format(data_i['date_created']))
-                    print('Sample num reads: {}'.format(data_i['meta']['num_reads']))
-                    print('Analyses:')
+            if data_type == 'analysis':
 
-                    data_i = [[
-                        i['id'],
-                        i['name'],
-                        i['started_on'],
-                        i['completed_on'],
-                        i['status'],
-                        i['meta']['num_files'],
-                        i['tags']] for i in data_i['analyses_full']]
+                for data_i in data:
+                    tmp = [
+                        ['id', data_i.get('id')],
+                        ['name', data_i.get('name')],
+                        ['date_created', data_i.get('date_created')],
+                        ['completed_on', data_i.get('completed_on')]
+                    ]
+
+                    for sample_i in data_i.get('samples', []):
+                        tmp.append(['sample', sample_i.split('/')[-1]])
+
+                    for sample_i in data_i.get('controls', []):
+                        tmp.append(['control', sample_i.get('id')])
+
+                    print()
+                    print('Analysis info:')
+                    print(tabulate(tmp, headers=['Variable', 'Value']))
+
+                    print()
+                    print('Analysis files:')
+
+                    # convert only filesizes that are not None
+                    for index, file_data in enumerate(data_i.get('files', [])):
+                        if file_data.get('filesize', None):
+                            data_i['files'][index]['filesize'] /= (1024.**3)
+                        else:
+                            data_i['files'][index]['filesize'] = 'NA'
+
+                    tmp = [[
+                        file.get('id'),
+                        file.get('filesize'),
+                        file.get('source'),
+                        os.path.split(file.get('path'))[1],
+                        file.get('tags')] for file in data_i.get('files', [])]
                     print(
                         tabulate(
-                            data_i,
+                            tmp,
+                            floatfmt='.4f',
                             headers=[
                                 'id',
+                                'filesize (Gigabytes)',
+                                'source',
                                 'name',
-                                'started on',
-                                'completed on',
-                                'status',
-                                'num files',
-                                'tags']))
+                                'tags'
+                            ],
+                            numalign='right',
+                        )
+                    )
+
                     print()
                     print()
             elif data_type == 'analyses':
                 data = [[
-                    i['id'],
-                    i['name'],
-                    i['started_on'],
-                    i['completed_on'],
-                    i['status'],
-                    i['meta']['num_files'],
-                    i['tags']] for i in data]
+                    analysis.get('id'),
+                    analysis.get('name'),
+                    analysis.get('started_on'),
+                    analysis.get('completed_on'),
+                    analysis.get('status'),
+                    analysis.get('meta', {}).get('num_files'),
+                    analysis.get('tags')] for analysis in data
+                ]
                 print(
                     tabulate(
                         data,
@@ -1850,14 +1848,86 @@ class BpApi(object):
                             'completed on',
                             'status',
                             'num files',
-                            'tags']))
+                            'tags'
+                        ]
+                    )
+                )
+            elif data_type == 'genome':
+                data = [[
+                    genome.get('id'),
+                    genome.get('name'),
+                    genome.get('created_on')] for genome in data]
+
+                print(tabulate(data, headers=['id', 'name', 'created_on']))
+            elif data_type == 'genomes':
+                data = [[
+                    genome.get('id'),
+                    genome.get('name'),
+                    genome.get('created_on')] for genome in data]
+
+                print(tabulate(data, headers=['id', 'name', 'created_on']))
+            elif data_type == 'sample':
+                for data_i in data:
+                    print('Sample id: {}'.format(data_i.get('id')))
+                    print('Sample name: {}'.format(data_i.get('name')))
+                    print('Sample datatype: {}'.format(data_i.get('datatype')))
+                    print('Sample genome: {}'.format(data_i.get('genome_name') or data_i.get('genome'))) # compatible with or without custom genome changes
+                    print('Sample data created: {}'.format(data_i.get('date_created')))
+                    print('Sample num reads: {}'.format(data_i.get('meta', {}).get('num_reads')))
+                    print('Analyses:')
+
+                    data_i = [[
+                        analysis.get('id'),
+                        analysis.get('name'),
+                        analysis.get('started_on'),
+                        analysis.get('completed_on'),
+                        analysis.get('status'),
+                        analysis.get('meta', {}).get('num_files'),
+                        analysis.get('tags')] for analysis in data_i['analyses_full']]
+                    print(
+                        tabulate(
+                            data_i,
+                            headers=[
+                                'id',
+                                'name',
+                                'started on',
+                                'completed on',
+                                'status',
+                                'num files',
+                                'tags'
+                            ]
+                        )
+                    )
+                    print()
+                    print()
+            elif data_type == 'samples':
+                data = [[
+                    sample.get('id'),
+                    sample.get('name'),
+                    sample.get('datatype'),
+                    (sample.get('genome_name') or sample.get('genome')), # compatible with or without custom genome changes
+                    sample.get('date_created'),
+                    sample.get('meta', {}).get('num_reads')] for sample in data]
+                print(
+                    tabulate(
+                        data,
+                        headers=[
+                            'id',
+                            'name',
+                            'datatype',
+                            'genome',
+                            'date created',
+                            'num reads'
+                        ]
+                    )
+                )
             elif data_type == 'workflows':
                 data = [[
-                    i['id'],
-                    i['name'],
-                    i['datatype'],
-                    i['description'],
-                    i['tags']] for i in data]
+                    workflow.get('id'),
+                    workflow.get('name'),
+                    workflow.get('datatype'),
+                    workflow.get('description'),
+                    workflow.get('tags')] for workflow in data[:5]]
                 print(
                     tabulate(
                         data,
@@ -1866,69 +1936,7 @@ class BpApi(object):
                             'name',
                             'datatype',
                             'description',
-                            'tags']))
-            elif data_type == 'analysis':
-
-                for data_i in data:
-
-                    tmp = [
-                        ['id', data_i['id']],
-                        ['name', data_i['name']],
-                        ['date_created', data_i['date_created']],
-                        ['completed_on', data_i['completed_on']]]
-
-                    for sample_i in data_i['samples']:
-                        tmp.append([
-                            'sample', sample_i.split('/')[-1]
-                        ])
-
-                    if data_i['controls'] is not None \
-                            and len(data_i['controls']) != 0:
-                        for sample_i in data_i['controls']:
-                            tmp.append([
-                                'control', sample_i['id']
-                            ])
-
-                    print()
-                    print('Analysis info:')
-                    print(tabulate(
-                        tmp,
-                        headers=[
-                            'Variable',
-                            'Value']))
-
-                    print()
-                    print('Analysis files:')
-
-                    # convert only filesizes that are not None
-                    for i, filedata in enumerate(data_i['files']):
-                        if filedata['filesize'] is not None:
-                            data_i['files'][i]['filesize'] /= (1024.**3)
-                        else:
-                            data_i['files'][i]['filesize'] = 'NA'
-
-                    tmp = [[
-                        i['id'],
-                        i['filesize'],
-                        i['source'],
-                        os.path.split(i['path'])[1],
-                        i['tags']] for i in data_i['files']]
-                    [i['filesize'] for i in data_i['files']]
-                    print(
-                        tabulate(
-                            tmp,
-                            headers=[
-                                'id',
-                                'filesize (Gigabytes)',
-                                'source',
-                                'name',
-                                'tags'],
-                            numalign='right',
-                            floatfmt=".4f"))
-
-                    print()
-                    print()
-
-            elif data_type == 'genome':
-                data = [[i['id'], i['name'], i['created_on']] for i in data]
-                print(tabulate(data, headers=['id', 'name', 'created_on']))
+                            'tags'
+                        ]
+                    )
+                )

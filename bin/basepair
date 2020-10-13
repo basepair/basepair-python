@@ -540,7 +540,7 @@ def read_args():
 
     # list parser
 
-    list_p = actions_p.add_parser('list', help='Download items.')
+    list_p = actions_p.add_parser('list', help='List of items.')
 
     list_sp = list_p.add_subparsers(
         help='Type of item to list',
@@ -598,7 +598,7 @@ def read_args():
 
     if not args.config:
         if 'BP_CONFIG_FILE' not in os.environ:
-            print('Please either use the --config option or set '
+            print('Please either use the -c or --config param or set '
                   'the environment variable BP_CONFIG_FILE!', file=sys.stderr)
             sys.exit(1)
         else:
