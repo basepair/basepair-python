@@ -1800,14 +1800,15 @@ class BpApi(object):
                     print(
                         tabulate(
                             tmp,
+                            floatfmt='.4f',
                             headers=[
                                 'id',
                                 'filesize (Gigabytes)',
                                 'source',
                                 'name',
-                                'tags'],
+                                'tags'
+                            ],
                             numalign='right',
-                            floatfmt=".4f"
                         )
                     )
 
@@ -1833,7 +1834,8 @@ class BpApi(object):
                             'completed on',
                             'status',
                             'num files',
-                            'tags']
+                            'tags'
+                        ]
                     )
                 )
             elif data_type == 'genome':
