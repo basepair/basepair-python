@@ -447,7 +447,7 @@ class BpApi(object):
                         for msg in error_obj.get('error_msgs'):
                             print('- ', msg)
                     if error_obj.get('warning'):
-                        print('Warnings:')
+                        print('Warnings (pass -i or --ignore_warning to ignore warnings):')
                         for msg in error_obj.get('warning_msgs'):
                             print('- ', msg)
                 else:
