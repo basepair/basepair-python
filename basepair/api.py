@@ -1773,8 +1773,7 @@ class BpApi(object):
                     i['id'],
                     i['name'],
                     i['datatype'],
-                    i['genome'],
-                    i['created_on'],
+                    i['date_created'],
                     i['meta']['num_reads']] for i in data]
                 print(
                     tabulate(
