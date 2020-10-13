@@ -387,6 +387,7 @@ def read_args():
     actions_p = parser.add_subparsers(
         help='Basepair actions.',
         dest='action')
+    actions_p.required = True
 
     # create parser
 
