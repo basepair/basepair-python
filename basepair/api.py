@@ -1773,6 +1773,7 @@ class BpApi(object):
                     i['id'],
                     i['name'],
                     i['datatype'],
+                    i.get('genome_name') or i.get('genome'),
                     i['date_created'],
                     i['meta']['num_reads']] for i in data]
                 print(
@@ -1790,7 +1791,7 @@ class BpApi(object):
                     print('Sample id: {}'.format(data_i['id']))
                     print('Sample name: {}'.format(data_i['name']))
                     print('Sample datatype: {}'.format(data_i['datatype']))
-                    print('Sample genome: {}'.format(data_i['genome']))
+                    print('Sample genome: {}'.format(data_i.get('genome_name') or data_i.get('genome')))
                     print('Sample data created: {}'.format(data_i['date_created']))
                     print('Sample num reads: {}'.format(data_i['meta']['num_reads']))
                     print('Analyses:')
