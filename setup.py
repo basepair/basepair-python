@@ -14,7 +14,11 @@ with open('README.md') as file:
 
 packages = [
     'basepair',
-    'basepair.utils'
+    'basepair.helpers',
+    'basepair.infra',
+    'basepair.infra.configuration',
+    'basepair.infra.webapp',
+    'basepair.utils',
 ]
 
 setup(
@@ -38,6 +42,7 @@ setup(
         'atac-seq'
     ],
     install_requires=[
+        'boto3',
         'future',
         'requests',
         'awscli',
