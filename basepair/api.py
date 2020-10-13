@@ -438,7 +438,21 @@ class BpApi(object):
             }
             try:
                 res = res.json()
-                print(res.get('error'))
+                error_obj = res.get('error')
+                if isinstance(error_obj, dict):
+                    # handles error object with the format:
+                    # {error:True, error_msgs:[], warning:True, warning_msgs:[]}
+                    if error_obj.get('error'):
+                        print('Errors:')
+                        for msg in error_obj.get('error_msgs'):
+                            print('- ', msg)
+                    if error_obj.get('warning'):
+                        print('Warnings:')
+                        for msg in error_obj.get('warning_msgs'):
+                            print('- ', msg)
+                else:
+                    # legacy
+                    print(error_obj)
             except ValueError:
                 if res.status_code in error_msgs:
                     print(error_msgs[res.status_code], file=sys.stderr)
