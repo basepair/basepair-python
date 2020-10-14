@@ -108,11 +108,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     self.genomes = self.get_genomes()
 
-    # Get configuration from host
+    # Get configuration from host only if it is not set in the incoming config
     cache = False
+    configuration = self.conf
     if use_cache:
       cache = '{}/json/config.json'.format(self.scratch)
-    configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
+    if len(self.conf.keys()) == 1:
+      configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
     self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
