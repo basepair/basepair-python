@@ -11,7 +11,7 @@ class Abstract:
   '''Webapp abastract class'''
   def __init__(self, cfg):
     protocol = 'https' if cfg.get('ssl', True) else 'http'
-    self.endpoint =  protocol + '://' + cfg.get('host') + cfg.get('prefix')
+    self.endpoint = protocol + '://' + cfg.get('host') + cfg.get('prefix')
     self.payload = {
       'username': cfg.get('username'),
       'api_key': cfg.get('key')
