@@ -725,7 +725,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     src:  {str} File path on AWS S3, not including the bucket           [Required]
     dest: {str} Directory or file path where file will be downloaded to [Required]
     '''
-    storage_cfg = self.configuration.get_storage()
+    storage_cfg = self.configuration.get_user_storage()
     src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     try:
@@ -738,7 +738,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
-    storage_cfg = self.configuration.get_storage()
+    storage_cfg = self.configuration.get_user_storage()
     dest = 's3://{}/{}'.format(storage_cfg.get('bucket'), dest)
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
@@ -938,7 +938,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       for arg, val in params.items():
         _params += ' {} "{}"'.format(arg, val)
 
-    storage_cfg = self.configuration.get_storage()
+    storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 

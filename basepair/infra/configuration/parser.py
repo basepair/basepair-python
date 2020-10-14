@@ -32,9 +32,22 @@ class Parser(): # pylint: disable=too-few-public-methods
       )
     return credentials
 
-  def get_storage(self, bucket=None):
+  def get_reflib_storage(self, bucket=None):
+    '''Get storage setting for reflibs'''
+    storages_cfg = self.cfg.get('storage', {}).get('reflibs', {})
+    all_reflib_buckets = []
+    for storage_cfg in storages_cfg:
+      storage_settings = storage_cfg.get('settings', {})
+      all_reflib_buckets.append({
+        'bucket': bucket or storage_settings.get('bucket'),
+        'credentials': storage_cfg.get('credentials'),
+        'region': storage_settings.get('region'),
+      })
+    return all_reflib_buckets
+
+  def get_user_storage(self, bucket=None):
     '''Get storage setting'''
-    storage_cfg = self.cfg.get('storage', {})
+    storage_cfg = self.cfg.get('storage', {}).get('user', {})
     storage_settings = storage_cfg.get('settings', {})
     return {
       'bucket': bucket or storage_settings.get('bucket'),
