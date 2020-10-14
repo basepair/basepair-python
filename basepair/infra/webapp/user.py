@@ -35,7 +35,9 @@ class User(Abstract):
 
       # save in cache if required
       if cache and parsed and not parsed.get('error'):
-        os.makedirs(os.path.dirname(filename))
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+          os.makedirs(directory)
         print('Saving configuration into:', filename)
         with open(filename, 'w') as handle:
           handle.write(json.dumps(parsed, indent=2))
