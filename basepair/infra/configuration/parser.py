@@ -24,7 +24,7 @@ class Parser(): # pylint: disable=too-few-public-methods
   def get_cli_credentials_from(cfg):
     '''Get cli credential from service cfg'''
     credentials = ''
-    credentials_cfg = cfg.get('credential', {})
+    credentials_cfg = cfg.get('credentials', {})
     if credentials_cfg and not credentials_cfg.get('role'):
       credentials = 'AWS_ACCESS_KEY_ID={} AWS_SECRET_ACCESS_KEY={} '.format(
         credentials_cfg.get('id'),
@@ -38,7 +38,7 @@ class Parser(): # pylint: disable=too-few-public-methods
     storage_settings = storage_cfg.get('settings', {})
     return {
       'bucket': bucket or storage_settings.get('bucket'),
-      'credential': storage_cfg.get('credential'),
+      'credentials': storage_cfg.get('credentials'),
       'region': storage_settings.get('region'),
     }
 
