@@ -66,7 +66,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   bp.delete_sample(sample_id)
   '''
 
-  def __init__(self, conf=None, scratch='.', use_cache=True, verbose=None):
+  def __init__(self, conf=None, scratch='.', use_cache=False, verbose=None):
     self.verbose = verbose
 
     if conf:
