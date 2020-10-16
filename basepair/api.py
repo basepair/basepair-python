@@ -842,7 +842,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if tags is None:
       return files
 
-    if isinstance(tags, list):
+    if not isinstance(tags, list):
       print('Invalid tags argument. Provide a list of tags.')
       return None
 
