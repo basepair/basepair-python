@@ -1074,10 +1074,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if not sample_genome_id:
           print('Could not find genome for analysis {}'.format(analysis['id']))
           continue
-        if analysis['params']['info']['genome_id'] != sample_genome_id:
+        if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
           print(
             'analysis genome {}'.format(analysis['params']['info']['genome_id']),
-            'different from sample genome {}.'.format(sample['genome']),
+            'different from sample genome {}.'.format(sample_genome_id),
           )
           continue
 
