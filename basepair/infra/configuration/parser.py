@@ -34,7 +34,7 @@ class Parser(): # pylint: disable=too-few-public-methods
 
   def get_reflib_storage(self, bucket=None):
     '''Get storage setting for reflibs'''
-    storages_cfg = self.cfg.get('storage', {}).get('reflibs', {})
+    storages_cfg = self.cfg.get('storage', {}).get('reflib', {})
     all_reflib_buckets = []
     for storage_cfg in storages_cfg:
       storage_settings = storage_cfg.get('settings', {})
