@@ -92,7 +92,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         }
       }
 
-    if self.conf.get('api', {}).get('ssl') is None or self.conf.get('aws'):
+    if self.conf.get('api', {}).get('ssl') is None:
       print('ERROR: The config file need to be updated. Please visit:')
       print('https://test.basepairtech.com/api/v2/users/api_key')
       print('To get your new config file.')
@@ -113,7 +113,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     configuration = self.conf
     if use_cache:
       cache = '{}/json/config.json'.format(self.scratch)
-    if len(self.conf.keys()) == 1:
+    if self.conf.get('cli') and len(self.conf.keys()) == 1:
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
