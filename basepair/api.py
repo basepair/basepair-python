@@ -1426,28 +1426,29 @@ class BpApi(object):
                 if not set(analysis_tags) <= set(analysis['tags']):
                     continue
 
-            if analysis['params'] and 'info' in analysis['params']:
-                if analysis['params']['info'].get('genome', None) is None:
-                    print('Could not find genome for analysis {}'.format(
-                        analysis['id']
-                    ), file=sys.stderr)
-                    continue
-                if sample.get('genome', None) is None:
-                    print('Could not find genome for analysis {}'.format(
-                        analysis['id']
-                    ), file=sys.stderr)
-                    continue
-                if analysis['params']['info']['genome'] != sample['genome']:
-                    print('analysis genome {}'.format(
-                        analysis['params']['info']['genome']),
-                          'different from sample genome {}!'.format(
-                              sample['genome']),
-                          file=sys.stderr)
-                    continue
+            # disable genome based match coz in middle of genome update
+            # if analysis['params'] and 'info' in analysis['params']:
+            #     if analysis['params']['info'].get('genome', None) is None:
+            #         print('Could not find genome for analysis {}'.format(
+            #             analysis['id']
+            #         ), file=sys.stderr)
+            #         continue
+            #     if sample.get('genome', None) is None:
+            #         print('Could not find genome for analysis {}'.format(
+            #             analysis['id']
+            #         ), file=sys.stderr)
+            #         continue
+            #     if analysis['params']['info']['genome'] != sample['genome']:
+            #         print('analysis genome {}'.format(
+            #             analysis['params']['info']['genome']),
+            #               'different from sample genome {}!'.format(
+            #                   sample['genome']),
+            #               file=sys.stderr)
+            #         continue
 
             if self.verbose:
                 print('looking at', analysis['id'], 'status',
-                    analysis['status'], file=sys.stderr)
+                      analysis['status'], file=sys.stderr)
             for tags_sub in tags:
                 filtered_files = self.filter_files_by_tags(
                     analysis['files'], tags_sub, kind=kind, exclude=exclude,
