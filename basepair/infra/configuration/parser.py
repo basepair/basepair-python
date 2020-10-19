@@ -4,6 +4,9 @@
 import json
 import os
 
+# App imports
+from basepair.helpers import eprint
+
 class Parser(): # pylint: disable=too-few-public-methods
   '''Configuration parser class'''
   def __init__(self, source):
@@ -15,9 +18,9 @@ class Parser(): # pylint: disable=too-few-public-methods
       try:
         self.cfg = json.load(open(source))
       except OSError as error:
-        print(f'ERROR: Not able to open config file: {error}')
+        eprint(f'ERROR: Not able to open config file: {error}')
       except ValueError:
-        print(f'ERROR: Not able to read config file: {error}')
+        eprint(f'ERROR: Not able to read config file: {error}')
     # TODO: if uri implement configuration manager
 
   @staticmethod

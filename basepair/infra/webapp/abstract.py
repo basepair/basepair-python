@@ -7,6 +7,9 @@ import os
 # Lib imports
 import requests
 
+# App imports
+from basepair.helpers import eprint
+
 class Abstract:
   '''Webapp abastract class'''
   def __init__(self, cfg):
@@ -28,7 +31,7 @@ class Abstract:
       )
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
-      print('ERROR: {}'.format(error))
+      eprint('ERROR: {}'.format(error))
       return { 'error': True, 'msg': error}
 
   def get(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
@@ -56,7 +59,7 @@ class Abstract:
           handle.write(json.dumps(parsed, indent=2))
       return parsed
     except requests.exceptions.RequestException as error:
-      print('ERROR: {}'.format(error))
+      eprint('ERROR: {}'.format(error))
       return { 'error': True, 'msg': error}
 
   def list(self, params={'limit': 100}, verify=True): # pylint: disable=dangerous-default-value
@@ -70,7 +73,7 @@ class Abstract:
       )
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
-      print('ERROR: {}'.format(error))
+      eprint('ERROR: {}'.format(error))
       return { 'error': True, 'msg': error}
 
   def save(self, obj_id=None, params={}, payload={}, verify=True): # pylint: disable=dangerous-default-value
@@ -86,7 +89,7 @@ class Abstract:
       )
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
-      print('ERROR: {}'.format(error))
+      eprint('ERROR: {}'.format(error))
       return { 'error': True, 'msg': error}
 
   @classmethod
@@ -99,12 +102,12 @@ class Abstract:
     }
 
     if response.status_code in error_msgs:
-      print('ERROR: {}'.format(error_msgs[response.status_code]))
+      eprint('ERROR: {}'.format(error_msgs[response.status_code]))
       return {'error': True, 'msg': error_msgs[response.status_code]}
 
     try:
       return response.json()
     except json.decoder.JSONDecodeError as error:
       msg = 'ERROR: Not able to parse response: {}.'.format(error)
-      print(msg)
+      eprint(msg)
       return {'error': True, 'msg': msg}

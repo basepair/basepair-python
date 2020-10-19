@@ -29,7 +29,7 @@ import time
 import datetime
 
 # App imports
-from .helpers import NicePrint, SetFilter
+from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
 from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
 
@@ -75,10 +75,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       self.conf = json.load(open(os.environ['BP_CONFIG_FILE']))
     else:
       if 'BP_USERNAME' not in os.environ:
-        print('ERROR: BP_USERNAME not set in env')
+        eprint('ERROR: BP_USERNAME not set in env')
         sys.exit(1)
       if 'BP_API_KEY' not in os.environ:
-        print('ERROR: BP_API_KEY not set in env')
+        eprint('ERROR: BP_API_KEY not set in env')
         sys.exit(1)
       username = os.environ['BP_USERNAME']
       api_key = os.environ['BP_API_KEY']
@@ -93,16 +93,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       }
 
     if self.conf.get('api', {}).get('ssl') is None:
-      print('ERROR: The config file need to be updated. Please visit:')
-      print('https://test.basepairtech.com/api/v2/users/api_key')
-      print('To get your new config file.')
+      eprint('ERROR: The config file need to be updated. Please visit:')
+      eprint('https://test.basepairtech.com/api/v2/users/api_key')
+      eprint('To get your new config file.')
       sys.exit(1)
 
     self.scratch = self.conf.get('scratch', scratch).rstrip('/')
     self.use_cache = use_cache
 
     if use_cache and self.verbose == 1:
-      print('Warning: caching data.')
+      eprint('Warning: caching data.')
 
     self._get_user_id()
 
@@ -172,7 +172,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
-    print(json.dumps(data, indent=2))
+    eprint(json.dumps(data, indent=2))
 
     if params:
       data['params'] = params
@@ -181,7 +181,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = analysis_api.save(payload=data)
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
-      print('created: analysis {} with sample id(s) {}'.format(
+      eprint('created: analysis {} with sample id(s) {}'.format(
           analysis_id,
           ','.join(sample_ids),
       ))
@@ -202,12 +202,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     tags:    {list} List of list of tags to filter files by
     '''
     if tagkind not in ['exact', 'diff', 'subset']:
-      print('Invalid tagkind, choose one of: exact, diff, subset')
+      eprint('Invalid tagkind, choose one of: exact, diff, subset')
       return None
     if tags is not None:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
-        print('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invald tags argument. Provide a list of list of tags.')
         return None
     if not isinstance(uid, list):
       uid = [uid]
@@ -261,12 +261,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     info = (Analysis(self.conf.get('api'))).save(payload=data)
     if info.get('error'):
-      print('failed:', ','.join(sample_ids), info.get('msg'))
+      eprint('failed:', ','.join(sample_ids), info.get('msg'))
       return None
 
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
-      print('created: analysis {} w/ sample {}'.format(analysis_id, ','.join(sample_ids)))
+      eprint('created: analysis {} w/ sample {}'.format(analysis_id, ','.join(sample_ids)))
     return analysis_id
 
   def get_analysis(self, uid):
@@ -295,9 +295,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         payload=data,
     )
     if info.get('error'):
-      print('cudnt update analysis {}, msg {}'.format(uid, info.get('msg')))
+      eprint('cudnt update analysis {}, msg {}'.format(uid, info.get('msg')))
     if self.verbose:
-      print('analysis', uid, 'updated')
+      eprint('analysis', uid, 'updated')
     return info
 
   ################################################################################################
@@ -359,7 +359,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Update resource'''
     info = (Gene(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
-      print('gene', uid, 'updated')
+      eprint('gene', uid, 'updated')
     return info
 
   ################################################################################################
@@ -391,7 +391,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Update resource'''
     info = (Genome(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
-      print('genome', uid, 'updated')
+      eprint('genome', uid, 'updated')
     return info
 
   ################################################################################################
@@ -400,7 +400,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_genomefile_by_filters(self, filters=None):
     '''Get genome files by filters'''
     if not filters:
-      print('Filters required.')
+      eprint('Filters required.')
       return None
     filters['limit'] = 0
     info = (GenomeFile(self.conf.get('api'))).list(params=filters)
@@ -451,15 +451,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Create resource'''
     info = (Project(self.conf.get('api'))).save(payload=data)
     if self.verbose == 2:
-      print('Creating project:')
-      print('Data:', data)
+      eprint('Creating project:')
+      eprint('Data:', data)
 
     project_id = info.get('id', None)
     if project_id:  # success
       if self.verbose:
-        print('created: project with id', project_id)
+        eprint('created: project with id', project_id)
     else:  # failure
-      print('failed project creation:', data['name'], info.get('msg'))
+      eprint('failed project creation:', data['name'], info.get('msg'))
     return project_id
 
   def update_project(self, uid, data, params=None):
@@ -470,7 +470,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         params=params
     )
     if self.verbose and not info.get('error'):
-      print('project', uid, 'updated')
+      eprint('project', uid, 'updated')
     return info
 
   ################################################################################################
@@ -502,16 +502,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if data.get('default_workflow'):
       if not self._check_workflow(data['default_workflow']):
         del data['default_workflow']
-        print('Provided workflow is not valid.')
+        eprint('Provided workflow is not valid.')
 
     if 'filepaths1' in data and data['filepaths1'] is None:
       if self.verbose:
-        print('filepaths1 is None.')
+        eprint('filepaths1 is None.')
       del data['filepaths1']
 
     if 'filepaths2' in data and data['filepaths2'] is None:
       if self.verbose:
-        print('filepaths2 is None.')
+        eprint('filepaths2 is None.')
       del data['filepaths2']
 
     if data.get('default_workflow'):
@@ -521,14 +521,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample_id = info.get('id')
 
     if self.verbose == 2:
-      print('Creating sample:')
-      print('Data:', data)
+      eprint('Creating sample:')
+      eprint('Data:', data)
 
     if sample_id:  # success
       if self.verbose:
-        print('created: sample with id', sample_id)
+        eprint('created: sample with id', sample_id)
     else:  # failure
-      print('failed sample creation:', data['name'], info.get('msg'))
+      eprint('failed sample creation:', data['name'], info.get('msg'))
       return None
 
     # if only one sample as str, but into list
@@ -553,13 +553,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # if a sample id exists, then upload the files
     if self.verbose:
-      print('Sample id: {}'.format(sample_id))
+      eprint('Sample id: {}'.format(sample_id))
 
     order = 0
     all_files = data.get('filepaths1', []) + data.get('filepaths2', [])
     for filepath in all_files:
       if self.verbose:
-        print('Creating upload {}'.format(filepath))
+        eprint('Creating upload {}'.format(filepath))
 
       upload_id, filepath, key = self.create_upload(
           sample_id,
@@ -574,7 +574,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if upload:
       for upload_id, filepath, key in files_to_upload:
         if self.verbose:
-          print('Uploading. upload_id: {}, filepath: {}, key: {}'.format(
+          eprint('Uploading. upload_id: {}, filepath: {}, key: {}'.format(
               upload_id,
               filepath,
               key
@@ -586,9 +586,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      print('error: deleting {}, msg {}'.format(uid, info.get('msg')))
+      eprint('error: deleting {}, msg {}'.format(uid, info.get('msg')))
     if self.verbose:
-      print('deleted sample', uid)
+      eprint('deleted sample', uid)
     return info
 
   def get_sample(self, uid, add_analysis=True):
@@ -617,17 +617,17 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get sample id from name'''
     info = (Sample(self.conf.get('api'))).list({'limit': 2, 'name': name})
     if not info:
-      print('warning: no sample by name', name)
+      eprint('warning: no sample by name', name)
       return None
     if len(info) > 1:
-      print('warning: multiple sample by name', name)
+      eprint('warning: multiple sample by name', name)
     return info[0]['id']
 
   def update_sample(self, uid, data):
     '''Update resource'''
     info = (Sample(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
-      print('sample', uid, 'updated')
+      eprint('sample', uid, 'updated')
     return info
 
   ################################################################################################
@@ -663,7 +663,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     upload_id = info.get('id')
     if upload_id:
       if self.verbose:
-        print('\tcreated: upload with id', upload_id)
+        eprint('\tcreated: upload with id', upload_id)
       return upload_id, filepath, key
     return None, None, None
 
@@ -733,9 +733,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as stderr:
-      print("Error downloading {}.".format(src))
-      print("Return code: {}".format(stderr.returncode))
-      print("Ouput: {}".format(stderr.output))
+      eprint("Error downloading {}.".format(src))
+      eprint("Return code: {}".format(stderr.returncode))
+      eprint("Ouput: {}".format(stderr.output))
       return False
 
   def copy_file_to_s3(self, src, dest, params=None):
@@ -744,13 +744,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dest = 's3://{}/{}'.format(storage_cfg.get('bucket'), dest)
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
-      print('copying', src, 'to', dest)
+      eprint('copying', src, 'to', dest)
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
-      print('error in copy file to s3')
-      print(cmd)
-      print(error.output)
+      eprint('error in copy file to s3')
+      eprint(cmd)
+      eprint(error.output)
       return None
 
   def download_file(self, filekey, dirname=None, filename=None, is_json=False, load=False): # pylint: disable=too-many-arguments
@@ -784,12 +784,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # if file not already there, download it
     if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
       if self.verbose:
-        print('downloading', filepath)
+        eprint('downloading', filepath)
       if not os.path.exists(os.path.dirname(filepath)):
         os.makedirs(os.path.dirname(filepath))
       self.copy_file(filekey, filepath, action='from')
     elif self.verbose:
-      print('exists', filepath)
+      eprint('exists', filepath)
 
     if load:
       data = open(filepath, 'r').read().strip()
@@ -811,13 +811,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       outdir = outdir if outdir else self.scratch
       fileout = os.path.join(outdir, os.path.split(file_i)[1])
       if os.path.exists(fileout):
-        print('Not downloading. File exists: {}'.format(fileout))
+        eprint('Not downloading. File exists: {}'.format(fileout))
         output = True
       else:
         output = self.copy_file_from_s3(file_i, outdir)
 
       if output:
-        print('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
+        eprint('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
         files_downloaded.append(fileout)
     return files_downloaded
 
@@ -843,7 +843,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return files
 
     if not isinstance(tags, list):
-      print('Invalid tags argument. Provide a list of tags.')
+      eprint('Invalid tags argument. Provide a list of tags.')
       return None
 
     # filter for matches
@@ -859,14 +859,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # check if no files left after filtering
     if len(files) == 0:
-      print('No matching files after filtering by tags:', tags)
+      eprint('No matching files after filtering by tags:', tags)
       return None
 
     # return files
     if multiple:
       return files
     if len(files) > 1:
-      print('multiple matches for tags:', tags)
+      eprint('multiple matches for tags:', tags)
       return files[0:1]
     return files
 
@@ -884,7 +884,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if tags:
       is_not_valid = not (isinstance(tags, list) and all([isinstance(item, list) for item in tags]))
       if is_not_valid:
-        print('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invald tags argument. Provide a list of list of tags.')
         return None
     else:
       tags = [None]
@@ -950,7 +950,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if features == 'genes':
       tags = ['expression_count', 'by_gene', 'text']
     if self.verbose:
-      print('getting file w tags', tags)
+      eprint('getting file w tags', tags)
     return self.get_file_by_tags(
       sample,
       analysis_tags=['alignment'],
@@ -988,7 +988,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           matches.append([analysis['id'], matching_file])
 
     if len(matches) == 0:
-      print('warning: no matching file for', node)
+      eprint('warning: no matching file for', node)
       return None
 
     if len(matches) > 1:
@@ -997,9 +997,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         reverse=True,
       )
       if not multiple:
-        print('warning: multiple matching file for', node)
+        eprint('warning: multiple matching file for', node)
       for file in matches:
-        print('\t', file[1]['last_updated'], file[1]['path'])
+        eprint('\t', file[1]['last_updated'], file[1]['path'])
 
     if multiple:
       filepath = []
@@ -1044,7 +1044,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     # some error checking
     if tags is None:
-      print("Tags is None")
+      eprint("Tags is None")
       return None
 
     # make sure tags is a list of lists
@@ -1056,7 +1056,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     matching_file = []
     for analysis in sample['analyses_full']:
       if analysis['status'] == 'error':
-        print('analysis ended in error, skipping.')
+        eprint('analysis ended in error, skipping.')
         continue
 
       # dont even look if not the right type of analysis
@@ -1068,21 +1068,21 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
       if analysis['params'] and 'info' in analysis['params']:
         if not analysis['params']['info'].get('genome_id'):
-          print('Could not find genome for analysis {}'.format(analysis['id']))
+          eprint('Could not find genome for analysis {}'.format(analysis['id']))
           continue
         sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
         if not sample_genome_id:
-          print('Could not find genome for analysis {}'.format(analysis['id']))
+          eprint('Could not find genome for analysis {}'.format(analysis['id']))
           continue
         if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
-          print(
+          eprint(
             'analysis genome {}'.format(analysis['params']['info']['genome_id']),
             'different from sample genome {}.'.format(sample_genome_id),
           )
           continue
 
       if self.verbose:
-        print('looking at', analysis['id'], 'status', analysis['status'])
+        eprint('looking at', analysis['id'], 'status', analysis['status'])
       for tags_sub in tags:
         filtered_files = self.filter_files_by_tags(
           analysis['files'],
@@ -1103,7 +1103,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           matches.append([analysis['id'], matching_file[0]])
 
     if not matches:
-      print('warning: no matching file for', tags)
+      eprint('warning: no matching file for', tags)
       return None
 
     if len(matches) > 1:
@@ -1112,9 +1112,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         reverse=True,
       )
       if not multiple:
-        print('warning: multiple matching file for', tags)
+        eprint('warning: multiple matching file for', tags)
       for file in matches:
-        print('\t', file[1]['last_updated'], file[1]['path'])
+        eprint('\t', file[1]['last_updated'], file[1]['path'])
 
     if multiple:
       filepath = []
@@ -1132,7 +1132,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         filepath = self.download_file(file1['path'], filename=dest, dirname=dirname)
       else:
         filepath = file1['path']
-        print('else')
+        eprint('else')
     return filepath
 
   def get_filepath(self, filename, dirname=None):
@@ -1229,7 +1229,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # if it is a detail
     if data_type in detail_methods:
       if uid is None:
-        print('Your uid is invalid: {}'.format(uid))
+        eprint('Your uid is invalid: {}'.format(uid))
         return
 
       for item_id in uid:
@@ -1237,7 +1237,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if data_tmp.get('id'):
           data.append(data_tmp)
         else:
-          print('{} with uid {} invalid.'.format(data_type.capitalize(), item_id))
+          eprint('{} with uid {} invalid.'.format(data_type.capitalize(), item_id))
 
     # if it is a list
     if data_type in list_methods:
@@ -1245,14 +1245,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
 
     if not data:
-      print('Nothing found for the parameters you gave.')
+      eprint('Nothing found for the parameters you gave.')
       return
 
     # print the data as json
     if is_json:
       for item in data:
-        print(item)
-        print()
+        eprint(item)
+        eprint()
       return
 
     # print the data human readable
@@ -1271,7 +1271,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def _check_genome(self, genome):
     '''Check if the genome is in the Basepair database'''
     if not any([genome in item['name'] for item in self.genomes]):
-      print(
+      eprint(
         'The provided genome, {}, does not exist in Basepair. Proceeding anyway...'.format(genome)
       )
 
@@ -1280,7 +1280,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_sample(uid, add_analysis=False)
     if info.get('id'):
       return True
-    print('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
+    eprint('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
   def _check_workflow(self, uid):
@@ -1288,7 +1288,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_workflow(uid)
     if info.get('id'):
       return True
-    print('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
+    eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
   @classmethod
@@ -1301,7 +1301,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if not files:
       return None
     if len(files) > 1:
-      print('multiple matches for node:', node)
+      eprint('multiple matches for node:', node)
     return files[0]
 
   def _get_analysis_owner_id(self, analysis_id):

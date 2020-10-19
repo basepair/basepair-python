@@ -8,6 +8,7 @@ import os
 import requests
 
 # App imports
+from basepair.helpers import eprint
 from .abstract import Abstract
 
 class User(Abstract):
@@ -38,10 +39,10 @@ class User(Abstract):
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
           os.makedirs(directory)
-        print('Saving configuration into:', filename)
+        eprint('Saving configuration into:', filename)
         with open(filename, 'w') as handle:
           handle.write(json.dumps(parsed, indent=2))
       return parsed
     except requests.exceptions.RequestException as error:
-      print('ERROR: {}'.format(error))
+      eprint('ERROR: {}'.format(error))
       return { 'error': True, 'msg': error}
