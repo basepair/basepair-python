@@ -728,7 +728,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dest: {str} Directory or file path where file will be downloaded to [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
-    src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+    if not src.startswith('s3://'):
+      src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
