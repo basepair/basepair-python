@@ -806,7 +806,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     outdir: {str}  Output directory to save files to
     '''
     uploads = sample['uploads']
-    files = [upload['key'] for upload in uploads]
+    files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
     files_downloaded = []
     for file_i in files:
       outdir = outdir if outdir else self.scratch
