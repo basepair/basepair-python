@@ -283,10 +283,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_analyses(self):
     '''Get resource list'''
-    info = (Analysis(self.conf.get('api'))).list(
-        params={'limit': 0}
-    )
-    return info.get('objects', [])
+    analysis_api = Analysis(self.conf.get('api'))
+
+    item_list = []
+    limit = 500
+    offset = 0
+    total_count = 1
+    while len(item_list) < total_count:
+      response = analysis_api.list({'limit': limit, 'offset': offset})
+      total_count = response.get('meta', {}).get('total_count')
+      item_list += response.get('objects')
+      offset += limit
+    return item_list
 
   def update_analysis(self, uid, data):
     '''Update resource'''
