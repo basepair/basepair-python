@@ -1067,21 +1067,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if should_continue:
         continue
 
-      # FIXME: uncomment it after db is fixed
-      # if analysis['params'] and 'info' in analysis['params']:
-      #   if not analysis['params']['info'].get('genome_id'):
-      #     eprint('Could not find genome for analysis {}'.format(analysis['id']))
-      #     continue
-      #   sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
-      #   if not sample_genome_id:
-      #     eprint('Could not find genome for analysis {}'.format(analysis['id']))
-      #     continue
-      #   if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
-      #     eprint(
-      #       'analysis genome {}'.format(analysis['params']['info']['genome_id']),
-      #       'different from sample genome {}.'.format(sample_genome_id),
-      #     )
-      #     continue
+      if analysis['params'] and 'info' in analysis['params']:
+        if not analysis['params']['info'].get('genome_id'):
+          eprint('Could not find genome for analysis {}'.format(analysis['id']))
+          continue
+        sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
+        if not sample_genome_id:
+          eprint('Could not find genome for analysis {}'.format(analysis['id']))
+          continue
+        if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
+          eprint(
+            'analysis genome {}'.format(analysis['params']['info']['genome_id']),
+            'different from sample genome {}.'.format(sample_genome_id),
+          )
+          continue
 
       if self.verbose:
         eprint('looking at', analysis['id'], 'status', analysis['status'])
