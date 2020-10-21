@@ -633,13 +633,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### UPLOAD #####################################################################################
   ################################################################################################
-  def create_upload(self, sample_id, filepath, order, is_paired_end, source='api'): # pylint: disable=too-many-arguments
+  def create_upload(self, sample_id, filepath, order, is_paired_end, source='api', uri=None): # pylint: disable=too-many-arguments
     '''Create a upload object and actually upload the file'''
     prefix = self.conf.get('api', {}).get('prefix', '/api/v2/')
     filesize = None
     key = filepath
     status = 'in_progress'
-    if filepath.startswith('ftp://'):
+    if filepath.startswith('ftp://') or uri:
       status = 'completed'
     else:
       key = 'uploads/{}/{}/{}'.format(
@@ -658,6 +658,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         'sample': '{}samples/{}'.format(prefix, sample_id),
         'source': source,
         'status': status,
+        'uri': uri,
         # 'timetaken': seconds_to_upload,
     })
     upload_id = info.get('id')
