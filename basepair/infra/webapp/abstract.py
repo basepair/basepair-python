@@ -81,7 +81,7 @@ class Abstract:
     params.update(self.payload)
     try:
       response = getattr(requests, 'put' if obj_id else 'post')(
-        '{}{}'.format(self.endpoint, obj_id),
+        '{}{}'.format(self.endpoint, obj_id or ''),
         data=json.dumps(payload),
         headers=self.headers,
         params=params,
