@@ -379,10 +379,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_genomes(self):
     '''Get resource list'''
-    info = (Genome(self.conf.get('api'))).list(
-        params={'limit': 0}
-    )
-    return info.get('objects', [])
+    return (Genome(self.conf.get('api'))).list_all()
 
   def update_genome(self, uid, data):
     '''Update resource'''
