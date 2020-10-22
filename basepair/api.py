@@ -702,6 +702,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         'timetaken': seconds_to_upload,
     })
 
+  def upload_uri_to_id(self, uri):
+    '''Get upload from uri and return upload id'''
+    info = (Upload(self.conf.get('api'))).list({'limit': 2, 'uri': uri})
+    if not info:
+      eprint('warning: no upload by uri', uri)
+      return None
+    if len(info) > 1:
+      eprint('warning: multiple upload by uri', uri)
+    return info[0]['id']
+
   ################################################################################################
   ### USER #######################################################################################
   ################################################################################################
