@@ -60,7 +60,7 @@ class Abstract:
       return parsed
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
-      return { 'error': True, 'msg': error}
+      return {'error': True, 'msg': error}
 
   def list(self, params={'limit': 100}, verify=True): # pylint: disable=dangerous-default-value
     '''Get a list of items'''
@@ -104,7 +104,7 @@ class Abstract:
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
-      return { 'error': True, 'msg': error}
+      return {'error': True, 'msg': error}
 
   @classmethod
   def _parse_response(cls, response):
