@@ -19,7 +19,7 @@ class Parser(): # pylint: disable=too-few-public-methods
         self.cfg = json.load(open(source))
       except OSError as error:
         eprint(f'ERROR: Not able to open config file: {error}')
-      except ValueError:
+      except ValueError as error:
         eprint(f'ERROR: Not able to read config file: {error}')
     # TODO: if uri implement configuration manager
 
