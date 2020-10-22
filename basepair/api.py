@@ -615,13 +615,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def sample_name_to_id(self, name):
     '''Get sample id from name'''
-    info = (Sample(self.conf.get('api'))).list({'limit': 2, 'name': name})
-    if not info:
-      eprint('warning: no sample by name', name)
+    response = (Sample(self.conf.get('api'))).list({'limit': 2, 'name': name})
+    items = response.get('objects')
+    if not items:
+      eprint('WARNING: no sample by name', name)
       return None
-    if len(info) > 1:
-      eprint('warning: multiple sample by name', name)
-    return info[0]['id']
+    if len(items) > 1:
+      eprint('WARNING: multiple sample by name', name)
+    return items[0].get('id')
 
   def update_sample(self, uid, data):
     '''Update resource'''
@@ -704,13 +705,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def upload_uri_to_id(self, uri):
     '''Get upload from uri and return upload id'''
-    info = (Upload(self.conf.get('api'))).list({'limit': 2, 'uri': uri})
-    if not info:
-      eprint('warning: no upload by uri', uri)
+    response = (Upload(self.conf.get('api'))).list({'limit': 2, 'uri': uri})
+    items = response.get('objects')
+    if not items:
+      eprint('WARNING: no upload by uri', uri)
       return None
-    if len(info) > 1:
-      eprint('warning: multiple upload by uri', uri)
-    return info[0]['id']
+    if len(items) > 1:
+      eprint('WARNING: multiple upload by uri', uri)
+    return items[0].get('id')
 
   ################################################################################################
   ### USER #######################################################################################
@@ -1000,7 +1002,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           matches.append([analysis['id'], matching_file])
 
     if len(matches) == 0:
-      eprint('warning: no matching file for', node)
+      eprint('WARNING: no matching file for', node)
       return None
 
     if len(matches) > 1:
@@ -1009,7 +1011,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         reverse=True,
       )
       if not multiple:
-        eprint('warning: multiple matching file for', node)
+        eprint('WARNING: multiple matching file for', node)
       for file in matches:
         eprint('\t', file[1]['last_updated'], file[1]['path'])
 
@@ -1115,7 +1117,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           matches.append([analysis['id'], matching_file[0]])
 
     if not matches:
-      eprint('warning: no matching file for', tags)
+      eprint('WARNING: no matching file for', tags)
       return None
 
     if len(matches) > 1:
@@ -1124,7 +1126,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         reverse=True,
       )
       if not multiple:
-        eprint('warning: multiple matching file for', tags)
+        eprint('WARNING: multiple matching file for', tags)
       for file in matches:
         eprint('\t', file[1]['last_updated'], file[1]['path'])
 
