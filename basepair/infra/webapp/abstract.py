@@ -74,6 +74,7 @@ class Abstract:
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
+      return {'error': True, 'msg': error}
 
   def list_all(self): # pylint: disable=dangerous-default-value
     '''Get a list of all items'''
