@@ -283,18 +283,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_analyses(self):
     '''Get resource list'''
-    analysis_api = Analysis(self.conf.get('api'))
-
-    item_list = []
-    limit = 500
-    offset = 0
-    total_count = 1
-    while len(item_list) < total_count:
-      response = analysis_api.list({'limit': limit, 'offset': offset})
-      total_count = response.get('meta', {}).get('total_count')
-      item_list += response.get('objects')
-      offset += limit
-    return item_list
+    return (Analysis(self.conf.get('api'))).list_all()
 
   def update_analysis(self, uid, data):
     '''Update resource'''
@@ -447,10 +436,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_workflows(self):
     '''Get resource list'''
-    info = (Pipeline(self.conf.get('api'))).list(
-        params={'limit': 0}
-    )
-    return info.get('objects', [])
+    return (Pipeline(self.conf.get('api'))).list_all()
 
   ################################################################################################
   ### PROJECT ####################################################################################
@@ -616,10 +602,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_samples(self):
     '''Get resource list'''
-    info = (Sample(self.conf.get('api'))).list(
-        params={'limit': 0}
-    )
-    return info.get('objects', [])
+    return (Sample(self.conf.get('api'))).list_all()
 
   def sample_name_to_id(self, name):
     '''Get sample id from name'''
