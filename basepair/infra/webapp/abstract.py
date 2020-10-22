@@ -74,7 +74,21 @@ class Abstract:
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
-      return { 'error': True, 'msg': error}
+
+  def list_all(self): # pylint: disable=dangerous-default-value
+    '''Get a list of all items'''
+    item_list = []
+    limit = 500
+    offset = 0
+    total_count = 1
+    while len(item_list) < total_count:
+      response = self.list({'limit': limit, 'offset': offset})
+      if response.get('error'):
+        return {'error': True, 'msg': response.get('msg')}
+      total_count = response.get('meta', {}).get('total_count')
+      item_list += response.get('objects')
+      offset += limit
+    return item_list
 
   def save(self, obj_id=None, params={}, payload={}, verify=True): # pylint: disable=dangerous-default-value
     '''Save or update resource'''
