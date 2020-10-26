@@ -67,7 +67,7 @@ class Abstract:
     params.update(self.payload)
     try:
       response = requests.get(
-        '{}'.format(self.endpoint),
+        self.endpoint.rstrip('/'),
         params=params,
         verify=verify,
       )
