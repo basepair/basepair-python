@@ -113,7 +113,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     configuration = self.conf
     if use_cache:
       cache = '{}/json/config.json'.format(self.scratch)
-    if self.conf.get('cli') and len(self.conf.keys()) == 1:
+
+    if self.conf.get('api', {}).get('cli'):
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
