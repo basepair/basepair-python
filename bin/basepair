@@ -173,23 +173,23 @@ def main():
         if args.list_type == 'analysis':
             for uid in args.uid:
                 bp.print_data(data_type='analysis', uid=uid,
-                              json=args.json)
+                              is_json=args.json)
         if args.list_type == 'analyses':
-            bp.print_data(data_type='analyses', json=args.json)
+            bp.print_data(data_type='analyses', is_json=args.json)
         elif args.list_type == 'genomes':
-            bp.print_data(data_type='genomes', json=args.json)
+            bp.print_data(data_type='genomes', is_json=args.json)
         elif args.list_type == 'sample':
             for uid in args.uid:
                 bp.print_data(data_type='sample', uid=uid,
-                              json=args.json)
+                              is_json=args.json)
         elif args.list_type == 'samples':
-            bp.print_data(data_type='samples', json=args.json)
+            bp.print_data(data_type='samples', is_json=args.json)
         elif args.list_type == 'workflows':
-            bp.print_data(data_type='workflows', json=args.json)
+            bp.print_data(data_type='workflows', is_json=args.json)
         elif args.list_type == 'genome':
             for uid in args.uid:
                 bp.print_data(data_type='genome', uid=uid,
-                              json=args.json)
+                              is_json=args.json)
 
 
 def create_project(bp, args):
@@ -312,6 +312,7 @@ def add_common_args(parser):
     parser.add_argument('--scratch', help='Scratch dir for files')
     parser.add_argument('--quiet', action='store_true')
     parser.add_argument('--verbose', action='store_true')
+    parser.set_defaults(scratch='.')
 
     return parser
 
