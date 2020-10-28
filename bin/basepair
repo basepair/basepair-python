@@ -80,8 +80,14 @@ def main():
     #     conf['api']['username'] = args.username
     # if args.api_key:
     #     conf['api']['api_key'] = args.api_key
-    bp = basepair.connect(conf=conf, scratch=args.scratch,
-                          verbose=args.verbose)
+
+    bp = basepair.connect(
+        conf=conf,
+        scratch=args.scratch,
+        use_cache=args.use_cache,
+        user_cache_for_host_conf=args.keep_cloud_service_conf,
+        verbose=args.verbose
+    )
 
     if hasattr(args, 'datatype'):
         if args.datatype and args.datatype not in bp.DATATYPES:
@@ -309,8 +315,10 @@ def delete(bp, data_type, uid):
 def add_common_args(parser):
 
     parser.add_argument('-c', '--config', help='API config info')
-    parser.add_argument('--scratch', help='Scratch dir for files')
     parser.add_argument('--quiet', action='store_true')
+    parser.add_argument('--keep-cloud-service-conf', action='store_true')
+    parser.add_argument('--use-cache', action='store_true')
+    parser.add_argument('--scratch', help='Scratch dir for files')
     parser.add_argument('--verbose', action='store_true')
     parser.set_defaults(scratch='.')
 

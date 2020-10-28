@@ -66,7 +66,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   bp.delete_sample(sample_id)
   '''
 
-  def __init__(self, conf=None, scratch='.', use_cache=False, verbose=None):
+  def __init__(self, conf=None, scratch='.', use_cache=False, user_cache_for_host_conf=False, verbose=None): # pylint: disable=too-many-arguments
     self.verbose = verbose
 
     if conf:
@@ -111,7 +111,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # Get configuration from host only if it is not set in the incoming config
     cache = False
     configuration = self.conf
-    if use_cache:
+    if user_cache_for_host_conf:
+      eprint('INFO: Use cached host cloud service configuration.')
       cache = '{}/json/config.json'.format(self.scratch)
 
     if self.conf.get('api', {}).get('cli'):
