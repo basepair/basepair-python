@@ -1304,15 +1304,17 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_analysis(analysis_id)
     return self.parse_url(info['owner'])['id'] if info else None
 
-  def _get_genome_by_name(self, genome):
+  def _get_genome_by_name(self, genome_name):
     '''Check if the genome is in the Basepair database'''
-    available_genomes = [item for item in self.genomes if item.get('name') == genome]
-    if not available_genomes:
-      eprint(
-        'The provided genome, {}, does not exist in Basepair. Proceeding anyway...'.format(genome)
-      )
-      return None
-    return available_genomes[0].get('resource_uri')
+    if genome_name:
+      available_genomes = [item for item in self.genomes if item.get('name') == genome_name]
+      if not available_genomes:
+        eprint(
+          'The provided genome, {}, does not exist in Basepair. Proceeding anyway...'.format(genome_name)
+        )
+        return None
+      return available_genomes[0].get('resource_uri')
+    return None
 
   def _get_sample_owner_id(self, sample_id):
     '''Get sample owner id'''
