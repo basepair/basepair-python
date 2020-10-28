@@ -506,6 +506,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint('filepaths2 is None.')
       del data['filepaths2']
 
+    # if only one sample as str, but into list
+    if data.get('filepaths1') and isinstance(data['filepaths1'], str):
+      data['filepaths1'] = [data['filepaths1']]
+
+    if data.get('filepaths2') and isinstance(data['filepaths2'], str):
+      data['filepaths2'] = [data['filepaths2']]
+
+    # validate unique file between filepaths1 and filepaths2
+    does_repeast = data.get('filepaths2') \
+      and any(path in data.get('filepaths2') for path in data.get('filepaths1'))
+    if does_repeast:
+      eprint('ERROR: Same file cannot be use in filepaths1 and filepaths2.')
+      return None
+
     if data.get('default_workflow'):
       data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
 
@@ -522,15 +536,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     else:  # failure
       eprint('failed sample creation:', data['name'], info.get('msg'))
       return None
-
-    # if only one sample as str, but into list
-    if data.get('filepaths1'):
-      if isinstance(data['filepaths1'], str):
-        data['filepaths1'] = [data['filepaths1']]
-
-    if data.get('filepaths2'):
-      if isinstance(data['filepaths2'], str):
-        data['filepaths2'] = [data['filepaths2']]
 
     # do the actual upload, update filepath
     files_to_upload = []
