@@ -469,7 +469,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### SAMPLE #####################################################################################
   ################################################################################################
-  def create_sample(self, data, source='api', upload=True): # pylint: disable=too-many-branches
+  def create_sample(self, data, source='api', upload=True): # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     '''Create sample with the provided info
 
     Parameters
@@ -522,6 +522,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if data.get('default_workflow'):
       data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
+
+    if data.get('projects'):
+      project = (Project(self.conf.get('api'))).get(data.get('projects'))
+      if project.get('error'):
+        eprint('ERROR: Looking for project. {}'.format(project.get('msg')))
+        return None
+      data['projects'] = [project.get('resource_uri')]
 
     info = (Sample(self.conf.get('api'))).save(payload=data)
     sample_id = info.get('id')

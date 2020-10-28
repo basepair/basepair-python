@@ -219,7 +219,7 @@ def create_sample(bp, args):
         'filepaths2': args.file2,
         'platform': args.platform,
         'default_workflow': int(args.workflow) if args.workflow else None,
-        'projectId': int(args.project) if args.project else None,
+        'projects': int(args.project) if args.project else None,
     }
 
     if args.key and args.val:
