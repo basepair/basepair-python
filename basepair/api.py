@@ -513,6 +513,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if data.get('filepaths2') and isinstance(data['filepaths2'], str):
       data['filepaths2'] = [data['filepaths2']]
 
+    if data.get('filepaths2') and not data.get('filepaths1'):
+      eprint('ERROR: Parameter filepaths1 cannot be empty if filepaths2 is specified.')
+      return None
+
     # validate unique file between filepaths1 and filepaths2
     does_repeast = data.get('filepaths2') \
       and any(path in data.get('filepaths2') for path in data.get('filepaths1'))
