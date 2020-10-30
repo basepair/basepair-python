@@ -1041,7 +1041,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname=None,
     download=True,
     exclude=None,
-    kind=None,
+    kind='exact',
     multiple=False,
     tags=None,
     #workflow_id=None,
@@ -1123,6 +1123,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if not matches:
       eprint('WARNING: no matching file for', tags)
+      eprint('in analyses with ids', [analysis['id'] for analysis in sample['analyses_full']])
+      eprint('for sample', sample['id'])
       return None
 
     if len(matches) > 1:
