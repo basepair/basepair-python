@@ -8,8 +8,8 @@ from .utils import colors
 # from .api import basepair
 
 __title__ = 'basepair'
-__version__ = '1.3.81'
-__copyright__ = 'Copyright [2015] - [2020] Basepair INC'
+__version__ = '1.3.83'
+__copyright__ = 'Copyright [2017] - [2020] Basepair INC'
 
 
 JSON_URL = 'https://pypi.python.org/pypi/{}/json'.format(__title__)
