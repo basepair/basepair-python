@@ -43,6 +43,7 @@ class BaseTest(unittest.TestCase):
 def compare_info(old_data, new_data):
     for key, val in old_data.items():
         # if old_data.get(key) != new_data.get(key):
+        # replace f string in the following line if uncommenting
         #     print(f'{old_data.get(key)} != {new_data.get(key)}')
         if (type(new_data.get(key)) == dict 
             and type(old_data.get(key)) == str 

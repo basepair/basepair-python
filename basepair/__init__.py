@@ -8,7 +8,7 @@ from .utils import colors
 # from .api import basepair
 
 __title__ = 'basepair'
-__version__ = '1.5.2'
+__version__ = '1.5.3'
 __copyright__ = 'Copyright [2017] - [2020] Basepair INC'
 
 
