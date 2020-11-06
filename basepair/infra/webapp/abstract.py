@@ -7,7 +7,7 @@ import os
 # Lib imports
 import requests
 
-# App imports
+# App imports
 from basepair.helpers import eprint
 
 class Abstract:

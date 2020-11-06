@@ -119,8 +119,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
-    self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
-    self.LIST_TYPES = ['samples', 'analyses', 'genomes', 'workflows', 'analysis'] # pylint: disable=invalid-name
+    self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
+    self.LIST_TYPES = ['samples', 'analyses', 'genomes', 'workflows', 'analysis'] # pylint: disable=invalid-name
 
   ################################################################################################
   ### ANALYSIS ###################################################################################
@@ -135,7 +135,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     project_id=None,
     sample_id=None,
     sample_ids=[],
-  ): # pylint: disable=dangerous-default-value,too-many-arguments
+  ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
     ----------
@@ -231,7 +231,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     params=None,
     sample_id=None,
     sample_ids=[]
-  ): # pylint: disable=dangerous-default-value,too-many-arguments
+  ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
     ----------
@@ -1308,7 +1308,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   @classmethod
   def _filter_files_by_node(cls, files, node, multiple=False):
     '''Filter files that are from the node.'''
-    # In some cases, multiple files are expected, set it to true.
+    # In some cases, multiple files are expected, set it to true.
     files = [file for file in files if file['node'] == node]
     if multiple:
       return files

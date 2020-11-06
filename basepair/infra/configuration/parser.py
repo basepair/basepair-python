@@ -4,7 +4,7 @@
 import json
 import os
 
-# App imports
+# App imports
 from basepair.helpers import eprint
 
 class Parser(): # pylint: disable=too-few-public-methods
