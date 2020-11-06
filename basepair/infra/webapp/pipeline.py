@@ -6,5 +6,5 @@ from .abstract import Abstract
 class Pipeline(Abstract):
   '''Webapp Pipeline class'''
   def __init__(self, cfg):
-    super().__init__(cfg)
+    super(Pipeline, self).__init__(cfg)
     self.endpoint += 'pipelines/'

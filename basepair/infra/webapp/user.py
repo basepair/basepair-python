@@ -14,7 +14,7 @@ from .abstract import Abstract
 class User(Abstract):
   '''Webapp User class'''
   def __init__(self, cfg):
-    super().__init__(cfg)
+    super(User, self).__init__(cfg)
     self.endpoint += 'users/'
 
   def get_configuration(self, cache=False, verify=True):
