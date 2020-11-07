@@ -10,7 +10,7 @@ import requests
 # App imports
 from basepair.helpers import eprint
 
-class Abstract:
+class Abstract(object):
   '''Webapp abastract class'''
   def __init__(self, cfg):
     protocol = 'https' if cfg.get('ssl', True) else 'http'
