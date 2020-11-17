@@ -30,7 +30,7 @@ class Analysis(Abstract):
       response = self._parse_response(response)
       if response and response.get('error'):
 
-        if response.get('error') and isinstance(response.get('error'), dict):
+        if isinstance(response.get('error'), dict):
           response = response['error']
 
           if response.get('error_msgs'):
