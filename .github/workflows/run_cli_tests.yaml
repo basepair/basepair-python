@@ -1,0 +1,66 @@
+name: Run CLI tests
+
+on:
+  push:
+    branches: [ master, dev, add_github_actions ]
+  pull_request:
+    branches: [ master, dev ]
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 2.7, 3.9 ]
+    steps:
+      - name: Checkout basepair-python
+        uses: actions/checkout@v2
+        with:
+          path: basepair-python
+
+      - name: Checkout tests
+        uses : actions/checkout@v2
+        with:
+          repository: basepair/tests
+          token: ${{ secrets.CI_GITHUB_REPOS_READ_TOKEN }}
+          path: tests
+          ref: basepair_python_tests
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: 'x64'
+
+      - name: Create virtual environment
+        run: |
+          cd basepair-python
+          pip install pipenv
+          pipenv install --skip-lock --python ${{ matrix.python-version }}
+          source $(pipenv --venv)/bin/activate
+          pipenv install -r ../tests/requirements.txt --skip-lock
+          pipenv graph
+          # pipenv run pipenv check
+
+      - name: Run tests
+        run: |
+          cd basepair-python
+          source $(pipenv --venv)/bin/activate
+          cd ../tests
+          pip list
+          python runner.py cli_tests --env=test -v --log-level=info --log-cli-level=info --html=results.html --self-contained-html --alluredir=./allure-results --sensitive-url=app.basepairtech.com -n auto
+
+      - name: upload report as artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: test report and logs
+          path: |
+            ./tests/results.html
+
+      - name: upload allure results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: allure results for debugging
+          path: |
+            ./tests/allure-results
