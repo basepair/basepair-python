@@ -749,6 +749,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if not src.startswith('s3://'):
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
+    if self.verbose:
+      print(cmd, file=sys.stderr)
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as stderr:
@@ -764,6 +766,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
       eprint('copying', src, 'to', dest)
+      print(cmd, file=sys.stderr)
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
@@ -772,7 +775,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint(error.output)
       return None
 
-  def download_file(self, filekey, dirname=None, filename=None, is_json=False, load=False): # pylint: disable=too-many-arguments
+  def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
