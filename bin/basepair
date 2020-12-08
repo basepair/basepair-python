@@ -226,6 +226,10 @@ def create_analysis(bp, args):
   else:
     print('You specified no parameters, submitting with default ones...', file=sys.stderr)
 
+  if not args.sample:
+    print('ERROR: Minimum one sample required.')
+    return
+
   bp.create_analysis(
     control_ids=args.control,
     ignore_validation_warnings=args.ignore_warning,
