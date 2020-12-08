@@ -217,7 +217,7 @@ def create_sample(bp, args):
 def create_analysis(bp, args):
   '''Create and submit an analysis'''
   params = {'node': {}}
-  if args.params is not None:
+  if args.params:
     for param in args.params:
       node_id, arg, val = param.split(':')
       if node_id not in params['node']:
