@@ -28,7 +28,7 @@ import basepair
 
 
 def yes_or_no(question, default='no'):
-  """Ask a yes/no question via raw_input() and return their answer.
+  '''Ask a yes/no question via raw_input() and return their answer.
 
   Parameters
   ----------
@@ -40,27 +40,25 @@ def yes_or_no(question, default='no'):
       It must be "yes" (the default), "no" or None (meaning
       an answer is required of the user).
 
-  """
+  '''
   valid = {
-    "yes": True,
-    "y": True,
-    "ye": True,
-    "no": False,
-    "n": False
+    'yes': True,
+    'y': True,
+    'ye': True,
+    'no': False,
+    'n': False
   }
 
-  prompt = " [y/n] "
+  prompt = ' [y/n] '
 
   while True:
 
     # get input function for py 2 and 3
     get_input = input
-
     if sys.version_info[:2] <= (2, 7):
       get_input = raw_input
 
     # get input from user
-
     sys.stdout.write(question + prompt)
     choice = get_input().lower()
 
@@ -68,11 +66,11 @@ def yes_or_no(question, default='no'):
     if choice in valid:
       return valid[choice]
     else:
-      sys.stdout.write("Please respond with 'yes' or 'no' "
-                       "(or 'y' or 'n').\n")
+      sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
 
 
 def main():
+  '''Main method'''
   args = read_args()
 
   if args.config:
@@ -97,7 +95,8 @@ def main():
   if hasattr(args, 'datatype'):
     if args.datatype and args.datatype not in bp.DATATYPES:
       raise argparse.ArgumentTypeError(
-        'datatype has to be among:' + ', '.join(bp.DATATYPES))
+        'datatype has to be among:' + ', '.join(bp.DATATYPES)
+      )
 
   if args.action == 'create':
     if args.create_type == 'project':
@@ -105,23 +104,18 @@ def main():
 
     if args.create_type == 'sample':
 
-      # if payload username or api key specified, make sure both
-      # are present
-
-      if args.payload_username is not None \
-          and args.payload_api_key is None:
-        print('specify both --payload-username and --payload-api-key!')
+      # if payload username or api key specified, make sure both are present
+      if args.payload_username is not None and args.payload_api_key is None:
+        print('specify parameter --payload-api-key!')
         sys.exit(1)
-      elif args.payload_api_key is not None \
-          and args.payload_username is None:
-        print('specify both --payload-username and --payload-api-key!')
+      elif args.payload_api_key is not None and args.payload_username is None:
+        print('specify parameter --payload-username!')
         sys.exit(1)
-      elif args.payload_username is not None \
-          and args.payload_username is not None:
+      elif args.payload_username is not None and args.payload_username is not None:
         bp.payload = {
           'username': args.payload_username,
-          'api_key': args.payload_api_key}
-
+          'api_key': args.payload_api_key,
+        }
       create_sample(bp, args)
     if args.create_type == 'analysis':
       create_analysis(bp, args)
@@ -132,22 +126,19 @@ def main():
   elif args.action == 'updateAnalysis':
     update_analysis(bp, args.analysis, args.key, args.val)
   elif args.action == 'download':
-
     if args.download_type == 'analysis':
-      # download a file form an analysis by tags
 
+      # download a file from an analysis by tags
       for uid in args.uid:
-        bp.download_analysis(uid, args.tags, args.tagkind,
-                             args.outdir)
+        bp.download_analysis(uid, args.tags, args.tagkind, args.outdir)
     elif args.download_type == 'file':
-      # download a file by uid
 
+      # download a file by uid
       for uid in args.uid:
         file_i = bp.get_file(uid)
         bp.download_file(file_i['path'], dirname=args.outdir)
 
     elif args.download_type == 'log':
-
       for uid in args.uid:
 
         # check analysis id is valid
@@ -163,17 +154,14 @@ def main():
 
     elif args.download_type == 'sample':
       for uid in args.uid:
-
         sample = bp.get_sample(uid, add_analysis=True)
-
         if sample is None:
-          print("{} is not a valid sample id!".format(uid))
+          print('{} is not a valid sample id!'.format(uid))
           continue
 
         # if tags provided, download file by tags
         if args.tags:
-          bp.get_file_by_tags(sample, tags=args.tags,
-                              kind=args.tagkind, dirname=args.outdir)
+          bp.get_file_by_tags(sample, tags=args.tags, kind=args.tagkind, dirname=args.outdir)
         else:
           bp.download_raw_files(sample, args.outdir)
 
@@ -183,47 +171,39 @@ def main():
 
     if args.list_type == 'analysis':
       for uid in args.uid:
-        bp.print_data(data_type='analysis', uid=uid,
-                      is_json=args.json)
+        bp.print_data(data_type='analysis', uid=uid, is_json=args.json)
     if args.list_type == 'analyses':
       bp.print_data(data_type='analyses', is_json=args.json)
     elif args.list_type == 'genomes':
       bp.print_data(data_type='genomes', is_json=args.json)
     elif args.list_type == 'sample':
       for uid in args.uid:
-        bp.print_data(data_type='sample', uid=uid,
-                      is_json=args.json)
+        bp.print_data(data_type='sample', uid=uid, is_json=args.json)
     elif args.list_type == 'samples':
       bp.print_data(data_type='samples', is_json=args.json)
     elif args.list_type == 'workflows':
       bp.print_data(data_type='workflows', is_json=args.json)
     elif args.list_type == 'genome':
       for uid in args.uid:
-        bp.print_data(data_type='genome', uid=uid,
-                      is_json=args.json)
+        bp.print_data(data_type='genome', uid=uid, is_json=args.json)
 
 
 def create_project(bp, args):
-  data = {
-    'name': args.name,
-  }
-
-  # if args.key and args.val:
-  #     for key, val in zip(args.key, args.val):
-  #         data[key] = val
-
-  project_id = bp.create_project(data=data)
+  '''Create project'''
+  data = {'name': args.name}
+  bp.create_project(data=data)
 
 
 def create_sample(bp, args):
+  '''Create sample'''
   data = {
-    'name': args.name,
-    'genome': args.genome,
     'datatype': args.datatype,
+    'default_workflow': int(args.workflow) if args.workflow else None,
     'filepaths1': args.file1,
     'filepaths2': args.file2,
+    'genome': args.genome,
+    'name': args.name,
     'platform': args.platform,
-    'default_workflow': int(args.workflow) if args.workflow else None,
     'projects': int(args.project) if args.project else None,
   }
 
@@ -235,30 +215,29 @@ def create_sample(bp, args):
 
 
 def create_analysis(bp, args):
-  """Create and submit an analysis"""
-
+  '''Create and submit an analysis'''
   params = {'node': {}}
-
   if args.params is not None:
-
     for param in args.params:
       node_id, arg, val = param.split(':')
-
       if node_id not in params['node']:
         params['node'][node_id] = {}
-
       params['node'][node_id][arg] = val
-
   else:
-    print('You specified no parameters, submitting with default ones...',
-          file=sys.stderr)
+    print('You specified no parameters, submitting with default ones...', file=sys.stderr)
 
   bp.create_analysis(
-    workflow_id=args.workflow, sample_ids=args.sample, control_ids=args.control,
-    project_id=args.project, params=params, ignore_validation_warnings=args.ignore_warning)
+    control_ids=args.control,
+    ignore_validation_warnings=args.ignore_warning,
+    params=params,
+    project_id=args.project,
+    sample_ids=args.sample,
+    workflow_id=args.workflow,
+  )
 
 
 def update_info(bp, kind, uid, keys, vals):
+  '''Update object info'''
   data = {}
   if keys and vals:
     for key, val in zip(keys, vals):
@@ -269,11 +248,11 @@ def update_info(bp, kind, uid, keys, vals):
   elif kind == 'analysis':
     res = bp.update_analysis(uid, data)
   if res.status_code != 204:
-    print('error {}: {}'.format(
-      res.status_code, res.reason), file=sys.stderr)
+    print('error {}: {}'.format(res.status_code, res.reason), file=sys.stderr)
 
 
 def update_project(bp, args):
+  '''Update project'''
   perm = args.perm if args.perm else 'read'
   params = {
     'permission_data': {
@@ -284,28 +263,27 @@ def update_project(bp, args):
   for project_id in args.project:
     res = bp.update_project(project_id, data=None, params=params)
     if res.status_code != 204:
-      print('error {}: {}'.format(
-        res.status_code, res.reason), file=sys.stderr)
+      print('error {}: {}'.format(res.status_code, res.reason), file=sys.stderr)
 
 
 def update_sample(bp, sample_id, keys, vals):
+  '''Update sample'''
   update_info(bp, 'sample', sample_id, keys, vals)
 
 
 def update_analysis(bp, analysis_id, keys, vals):
+  '''Update analysis'''
   update_info(bp, 'analysis', analysis_id, keys, vals)
 
 
 def delete(bp, data_type, uid):
-
+  '''Delete object'''
   if not uid:
     print('Please add one or more uid', file=sys.stderr)
     return
 
   if data_type not in ['sample', 'analysis']:
-    print(
-      ('\'--type {}\' is invalid, choose from: ' +
-       'sample or analysis').format(data_type))
+    print('\'--type {}\' is invalid, choose from: sample or analysis'.format(data_type))
     return
 
   for uid in uid:
@@ -318,7 +296,7 @@ def delete(bp, data_type, uid):
 
 
 def add_common_args(parser):
-
+  '''Add common args'''
   parser.add_argument('-c', '--config', help='API config info')
   parser.add_argument('--quiet', action='store_true')
   parser.add_argument('--keep-cloud-service-conf', action='store_true')
@@ -326,59 +304,64 @@ def add_common_args(parser):
   parser.add_argument('--scratch', help='Scratch dir for files')
   parser.add_argument('--verbose', action='store_true')
   parser.set_defaults(scratch='.')
-
   return parser
 
 
 def add_payload_args(parser):
-
+  '''Add payload args'''
   parser.add_argument(
     '--payload-username',
-    help='Replace payload api key. Must also specify --payload-api-key')
+    help='Replace payload api key. Must also specify --payload-api-key'
+  )
   parser.add_argument(
     '--payload-api-key',
-    help='Replace payload api key. Must also specify --payload-username')
-
+    help='Replace payload api key. Must also specify --payload-username'
+  )
   return parser
 
 
 def add_uid_parser(parser):
-
+  '''Add uid parser'''
   parser.add_argument(
     '-u',
     '--uid',
     nargs='+',
     default=None,
-    help='The unique analysis id(s) to download')
+    help='The unique analysis id(s) to download'
+  )
   return parser
 
 
 def add_json_parser(parser):
-
+  '''Add json parser'''
   parser.add_argument(
     '--json',
     action='store_true',
-    help='(Optional) Print the data in JSON format ' +
-         '(this shows all data associated with each item).')
+    help='(Optional) Print the data in JSON format (this shows all data associated with each item).'
+  )
   return parser
 
 
 def add_outdir_parser(parser):
+  '''Add outdir parser'''
   parser.add_argument(
     '-o',
     '--outdir',
     required=False,
     default='.',
-    help='Base directory to save files to (default \'.\').')
+    help='Base directory to save files to (default \'.\').'
+  )
   return parser
 
 
 def add_tags_parser(parser):
+  '''Add tags parser'''
   parser.add_argument(
     '--tags',
     nargs='+',
     action='append',
-    default=None)
+    default=None
+  )
   parser.add_argument(
     '--tagkind',
     default='exact',
@@ -387,45 +370,48 @@ def add_tags_parser(parser):
              (1) exact (default): only get files with exactly these tags.
              (2) diff: exclude files with this tag.
              (3) subset: any files with one or more of these tags.
-             ''')
-
+             '''
+  )
   return parser
 
 
 def read_args():
-
+  '''Read args'''
   parser = argparse.ArgumentParser(
-    description='Basepair CLI, API version ' + basepair.__version__,
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+    description='Basepair CLI, API version {}'.format(basepair.__version__),
+    formatter_class=argparse.RawDescriptionHelpFormatter
+  )
 
   actions_p = parser.add_subparsers(
     help='Basepair actions.',
-    dest='action')
+    dest='action'
+  )
   actions_p.required = True
 
   # create parser
-
   create_p = actions_p.add_parser(
     'create',
-    help='Create samples, analyses, etc.')
+    help='Create samples, analyses, etc.'
+  )
   create_sp = create_p.add_subparsers(
     help='Type of item to download',
-    dest='create_type')
+    dest='create_type'
+  )
 
   # create project parser
-
   create_project_p = create_sp.add_parser(
     'project',
-    help='Add a project to your account on Basepair.')
+    help='Add a project to your account on Basepair.'
+  )
   create_project_p = add_common_args(create_project_p)
   create_project_p.add_argument('--name')
   create_project_p = add_payload_args(create_project_p)
 
   # create sample parser
-
   create_sample_p = create_sp.add_parser(
     'sample',
-    help='Add a sample to your account on Basepair.')
+    help='Add a sample to your account on Basepair.'
+  )
   create_sample_p = add_common_args(create_sample_p)
   create_sample_p.add_argument('--name')
   create_sample_p.add_argument('--genome')
@@ -440,51 +426,56 @@ def read_args():
   create_sample_p = add_payload_args(create_sample_p)
 
   # create analysis parser
-
   create_analysis_p = create_sp.add_parser(
     'analysis',
-    help='Create and run an analysis.')
+    help='Create and run an analysis.'
+  )
   create_analysis_p = add_common_args(create_analysis_p)
   create_analysis_p.add_argument('-p', '--project', help='Project id')
   create_analysis_p.add_argument(
-    '-w', '--workflow', help='Workflow id')
+    '-w', '--workflow', help='Workflow id'
+  )
   create_analysis_p.add_argument(
-    '--sample', nargs='+', help='Sample id')
+    '--sample', nargs='+', help='Sample id'
+  )
   create_analysis_p.add_argument(
-    '--control', nargs='+', help='Control id')
+    '--control', nargs='+', help='Control id'
+  )
   create_analysis_p.add_argument('--params', nargs='+')
   create_analysis_p.add_argument(
-    '-i', '--ignore_warning', default=False, action='store_true',
-    help='Ignore validation warnings')
+    '-i', '--ignore_warning',
+    action='store_true',
+    default=False,
+    help='Ignore validation warnings',
+  )
 
   # update project parser
-
   update_project_parser = actions_p.add_parser(
     'updateProject',
     help='Update information associated with a project.'
   )
   update_project_parser = add_common_args(update_project_parser)
   update_project_parser.add_argument(
-    '-p', '--project', nargs='+', help='project id')
+    '-p', '--project', nargs='+', help='project id'
+  )
   update_project_parser.add_argument('--emails', nargs='+')
   update_project_parser.add_argument('--perm')
   update_project_parser.add_argument('--key', action='append')
   update_project_parser.add_argument('--val', action='append')
 
   # update sample parser
-
   update_sample_parser = actions_p.add_parser(
     'updateSample',
     help='Update information associated with a sample.'
   )
   update_sample_parser = add_common_args(update_sample_parser)
   update_sample_parser.add_argument(
-    '-s', '--sample', nargs='+', help='Sample id')
+    '-s', '--sample', nargs='+', help='Sample id'
+  )
   update_sample_parser.add_argument('--key', action='append')
   update_sample_parser.add_argument('--val', action='append')
 
   # update analysis parser
-
   update_analysis_parser = actions_p.add_parser(
     'updateAnalysis',
     help='Update information associated with an analysis.'
@@ -495,12 +486,12 @@ def read_args():
   update_analysis_parser.add_argument('--val', action='append')
 
   # download parsers
-
   download_p = actions_p.add_parser('download', help='Download items.')
 
   download_sp = download_p.add_subparsers(
     help='Type of item to download',
-    dest='download_type')
+    dest='download_type'
+  )
 
   download_analysis_p = download_sp.add_parser(
     'analysis',
@@ -513,29 +504,30 @@ def read_args():
 
   download_file_p = download_sp.add_parser(
     'file',
-    help='Download one or more files by uid.')
+    help='Download one or more files by uid.'
+  )
   download_file_p = add_uid_parser(download_file_p)
   download_file_p = add_outdir_parser(download_file_p)
   download_file_p = add_common_args(download_file_p)
 
   download_log_p = download_sp.add_parser(
     'log',
-    help='Download analysis logs from one or more analyses.')
+    help='Download analysis logs from one or more analyses.'
+  )
   download_log_p = add_uid_parser(download_log_p)
   download_log_p = add_outdir_parser(download_log_p)
   download_log_p = add_common_args(download_log_p)
 
   download_sample_p = download_sp.add_parser(
     'sample',
-    help='Download raw data or analysis files by tags from ' +
-         'one or more samples.')
+    help='Download raw data or analysis files by tags from one or more samples.'
+  )
   download_sample_p = add_uid_parser(download_sample_p)
   download_sample_p = add_tags_parser(download_sample_p)
   download_sample_p = add_outdir_parser(download_sample_p)
   download_sample_p = add_common_args(download_sample_p)
 
   # delete parser
-
   delete_parser = actions_p.add_parser(
     'delete',
     help='Delete a sample or analysis from your Basepair account.'
@@ -544,81 +536,87 @@ def read_args():
   delete_parser.add_argument(
     '-t',
     '--type',
+    help='Type of data to delete. Options: sample, analysis',
     required=True,
-    help='Type of data to delete. Options: sample, analysis')
+  )
   delete_parser.add_argument(
     '-u',
     '--uid',
     default=None,
+    help=' The unique sample or analysis id(s)',
     nargs='+',
-    help=' The unique sample or analysis id(s)')
+  )
 
   # list parser
-
   list_p = actions_p.add_parser('list', help='List of items.')
 
   list_sp = list_p.add_subparsers(
+    dest='list_type',
     help='Type of item to list',
-    dest='list_type')
+  )
 
   list_analysis_p = list_sp.add_parser(
     'analysis',
-    help='List files and other info for one or more analyses.')
+    help='List files and other info for one or more analyses.'
+  )
   list_analysis_p = add_common_args(list_analysis_p)
   list_analysis_p = add_uid_parser(list_analysis_p)
   list_analysis_p = add_json_parser(list_analysis_p)
 
   list_analyses_p = list_sp.add_parser(
     'analyses',
-    help='List basic info about your analyses')
+    help='List basic info about your analyses'
+  )
   list_analyses_p = add_common_args(list_analyses_p)
   list_analyses_p = add_json_parser(list_analyses_p)
 
   list_samples_p = list_sp.add_parser(
     'samples',
-    help='List basic info about all your samples.')
+    help='List basic info about all your samples.'
+  )
   list_samples_p = add_common_args(list_samples_p)
   list_samples_p = add_json_parser(list_samples_p)
 
   list_sample_p = list_sp.add_parser(
     'sample',
-    help='List detail info about one or more samples.')
+    help='List detail info about one or more samples.'
+  )
   list_sample_p = add_common_args(list_sample_p)
   list_sample_p = add_uid_parser(list_sample_p)
   list_sample_p = add_json_parser(list_sample_p)
 
   list_genomes_p = list_sp.add_parser(
     'genomes',
-    help='List available genomes.')
+    help='List available genomes.'
+  )
   list_genomes_p = add_common_args(list_genomes_p)
   list_genomes_p = add_json_parser(list_genomes_p)
 
   list_genome_p = list_sp.add_parser(
     'genome',
-    help='List detail info about one or more genomes.')
+    help='List detail info about one or more genomes.'
+  )
   list_genome_p = add_common_args(list_genome_p)
   list_genome_p = add_uid_parser(list_genome_p)
   list_genome_p = add_json_parser(list_genome_p)
 
   list_workflows_p = list_sp.add_parser(
     'workflows',
-    help='List available workflows.')
+    help='List available workflows.'
+  )
   list_workflows_p = add_common_args(list_workflows_p)
   list_workflows_p = add_json_parser(list_workflows_p)
 
-  parser.set_defaults(
-    params=[],
-  )
+  parser.set_defaults(params=[],)
   args = parser.parse_args()
 
   if not args.config:
     if 'BP_CONFIG_FILE' not in os.environ:
-      print('Please either use the -c or --config param or set '
-            'the environment variable BP_CONFIG_FILE!', file=sys.stderr)
+      print('Please either use the -c or --config param or '
+            'set the environment variable BP_CONFIG_FILE!', file=sys.stderr)
       sys.exit(1)
     else:
-      print('Using config file ' + os.environ['BP_CONFIG_FILE'],
-            file=sys.stderr)
+      print('Using config file ' + os.environ['BP_CONFIG_FILE'], file=sys.stderr)
   else:
     print('Using config file', args.config, file=sys.stderr)
 
@@ -632,8 +630,7 @@ def read_args():
     elif not args.key and args.val:
       raise argparse.ArgumentTypeError('key required for val')
     elif args.key and args.val and len(args.key) != len(args.val):
-      raise argparse.ArgumentTypeError(
-        'number of key and val are not equal')
+      raise argparse.ArgumentTypeError('number of key and val are not equal')
 
   return args
 
