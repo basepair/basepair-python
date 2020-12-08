@@ -235,7 +235,7 @@ def create_analysis(bp, args):
     return
 
   bp.create_analysis(
-    control_ids=args.control,
+    control_ids=args.control or [],
     ignore_validation_warnings=args.ignore_warning,
     params=params,
     project_id=args.project,
