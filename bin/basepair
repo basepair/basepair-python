@@ -27,8 +27,9 @@ sys.path.insert(0, '/home/ec2-user/basepair')
 import basepair
 
 
-def yes_or_no(question, default='no'):
-  '''Ask a yes/no question via raw_input() and return their answer.
+def yes_or_no(question):
+  '''
+  Ask a yes/no question via raw_input() and return their answer.
 
   Parameters
   ----------
@@ -65,8 +66,7 @@ def yes_or_no(question, default='no'):
     # check answer
     if choice in valid:
       return valid[choice]
-    else:
-      sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
+    sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
 
 
 def main():
@@ -627,9 +627,9 @@ def read_args():
   if hasattr(args, 'key') and hasattr(args, 'val'):
     if args.key and not args.val:
       raise argparse.ArgumentTypeError('val required for key')
-    elif not args.key and args.val:
+    if not args.key and args.val:
       raise argparse.ArgumentTypeError('key required for val')
-    elif args.key and args.val and len(args.key) != len(args.val):
+    if args.key and args.val and len(args.key) != len(args.val):
       raise argparse.ArgumentTypeError('number of key and val are not equal')
 
   return args
