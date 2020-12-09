@@ -209,7 +209,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if tags is not None:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
-        eprint('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
     if not isinstance(uid, list):
       uid = [uid]
@@ -903,7 +903,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if tags:
       is_not_valid = not (isinstance(tags, list) and all([isinstance(item, list) for item in tags]))
       if is_not_valid:
-        eprint('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
     else:
       tags = [None]
