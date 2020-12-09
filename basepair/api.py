@@ -911,12 +911,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # filter the files
     matching_files = []
     for tags_sub in tags:
-      matching_files += self.filter_files_by_tags(
+      files = self.filter_files_by_tags(
         analysis['files'],
         tags_sub,
         kind=kind,
         multiple=True,
       )
+      if files:
+        matching_files += files
 
     return [self.download_file(
       matching_file['path'],
