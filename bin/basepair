@@ -127,43 +127,16 @@ def main():
     update_analysis(bp, args.analysis, args.key, args.val)
   elif args.action == 'download':
     if args.download_type == 'analysis':
+      download_analysis(bp, args)
 
-      # download a file from an analysis by tags
-      for uid in args.uid:
-        bp.download_analysis(uid, args.tags, args.tagkind, args.outdir)
     elif args.download_type == 'file':
-
-      # download a file by uid
-      for uid in args.uid:
-        file_i = bp.get_file(uid)
-        bp.download_file(file_i['path'], dirname=args.outdir)
+      download_file(bp, args)
 
     elif args.download_type == 'log':
-      for uid in args.uid:
-
-        # check analysis id is valid
-        info, res = bp.get_analysis(uid)
-        if info is None:
-          print("{} is not a valid analysis id!".format(uid))
-          continue
-
-        if args.outdir:
-          bp.get_log(uid, args.outdir)
-        else:
-          bp.get_log(uid)
+      download_log(bp, args)
 
     elif args.download_type == 'sample':
-      for uid in args.uid:
-        sample = bp.get_sample(uid, add_analysis=True)
-        if sample is None:
-          print('{} is not a valid sample id!'.format(uid))
-          continue
-
-        # if tags provided, download file by tags
-        if args.tags:
-          bp.get_file_by_tags(sample, tags=args.tags, kind=args.tagkind, dirname=args.outdir)
-        else:
-          bp.download_raw_files(sample, args.outdir)
+      download_sample(bp, args)
 
   elif args.action == 'delete':
     delete(bp, args.type[0], args.uid)
@@ -243,6 +216,65 @@ def create_analysis(bp, args):
     sample_ids=args.sample,
     workflow_id=args.workflow,
   )
+
+
+def download_analysis(bp, args):
+  '''Download analysis'''
+  if not args.uid:
+    print('ERROR: Minimum one analysis uid required.')
+    return
+
+  # download a file from an analysis by tags
+  for uid in args.uid:
+    bp.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
+
+
+def download_file(bp, args):
+  '''Download file by uid'''
+  if not args.uid:
+    print('ERROR: Minimum one file uid required.')
+    return
+
+  for uid in args.uid:
+    file_i = bp.get_file(uid)
+    bp.download_file(file_i['path'], dirname=args.outdir)
+
+
+def download_log(bp, args):
+  '''Download analysis log'''
+  if not args.uid:
+    print('ERROR: Minimum one analysis uid required.')
+    return
+
+  for uid in args.uid:
+    info, res = bp.get_analysis(uid)  # check analysis id is valid
+    if info is None:
+      print("{} is not a valid analysis id!".format(uid))
+      continue
+
+    if args.outdir:
+      bp.get_log(uid, args.outdir)
+    else:
+      bp.get_log(uid)
+
+
+def download_sample(bp, args):
+  '''Download sample'''
+  if not args.uid:
+    print('ERROR: Minimum one sample uid required.')
+    return
+
+  for uid in args.uid:
+    sample = bp.get_sample(uid, add_analysis=True)  # check sample id is valid
+    if sample is None:
+      print('{} is not a valid sample id!'.format(uid))
+      continue
+
+    # if tags provided, download file by tags
+    if args.tags:
+      bp.get_file_by_tags(sample, tags=args.tags, kind=args.tagkind, dirname=args.outdir)
+    else:
+      bp.download_raw_files(sample, args.outdir)
 
 
 def update_info(bp, kind, uid, keys, vals):
