@@ -271,8 +271,8 @@ def update_project(bp, args):
   }
   for project_id in args.project:
     res = bp.update_project(project_id, data=None, params=params)
-    if res.status_code != 204:
-      print('error {}: {}'.format(res.status_code, res.reason), file=sys.stderr)
+    if res.get('error'):
+      print('error: {}'.format(res.get('msg')), file=sys.stderr)
 
 
 def update_sample(bp, sample_id, keys, vals):
