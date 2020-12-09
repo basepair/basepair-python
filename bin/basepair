@@ -262,7 +262,7 @@ def update_info(bp, kind, uid, keys, vals):
 
 def update_project(bp, args):
   '''Update project'''
-  perm = args.perm if args.perm else 'read'
+  perm = args.perm or 'read'
   params = {
     'permission_data': {
       'emails': args.emails,
