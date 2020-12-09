@@ -256,8 +256,8 @@ def update_info(bp, kind, uid, keys, vals):
     res = bp.update_sample(uid, data)
   elif kind == 'analysis':
     res = bp.update_analysis(uid, data)
-  if res.status_code != 204:
-    print('error {}: {}'.format(res.status_code, res.reason), file=sys.stderr)
+  if res.get('error'):
+    print('error: {}'.format(res.get('msg')), file=sys.stderr)
 
 
 def update_project(bp, args):
