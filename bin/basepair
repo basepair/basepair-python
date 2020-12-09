@@ -122,7 +122,7 @@ def main():
   elif args.action == 'updateProject':
     update_project(bp, args)
   elif args.action == 'updateSample':
-    update_sample(bp, args.sample[0], args.key, args.val)
+    update_sample(bp, args.sample, args.key, args.val)
   elif args.action == 'updateAnalysis':
     update_analysis(bp, args.analysis, args.key, args.val)
   elif args.action == 'download':
@@ -487,7 +487,7 @@ def read_args():
   )
   update_sample_parser = add_common_args(update_sample_parser)
   update_sample_parser.add_argument(
-    '-s', '--sample', nargs='+', help='Sample id'
+    '-s', '--sample', help='Sample id'
   )
   update_sample_parser.add_argument('--key', action='append')
   update_sample_parser.add_argument('--val', action='append')
