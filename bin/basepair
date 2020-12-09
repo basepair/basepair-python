@@ -381,6 +381,7 @@ def add_tags_parser(parser):
   )
   parser.add_argument(
     '--tagkind',
+    choices=['diff', 'exact', 'subset'],
     default='exact',
     help='''
              Tag filtering strategy. Options:\n

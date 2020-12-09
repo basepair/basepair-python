@@ -203,10 +203,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     tagkind: {str}  Type of tag filtering to do. Options: exact, diff, subset
     tags:    {list} List of list of tags to filter files by
     '''
-    if tagkind not in ['exact', 'diff', 'subset']:
-      eprint('Invalid tagkind, choose one of: exact, diff, subset')
-      return None
-    if tags is not None:
+    if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
