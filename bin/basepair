@@ -281,6 +281,10 @@ def update_project(bp, args):
 
 def update_sample(bp, sample_id, keys, vals):
   '''Update sample'''
+  if not sample_id:
+    print('ERROR: Minimum one sample required.')
+    return
+
   update_info(bp, 'sample', sample_id, keys, vals)
 
 
