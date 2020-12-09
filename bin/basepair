@@ -217,14 +217,6 @@ def create_sample(bp, args):
 def create_analysis(bp, args):
   '''Create and submit an analysis'''
   params = {'node': {}}
-  if args.params:
-    for param in args.params:
-      node_id, arg, val = param.split(':')
-      if node_id not in params['node']:
-        params['node'][node_id] = {}
-      params['node'][node_id][arg] = val
-  else:
-    print('You specified no parameters, submitting with default ones...', file=sys.stderr)
 
   if not args.workflow:
     print('ERROR: Workflow required.')
@@ -233,6 +225,15 @@ def create_analysis(bp, args):
   if not args.sample:
     print('ERROR: Minimum one sample required.')
     return
+
+  if args.params:
+    for param in args.params:
+      node_id, arg, val = param.split(':')
+      if node_id not in params['node']:
+        params['node'][node_id] = {}
+      params['node'][node_id][arg] = val
+  else:
+    print('You specified no parameters, submitting with default ones...', file=sys.stderr)
 
   bp.create_analysis(
     control_ids=args.control or [],
