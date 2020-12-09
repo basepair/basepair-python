@@ -262,6 +262,10 @@ def update_info(bp, kind, uid, keys, vals):
 
 def update_project(bp, args):
   '''Update project'''
+  if not args.project:
+    print('ERROR: Minimum one project required.')
+    return
+
   perm = args.perm or 'view'
   params = {
     'permission_data': {
