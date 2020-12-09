@@ -1348,5 +1348,5 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   @classmethod
   def _parsed_sample_list(cls, items, prefix):
-    '''Parse sample id list into sample resurce uri list'''
+    '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
