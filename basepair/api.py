@@ -295,6 +295,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     if info.get('error'):
       eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
+      return
+
     if self.verbose:
       eprint('analysis', uid, 'updated')
     return info
@@ -595,6 +597,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
       eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return
+
     if self.verbose:
       eprint('deleted sample', uid)
     return info
