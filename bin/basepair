@@ -144,7 +144,7 @@ def main():
         # check analysis id is valid
         info, res = bp.get_analysis(uid)
         if info is None:
-          print("{} is not a valid analysis id!".format(uid))
+          print('{} is not a valid analysis id!'.format(uid))
           continue
 
         if args.outdir:
