@@ -166,7 +166,7 @@ def main():
           bp.download_raw_files(sample, args.outdir)
 
   elif args.action == 'delete':
-    delete(bp, args.type[0], args.uid)
+    delete(bp, args.type, args.uid)
   elif args.action == 'list':
 
     if args.list_type == 'analysis':
@@ -280,10 +280,6 @@ def delete(bp, data_type, uid):
   '''Delete object'''
   if not uid:
     print('Please add one or more uid', file=sys.stderr)
-    return
-
-  if data_type not in ['sample', 'analysis']:
-    print('\'--type {}\' is invalid, choose from: sample or analysis'.format(data_type))
     return
 
   for uid in uid:
@@ -536,6 +532,7 @@ def read_args():
   delete_parser.add_argument(
     '-t',
     '--type',
+    choices=['analysis', 'sample'],
     help='Type of data to delete. Options: sample, analysis',
     required=True,
   )
