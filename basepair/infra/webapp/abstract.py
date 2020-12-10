@@ -120,6 +120,9 @@ class Abstract(object):
       eprint('ERROR: {}'.format(error_msgs[response.status_code]))
       return {'error': True, 'msg': error_msgs[response.status_code]}
 
+    if response.status_code == 204:  # for delete response
+      return {'error': False}
+
     try:
       response = response.json()
 
