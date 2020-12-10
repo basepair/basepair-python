@@ -119,8 +119,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
-    self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
-    self.LIST_TYPES = ['samples', 'analyses', 'genomes', 'workflows', 'analysis'] # pylint: disable=invalid-name
+    self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
+    self.LIST_TYPES = ['samples', 'analyses', 'genomes', 'workflows', 'analysis'] # pylint: disable=invalid-name
 
   ################################################################################################
   ### ANALYSIS ###################################################################################
@@ -135,7 +135,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     project_id=None,
     sample_id=None,
     sample_ids=[],
-  ): # pylint: disable=dangerous-default-value,too-many-arguments
+  ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
     ----------
@@ -228,7 +228,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     params=None,
     sample_id=None,
     sample_ids=[]
-  ): # pylint: disable=dangerous-default-value,too-many-arguments
+  ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
     ----------
@@ -746,6 +746,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if not src.startswith('s3://'):
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
+    if self.verbose:
+      print(cmd, file=sys.stderr)
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as stderr:
@@ -761,6 +763,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
       eprint('copying', src, 'to', dest)
+      print(cmd, file=sys.stderr)
     try:
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
@@ -769,7 +772,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint(error.output)
       return None
 
-  def download_file(self, filekey, dirname=None, filename=None, is_json=False, load=False): # pylint: disable=too-many-arguments
+  def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -1281,7 +1284,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### Private methods ###
   def _add_full_analysis(self, sample):
     '''Add full analysis info to the sample'''
-    analysis_ids = [self.parse_url(uri)['id'] for uri in sample['analyses']]
+    analysis_ids = [self.parse_url(uri)['id']
+        for uri in sample.get('analyses', [])]
     analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
@@ -1307,7 +1311,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   @classmethod
   def _filter_files_by_node(cls, files, node, multiple=False):
     '''Filter files that are from the node.'''
-    # In some cases, multiple files are expected, set it to true.
+    # In some cases, multiple files are expected, set it to true.
     files = [file for file in files if file['node'] == node]
     if multiple:
       return files
