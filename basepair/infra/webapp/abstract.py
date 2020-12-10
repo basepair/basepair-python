@@ -7,10 +7,10 @@ import os
 # Lib imports
 import requests
 
-# App imports
+# App imports
 from basepair.helpers import eprint
 
-class Abstract:
+class Abstract(object):
   '''Webapp abastract class'''
   def __init__(self, cfg):
     protocol = 'https' if cfg.get('ssl', True) else 'http'
@@ -121,7 +121,19 @@ class Abstract:
       return {'error': True, 'msg': error_msgs[response.status_code]}
 
     try:
-      return response.json()
+      response = response.json()
+
+      error = response and response.get('error')
+      if error and isinstance(error, dict):
+        response = error
+
+        if response.get('error_msgs'):
+          eprint('ERROR: {}'.format(response['error_msgs']))
+
+        if response.get('warning_msgs'):
+          eprint('WARNING: {}'.format(response['warning_msgs']))
+
+      return response
     except json.decoder.JSONDecodeError as error:
       msg = 'ERROR: Not able to parse response: {}.'.format(error)
       eprint(msg)

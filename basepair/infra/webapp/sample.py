@@ -6,5 +6,5 @@ from .abstract import Abstract
 class Sample(Abstract):
   '''Webapp Sample class'''
   def __init__(self, cfg):
-    super().__init__(cfg)
+    super(Sample, self).__init__(cfg)
     self.endpoint += 'samples/'

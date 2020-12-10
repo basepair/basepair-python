@@ -1,4 +1,5 @@
 '''Helper to print object nicely'''
+from __future__ import print_function
 
 # General imports
 import os

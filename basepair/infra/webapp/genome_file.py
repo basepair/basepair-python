@@ -6,5 +6,5 @@ from .abstract import Abstract
 class GenomeFile(Abstract):
   '''Webapp GenomeFile class'''
   def __init__(self, cfg):
-    super().__init__(cfg)
+    super(GenomeFile, self).__init__(cfg)
     self.endpoint += 'genomefiles/'
