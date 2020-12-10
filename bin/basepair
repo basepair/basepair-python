@@ -23,6 +23,9 @@ import json
 import sys
 import os
 
+# App imports
+from basepair.helpers import eprint
+
 sys.path.insert(0, '/home/ec2-user/basepair')
 import basepair
 
@@ -106,10 +109,10 @@ def main():
 
       # if payload username or api key specified, make sure both are present
       if args.payload_username is not None and args.payload_api_key is None:
-        print('specify parameter --payload-api-key!')
+        eprint('specify parameter --payload-api-key!')
         sys.exit(1)
       elif args.payload_api_key is not None and args.payload_username is None:
-        print('specify parameter --payload-username!')
+        eprint('specify parameter --payload-username!')
         sys.exit(1)
       elif args.payload_username is not None and args.payload_username is not None:
         bp.payload = {
@@ -139,7 +142,7 @@ def main():
       download_sample(bp, args)
 
   elif args.action == 'delete':
-    delete(bp, args.type[0], args.uid)
+    delete(bp, args.type, args.uid)
   elif args.action == 'list':
 
     if args.list_type == 'analysis':
@@ -192,11 +195,11 @@ def create_analysis(bp, args):
   params = {'node': {}}
 
   if not args.workflow:
-    print('ERROR: Workflow required.')
+    eprint('ERROR: Workflow required.')
     return
 
   if not args.sample:
-    print('ERROR: Minimum one sample required.')
+    eprint('ERROR: Minimum one sample required.')
     return
 
   if args.params:
@@ -206,7 +209,7 @@ def create_analysis(bp, args):
         params['node'][node_id] = {}
       params['node'][node_id][arg] = val
   else:
-    print('You specified no parameters, submitting with default ones...', file=sys.stderr)
+    eprint('You specified no parameters, submitting with default ones...')
 
   bp.create_analysis(
     control_ids=args.control or [],
@@ -221,7 +224,7 @@ def create_analysis(bp, args):
 def download_analysis(bp, args):
   '''Download analysis'''
   if not args.uid:
-    print('ERROR: Minimum one analysis uid required.')
+    eprint('ERROR: Minimum one analysis uid required.')
     return
 
   # download a file from an analysis by tags
@@ -232,7 +235,7 @@ def download_analysis(bp, args):
 def download_file(bp, args):
   '''Download file by uid'''
   if not args.uid:
-    print('ERROR: Minimum one file uid required.')
+    eprint('ERROR: Minimum one file uid required.')
     return
 
   for uid in args.uid:
@@ -243,13 +246,13 @@ def download_file(bp, args):
 def download_log(bp, args):
   '''Download analysis log'''
   if not args.uid:
-    print('ERROR: Minimum one analysis uid required.')
+    eprint('ERROR: Minimum one analysis uid required.')
     return
 
   for uid in args.uid:
     info, res = bp.get_analysis(uid)  # check analysis id is valid
     if info is None:
-      print("{} is not a valid analysis id!".format(uid))
+      eprint('{} is not a valid analysis id!'.format(uid))
       continue
 
     if args.outdir:
@@ -261,13 +264,13 @@ def download_log(bp, args):
 def download_sample(bp, args):
   '''Download sample'''
   if not args.uid:
-    print('ERROR: Minimum one sample uid required.')
+    eprint('ERROR: Minimum one sample uid required.')
     return
 
   for uid in args.uid:
     sample = bp.get_sample(uid, add_analysis=True)  # check sample id is valid
     if sample is None:
-      print('{} is not a valid sample id!'.format(uid))
+      eprint('{} is not a valid sample id!'.format(uid))
       continue
 
     # if tags provided, download file by tags
@@ -289,13 +292,13 @@ def update_info(bp, kind, uid, keys, vals):
   elif kind == 'analysis':
     res = bp.update_analysis(uid, data)
   if res.get('error'):
-    print('error: {}'.format(res.get('msg')), file=sys.stderr)
+    eprint('error: {}'.format(res.get('msg')))
 
 
 def update_project(bp, args):
   '''Update project'''
   if not args.project:
-    print('ERROR: Minimum one project required.')
+    eprint('ERROR: Minimum one project required.')
     return
 
   perm = args.perm or 'view'
@@ -308,13 +311,13 @@ def update_project(bp, args):
   for project_id in args.project:
     res = bp.update_project(project_id, data=None, params={'params': json.dumps(params)})
     if res.get('error'):
-      print('error: {}'.format(res.get('msg')), file=sys.stderr)
+      eprint('error: {}'.format(res.get('msg')))
 
 
 def update_sample(bp, sample_id, keys, vals):
   '''Update sample'''
   if not sample_id:
-    print('ERROR: Minimum one sample required.')
+    eprint('ERROR: Minimum one sample required.')
     return
 
   update_info(bp, 'sample', sample_id, keys, vals)
@@ -328,11 +331,7 @@ def update_analysis(bp, analysis_id, keys, vals):
 def delete(bp, data_type, uid):
   '''Delete object'''
   if not uid:
-    print('Please add one or more uid', file=sys.stderr)
-    return
-
-  if data_type not in ['sample', 'analysis']:
-    print('\'--type {}\' is invalid, choose from: sample or analysis'.format(data_type))
+    eprint('Please add one or more uid')
     return
 
   for uid in uid:
@@ -586,6 +585,7 @@ def read_args():
   delete_parser.add_argument(
     '-t',
     '--type',
+    choices=['analysis', 'sample'],
     help='Type of data to delete. Options: sample, analysis',
     required=True,
   )
@@ -662,13 +662,12 @@ def read_args():
 
   if not args.config:
     if 'BP_CONFIG_FILE' not in os.environ:
-      print('Please either use the -c or --config param or '
-            'set the environment variable BP_CONFIG_FILE!', file=sys.stderr)
+      eprint('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
       sys.exit(1)
     else:
-      print('Using config file ' + os.environ['BP_CONFIG_FILE'], file=sys.stderr)
+      eprint('Using config file {}'.format(os.environ['BP_CONFIG_FILE']))
   else:
-    print('Using config file', args.config, file=sys.stderr)
+    eprint('Using config file', args.config)
 
   # if neither set, be verbose
   if not args.verbose and not args.quiet:
@@ -684,7 +683,7 @@ def read_args():
       msg = 'number of key and val are not equal'
 
     if msg:  # stop execution if key/val error
-      print(msg)
+      eprint(msg)
       sys.exit(1)
 
   return args
