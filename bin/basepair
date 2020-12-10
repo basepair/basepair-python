@@ -23,6 +23,9 @@ import json
 import sys
 import os
 
+# App imports
+from basepair.helpers import eprint
+
 sys.path.insert(0, '/home/ec2-user/basepair')
 import basepair
 
@@ -106,10 +109,10 @@ def main():
 
       # if payload username or api key specified, make sure both are present
       if args.payload_username is not None and args.payload_api_key is None:
-        print('specify parameter --payload-api-key!')
+        eprint('specify parameter --payload-api-key!')
         sys.exit(1)
       elif args.payload_api_key is not None and args.payload_username is None:
-        print('specify parameter --payload-username!')
+        eprint('specify parameter --payload-username!')
         sys.exit(1)
       elif args.payload_username is not None and args.payload_username is not None:
         bp.payload = {
@@ -144,7 +147,7 @@ def main():
         # check analysis id is valid
         info, res = bp.get_analysis(uid)
         if info is None:
-          print('{} is not a valid analysis id!'.format(uid))
+          eprint('{} is not a valid analysis id!'.format(uid))
           continue
 
         if args.outdir:
@@ -156,7 +159,7 @@ def main():
       for uid in args.uid:
         sample = bp.get_sample(uid, add_analysis=True)
         if sample is None:
-          print('{} is not a valid sample id!'.format(uid))
+          eprint('{} is not a valid sample id!'.format(uid))
           continue
 
         # if tags provided, download file by tags
@@ -224,7 +227,7 @@ def create_analysis(bp, args):
         params['node'][node_id] = {}
       params['node'][node_id][arg] = val
   else:
-    print('You specified no parameters, submitting with default ones...', file=sys.stderr)
+    eprint('You specified no parameters, submitting with default ones...')
 
   bp.create_analysis(
     control_ids=args.control,
@@ -248,7 +251,7 @@ def update_info(bp, kind, uid, keys, vals):
   elif kind == 'analysis':
     res = bp.update_analysis(uid, data)
   if res.status_code != 204:
-    print('error {}: {}'.format(res.status_code, res.reason), file=sys.stderr)
+    eprint('error {}: {}'.format(res.status_code, res.reason))
 
 
 def update_project(bp, args):
@@ -263,7 +266,7 @@ def update_project(bp, args):
   for project_id in args.project:
     res = bp.update_project(project_id, data=None, params=params)
     if res.status_code != 204:
-      print('error {}: {}'.format(res.status_code, res.reason), file=sys.stderr)
+      eprint('error {}: {}'.format(res.status_code, res.reason))
 
 
 def update_sample(bp, sample_id, keys, vals):
@@ -279,7 +282,7 @@ def update_analysis(bp, analysis_id, keys, vals):
 def delete(bp, data_type, uid):
   '''Delete object'''
   if not uid:
-    print('Please add one or more uid', file=sys.stderr)
+    eprint('Please add one or more uid')
     return
 
   for uid in uid:
@@ -609,13 +612,12 @@ def read_args():
 
   if not args.config:
     if 'BP_CONFIG_FILE' not in os.environ:
-      print('Please either use the -c or --config param or '
-            'set the environment variable BP_CONFIG_FILE!', file=sys.stderr)
+      eprint('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
       sys.exit(1)
     else:
-      print('Using config file ' + os.environ['BP_CONFIG_FILE'], file=sys.stderr)
+      eprint('Using config file {}'.format(os.environ['BP_CONFIG_FILE']))
   else:
-    print('Using config file', args.config, file=sys.stderr)
+    eprint('Using config file', args.config)
 
   # if neither set, be verbose
   if not args.verbose and not args.quiet:
