@@ -203,13 +203,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     tagkind: {str}  Type of tag filtering to do. Options: exact, diff, subset
     tags:    {list} List of list of tags to filter files by
     '''
-    if tagkind not in ['exact', 'diff', 'subset']:
-      eprint('Invalid tagkind, choose one of: exact, diff, subset')
-      return None
-    if tags is not None:
+    if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
-        eprint('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
     if not isinstance(uid, list):
       uid = [uid]
@@ -910,7 +907,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if tags:
       is_not_valid = not (isinstance(tags, list) and all([isinstance(item, list) for item in tags]))
       if is_not_valid:
-        eprint('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
     else:
       tags = [None]
@@ -918,12 +915,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # filter the files
     matching_files = []
     for tags_sub in tags:
-      matching_files += self.filter_files_by_tags(
+      files = self.filter_files_by_tags(
         analysis['files'],
         tags_sub,
         kind=kind,
         multiple=True,
       )
+      if files:
+        matching_files += files
 
     return [self.download_file(
       matching_file['path'],
@@ -1357,5 +1356,5 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   @classmethod
   def _parsed_sample_list(cls, items, prefix):
-    '''Parse sample id list into sample resurce uri list'''
+    '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
