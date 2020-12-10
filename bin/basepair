@@ -675,12 +675,17 @@ def read_args():
     args.verbose = True
 
   if hasattr(args, 'key') and hasattr(args, 'val'):
+    msg = None
     if args.key and not args.val:
-      raise argparse.ArgumentTypeError('val required for key')
-    if not args.key and args.val:
-      raise argparse.ArgumentTypeError('key required for val')
-    if args.key and args.val and len(args.key) != len(args.val):
-      raise argparse.ArgumentTypeError('number of key and val are not equal')
+      msg = 'val required for key'
+    elif args.val and not args.key:
+      msg = 'key required for val'
+    elif args.key and args.val and len(args.key) != len(args.val):
+      msg = 'number of key and val are not equal'
+
+    if msg:  # stop execution if key/val error
+      print(msg)
+      sys.exit(1)
 
   return args
 
