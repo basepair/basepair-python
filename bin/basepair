@@ -464,7 +464,8 @@ def read_args():
     choices=[
       'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
       'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
-    ]
+    ],
+    default='rna-seq'
   )
   create_sample_p.add_argument('--file1', nargs='+')
   create_sample_p.add_argument('--file2', nargs='+')
