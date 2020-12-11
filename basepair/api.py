@@ -1260,7 +1260,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return
 
       for item_id in uid:
-        data_tmp = getattr(self, list_methods.get(data_type))(item_id)
+        data_tmp = getattr(self, detail_methods.get(data_type))(item_id)
         if data_tmp.get('id'):
           data.append(data_tmp)
         else:
