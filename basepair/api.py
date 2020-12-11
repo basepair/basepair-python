@@ -120,7 +120,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     self.configuration = Parser(configuration)
 
     self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
-    self.LIST_TYPES = ['samples', 'analyses', 'genomes', 'workflows', 'analysis'] # pylint: disable=invalid-name
 
   ################################################################################################
   ### ANALYSIS ###################################################################################
