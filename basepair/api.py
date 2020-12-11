@@ -119,8 +119,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
-    self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
-
   ################################################################################################
   ### ANALYSIS ###################################################################################
   ################################################################################################

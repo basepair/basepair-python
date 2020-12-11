@@ -95,12 +95,6 @@ def main():
     verbose=args.verbose
   )
 
-  if hasattr(args, 'datatype'):
-    if args.datatype and args.datatype not in bp.DATATYPES:
-      raise argparse.ArgumentTypeError(
-        'datatype has to be among:' + ', '.join(bp.DATATYPES)
-      )
-
   if args.action == 'create':
     if args.create_type == 'project':
       create_project(bp, args)
@@ -465,7 +459,13 @@ def read_args():
   create_sample_p.add_argument('--name')
   create_sample_p.add_argument('--genome')
   create_sample_p.add_argument('--platform')
-  create_sample_p.add_argument('--datatype')
+  create_sample_p.add_argument(
+    '--datatype',
+    choices=[
+      'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+      'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+    ]
+  )
   create_sample_p.add_argument('--file1', nargs='+')
   create_sample_p.add_argument('--file2', nargs='+')
   create_sample_p.add_argument('-w', '--workflow', help='Workflow id')
