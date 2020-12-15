@@ -119,7 +119,7 @@ def main():
   elif args.action == 'updateProject':
     update_project(bp, args)
   elif args.action == 'updateSample':
-    update_sample(bp, args.sample, args.key, args.val)
+    update_sample(bp, args)
   elif args.action == 'updateAnalysis':
     update_analysis(bp, args.analysis, args.key, args.val)
   elif args.action == 'download':
@@ -274,9 +274,8 @@ def download_sample(bp, args):
       bp.download_raw_files(sample, args.outdir)
 
 
-def update_info(bp, kind, uid, keys, vals):
+def update_info(bp, kind=None, uid=None, keys=None, vals=None, data={}):
   '''Update object info'''
-  data = {}
   if keys and vals:
     for key, val in zip(keys, vals):
       data[key] = val
@@ -308,18 +307,28 @@ def update_project(bp, args):
       eprint('error: {}'.format(res.get('msg')))
 
 
-def update_sample(bp, sample_id, keys, vals):
+def update_sample(bp, args):
   '''Update sample'''
-  if not sample_id:
-    eprint('ERROR: Minimum one sample required.')
+  if not args.sample:
+    eprint('ERROR: Sample required.')
     return
 
-  update_info(bp, 'sample', sample_id, keys, vals)
+  data = {}
+  if args.name:
+    data['name'] = args.name
+
+  if args.genome:
+    data['genome'] = args.genome
+
+  if args.datatype:
+    data['datatype'] = args.datatype
+
+  update_info(bp, kind='sample', uid=args.sample, keys=args.key, vals=args.val, data=data)
 
 
 def update_analysis(bp, analysis_id, keys, vals):
   '''Update analysis'''
-  update_info(bp, 'analysis', analysis_id, keys, vals)
+  update_info(bp, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
 
 
 def delete(bp, data_type, uid):
@@ -521,6 +530,15 @@ def read_args():
   update_sample_parser = add_common_args(update_sample_parser)
   update_sample_parser.add_argument(
     '-s', '--sample', help='Sample id'
+  )
+  update_sample_parser.add_argument('--name')
+  update_sample_parser.add_argument('--genome')
+  update_sample_parser.add_argument(
+    '--datatype',
+    choices=[
+      'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+      'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+    ],
   )
   update_sample_parser.add_argument('--key', action='append')
   update_sample_parser.add_argument('--val', action='append')
