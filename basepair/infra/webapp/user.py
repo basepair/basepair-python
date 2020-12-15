@@ -45,4 +45,4 @@ class User(Abstract):
       return parsed
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
-      return { 'error': True, 'msg': error}
+      return {'error': True, 'msg': error}
