@@ -629,6 +629,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def update_sample(self, uid, data):
     '''Update resource'''
+    genome = data.get('genome')
+    if genome:
+      data['genome'] = self._get_genome_by_name(genome)
+
     info = (Sample(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
       eprint('sample', uid, 'updated')
