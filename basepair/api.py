@@ -701,12 +701,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def upload_file(self, upload_id, filepath, key):
     '''Upload file to S3 and update info'''
     starttime = time.time()
-    self.copy_file(filepath, key, action='to')
+    response = self.copy_file(filepath, key, action='to')
     seconds_to_upload = int(time.time() - starttime)
     (Upload(self.conf.get('api'))).save(obj_id=upload_id, payload={
         'filesize': os.stat(filepath).st_size,
         'seq_length': 0,
-        'status': 'completed',
+        'status': 'completed' if response else 'failed',
         'timetaken': seconds_to_upload,
     })
 
