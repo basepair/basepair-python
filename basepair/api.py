@@ -752,14 +752,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
-      print(cmd, file=sys.stderr)
-    try:
-      return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    except subprocess.CalledProcessError as stderr:
-      eprint("Error downloading {}.".format(src))
-      eprint("Return code: {}".format(stderr.returncode))
-      eprint("Ouput: {}".format(stderr.output))
-      return False
+      eprint('copying from {} to {}'.format(src, dest))
+    return self._execute_command(cmd=cmd, retry=3)
 
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
@@ -767,15 +761,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dest = 's3://{}/{}'.format(storage_cfg.get('bucket'), dest)
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
-      eprint('copying', src, 'to', dest)
-      print(cmd, file=sys.stderr)
-    try:
-      return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    except CalledProcessError as error:
-      eprint('error in copy file to s3')
-      eprint(cmd)
-      eprint(error.output)
-      return None
+      eprint('copying from {} to {}'.format(src, dest))
+    return self._execute_command(cmd=cmd)
 
   def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
@@ -1312,6 +1299,21 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return True
     eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
+
+  def _execute_command(self, cmd=None, retry=5, current_try=0):
+    '''Execute s3 commands'''
+    sleep_time = 3
+    try:
+      eprint('Executing command:  {}\n'.format(cmd))
+      return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+    except CalledProcessError as error:
+      eprint('Error: {}'.format(error.output))
+      eprint('Return code: {}'.format(error.returncode))
+      if current_try >= retry:
+        return None
+      eprint('retrying in {} seconds...'.format(sleep_time))
+      time.sleep(sleep_time)
+      return self._execute_command(cmd=cmd, current_try=current_try + 1)
 
   @classmethod
   def _filter_files_by_node(cls, files, node, multiple=False):
