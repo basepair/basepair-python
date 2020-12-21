@@ -332,6 +332,9 @@ def update_sample(bp, args):
 
 def update_analysis(bp, analysis_id, keys, vals):
   '''Update analysis'''
+  if not analysis_id:
+    eprint('Error: Analysis required.')
+    return
   update_info(bp, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
 
 
