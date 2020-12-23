@@ -119,9 +119,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
-    self.DATATYPES = ['dna-seq', 'chip-seq', 'rna-seq', 'atac-seq', 'other'] # pylint: disable=invalid-name
-    self.LIST_TYPES = ['samples', 'analyses', 'genomes', 'workflows', 'analysis'] # pylint: disable=invalid-name
-
   ################################################################################################
   ### ANALYSIS ###################################################################################
   ################################################################################################
@@ -203,13 +200,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     tagkind: {str}  Type of tag filtering to do. Options: exact, diff, subset
     tags:    {list} List of list of tags to filter files by
     '''
-    if tagkind not in ['exact', 'diff', 'subset']:
-      eprint('Invalid tagkind, choose one of: exact, diff, subset')
-      return None
-    if tags is not None:
+    if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
-        eprint('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
     if not isinstance(uid, list):
       uid = [uid]
@@ -294,7 +288,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         payload=data,
     )
     if info.get('error'):
-      eprint('cudnt update analysis {}, msg {}'.format(uid, info.get('msg')))
+      eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
+      return
+
     if self.verbose:
       eprint('analysis', uid, 'updated')
     return info
@@ -594,7 +590,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      eprint('error: deleting {}, msg {}'.format(uid, info.get('msg')))
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return
+
     if self.verbose:
       eprint('deleted sample', uid)
     return info
@@ -631,6 +629,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def update_sample(self, uid, data):
     '''Update resource'''
+    genome = data.get('genome')
+    if genome:
+      data['genome'] = self._get_genome_by_name(genome)
+
     info = (Sample(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
       eprint('sample', uid, 'updated')
@@ -699,12 +701,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def upload_file(self, upload_id, filepath, key):
     '''Upload file to S3 and update info'''
     starttime = time.time()
-    self.copy_file(filepath, key, action='to')
+    response = self.copy_file(filepath, key, action='to')
     seconds_to_upload = int(time.time() - starttime)
     (Upload(self.conf.get('api'))).save(obj_id=upload_id, payload={
         'filesize': os.stat(filepath).st_size,
         'seq_length': 0,
-        'status': 'completed',
+        'status': 'completed' if response else 'failed',
         'timetaken': seconds_to_upload,
     })
 
@@ -750,14 +752,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
-      print(cmd, file=sys.stderr)
-    try:
-      return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    except subprocess.CalledProcessError as stderr:
-      eprint("Error downloading {}.".format(src))
-      eprint("Return code: {}".format(stderr.returncode))
-      eprint("Ouput: {}".format(stderr.output))
-      return False
+      eprint('copying from {} to {}'.format(src, dest))
+    return self._execute_command(cmd=cmd, retry=3)
 
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
@@ -765,15 +761,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dest = 's3://{}/{}'.format(storage_cfg.get('bucket'), dest)
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
-      eprint('copying', src, 'to', dest)
-      print(cmd, file=sys.stderr)
-    try:
-      return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    except CalledProcessError as error:
-      eprint('error in copy file to s3')
-      eprint(cmd)
-      eprint(error.output)
-      return None
+      eprint('copying from {} to {}'.format(src, dest))
+    return self._execute_command(cmd=cmd)
 
   def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
@@ -906,7 +895,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if tags:
       is_not_valid = not (isinstance(tags, list) and all([isinstance(item, list) for item in tags]))
       if is_not_valid:
-        eprint('Invald tags argument. Provide a list of list of tags.')
+        eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
     else:
       tags = [None]
@@ -914,12 +903,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # filter the files
     matching_files = []
     for tags_sub in tags:
-      matching_files += self.filter_files_by_tags(
+      files = self.filter_files_by_tags(
         analysis['files'],
         tags_sub,
         kind=kind,
         multiple=True,
       )
+      if files:
+        matching_files += files
 
     return [self.download_file(
       matching_file['path'],
@@ -1309,6 +1300,21 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
+  def _execute_command(self, cmd=None, retry=5, current_try=0):
+    '''Execute s3 commands'''
+    sleep_time = 3
+    try:
+      eprint('Executing command:  {}\n'.format(cmd))
+      return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+    except CalledProcessError as error:
+      eprint('Error: {}'.format(error.output))
+      eprint('Return code: {}'.format(error.returncode))
+      if current_try >= retry:
+        return None
+      eprint('retrying in {} seconds...'.format(sleep_time))
+      time.sleep(sleep_time)
+      return self._execute_command(cmd=cmd, current_try=current_try + 1)
+
   @classmethod
   def _filter_files_by_node(cls, files, node, multiple=False):
     '''Filter files that are from the node.'''
@@ -1353,5 +1359,5 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   @classmethod
   def _parsed_sample_list(cls, items, prefix):
-    '''Parse sample id list into sample resurce uri list'''
+    '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
