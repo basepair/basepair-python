@@ -21,6 +21,9 @@ class Abstract(object):
     }
     self.headers = {'content-type': 'application/json'}
 
+  def resource_url(self, obj_id):
+    return '{}{}'.format(self.endpoint, obj_id)
+
   def delete(self, obj_id, verify=True):
     '''Delete resource'''
     try:
@@ -32,7 +35,7 @@ class Abstract(object):
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
-      return { 'error': True, 'msg': error}
+      return {'error': True, 'msg': error}
 
   def get(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
     '''Get detail of an resource'''
@@ -44,7 +47,7 @@ class Abstract(object):
     params.update(self.payload)
     try:
       response = requests.get(
-        '{}{}'.format(self.endpoint, obj_id),
+        self.resource_url(obj_id),
         params=params,
         verify=verify,
       )
@@ -96,7 +99,7 @@ class Abstract(object):
     params.update(self.payload)
     try:
       response = getattr(requests, 'put' if obj_id else 'post')(
-        '{}{}'.format(self.endpoint, obj_id or ''),
+        self.resource_url(obj_id) if obj_id else self.endpoint,
         data=json.dumps(payload),
         headers=self.headers,
         params=params,
