@@ -33,7 +33,7 @@ PyYAML==5.1
 requests==2.25.0
 rsa==3.4.2
 s3transfer==0.3.0
-scandir==1.7
+scandir==1.10.0
 simplegeneric==0.8.1
 six==1.12
 traitlets==4.3.2
