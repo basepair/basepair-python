@@ -314,7 +314,7 @@ def update_project(bp, args):
     }
 
   if not data and not params:
-    eprint('WARNING: No param to update.')
+    eprint('WARNING: No data to update.')
     return
 
   for project_id in args.project:
