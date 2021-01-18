@@ -312,6 +312,11 @@ def update_project(bp, args):
         }
       })
     }
+
+  if not data and not params:
+    eprint('WARNING: No param to update.')
+    return
+
   for project_id in args.project:
     res = bp.update_project(project_id, data=data, params=params)
 
