@@ -537,8 +537,8 @@ def read_args():
   update_project_parser.add_argument(
     '-p', '--project', nargs='+', help='project id'
   )
-  update_project_parser.add_argument('--emails', nargs='+')
-  update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'])
+  update_project_parser.add_argument('--emails', default=[], nargs='+')
+  update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
   update_project_parser.add_argument('--name')
 
   # update sample parser
