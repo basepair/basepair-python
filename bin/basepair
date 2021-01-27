@@ -298,14 +298,28 @@ def update_project(bp, args):
     eprint('ERROR: Minimum one project required.')
     return
 
-  params = {
-    'permission_data': {
-      'emails': args.emails,
-      'perm': args.perm,
+  data = {}
+  if args.name:
+    data = {'name': args.name}
+
+  params = {}
+  if args.emails and args.perm:
+    params = {
+      'params': json.dumps({
+        'permission_data': {
+          'emails': args.emails,
+          'perm': args.perm,
+        }
+      })
     }
-  }
+
+  if not data and not params:
+    eprint('WARNING: No data to update.')
+    return
+
   for project_id in args.project:
-    res = bp.update_project(project_id, data=None, params={'params': json.dumps(params)})
+    res = bp.update_project(project_id, data=data, params=params)
+
     if res.get('error'):
       eprint('error: {}'.format(res.get('msg')))
 
@@ -525,8 +539,7 @@ def read_args():
   )
   update_project_parser.add_argument('--emails', default=[], nargs='+')
   update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
-  update_project_parser.add_argument('--key', action='append')
-  update_project_parser.add_argument('--val', action='append')
+  update_project_parser.add_argument('--name')
 
   # update sample parser
   update_sample_parser = actions_p.add_parser(
