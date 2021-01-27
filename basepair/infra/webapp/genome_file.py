@@ -7,4 +7,4 @@ class GenomeFile(Abstract):
   '''Webapp GenomeFile class'''
   def __init__(self, cfg):
     super(GenomeFile, self).__init__(cfg)
-    self.endpoint += 'genomefiles/'
+    self.endpoint += 'genome-files/'
