@@ -21,9 +21,6 @@ class Abstract(object):
     }
     self.headers = {'content-type': 'application/json'}
 
-  def resource_url(self, obj_id):
-    return '{}{}'.format(self.endpoint, obj_id)
-
   def delete(self, obj_id, verify=True):
     '''Delete resource'''
     try:
@@ -93,6 +90,10 @@ class Abstract(object):
       item_list += response.get('objects')
       offset += limit
     return item_list
+
+  def resource_url(self, obj_id):
+    '''Generate resource uri from obj id'''
+    return '{}{}'.format(self.endpoint, obj_id)
 
   def save(self, obj_id=None, params={}, payload={}, verify=True): # pylint: disable=dangerous-default-value
     '''Save or update resource'''
