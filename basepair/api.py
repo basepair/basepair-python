@@ -1304,7 +1304,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Execute s3 commands'''
     sleep_time = 3
     try:
-      eprint('Executing command:  {}\n'.format(cmd))
+      if self.verbose:
+        eprint('Executing command:  {}\n'.format(cmd))
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
       eprint('Error: {}'.format(error.output))
