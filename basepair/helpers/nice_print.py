@@ -67,7 +67,7 @@ class NicePrint:
           file['filesize'],
           file['source'],
           os.path.split(file['path'])[1],
-          file['url'],
+          file['path'],
           file['tags'],
         ] for file in analysis['files']
       ]
@@ -79,7 +79,7 @@ class NicePrint:
           'filesize (Gigabytes)',
           'source',
           'name',
-          'path'
+          'path',
           'tags',
         ],
         numalign='right',
