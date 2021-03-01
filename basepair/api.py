@@ -1258,9 +1258,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if data_type in list_methods:
       data = getattr(self, list_methods.get(data_type))()
 
-
     if not data:
       eprint('Nothing found for the parameters you gave.')
+      return
+
+    if isinstance(data, dict) and data.get('error'):
+      eprint(data.get('msg', 'Error retrieving data.'))
       return
 
     # print the data as json
