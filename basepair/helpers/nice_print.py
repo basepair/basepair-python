@@ -61,13 +61,14 @@ class NicePrint:
       for filedata in analysis['files']:
         filedata['filesize'] = filedata['filesize']/(1024.**3) if filedata['filesize'] else 'NA'
 
+      bucket = analysis.get('params', {}).get('info', {}).get('bucket', None)
       to_print = [
         [
           file['id'],
           file['filesize'],
           file['source'],
           os.path.split(file['path'])[1],
-          file['url'],
+          '{}{}'.format('s3://{}/'.format(bucket) if bucket else '', file['path']),
           file['tags'],
         ] for file in analysis['files']
       ]
@@ -79,7 +80,7 @@ class NicePrint:
           'filesize (Gigabytes)',
           'source',
           'name',
-          'path'
+          'uri',
           'tags',
         ],
         numalign='right',
