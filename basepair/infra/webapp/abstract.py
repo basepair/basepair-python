@@ -76,14 +76,14 @@ class Abstract(object):
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
-  def list_all(self): # pylint: disable=dangerous-default-value
+  def list_all(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get a list of all items'''
     item_list = []
     limit = 500
     offset = 0
     total_count = 1
     while len(item_list) < total_count:
-      response = self.list({'limit': limit, 'offset': offset})
+      response = self.list({**filters, 'limit': limit, 'offset': offset})
       if response.get('error'):
         return {'error': True, 'msg': response.get('msg')}
       total_count = response.get('meta', {}).get('total_count')

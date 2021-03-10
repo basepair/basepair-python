@@ -143,14 +143,14 @@ def main():
       for uid in args.uid:
         bp.print_data(data_type='analysis', uid=uid, is_json=args.json)
     if args.list_type == 'analyses':
-      bp.print_data(data_type='analyses', is_json=args.json)
+      bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
     elif args.list_type == 'genomes':
       bp.print_data(data_type='genomes', is_json=args.json)
     elif args.list_type == 'sample':
       for uid in args.uid:
         bp.print_data(data_type='sample', uid=uid, is_json=args.json)
     elif args.list_type == 'samples':
-      bp.print_data(data_type='samples', is_json=args.json)
+      bp.print_data(data_type='samples', is_json=args.json, project=args.project)
     elif args.list_type == 'workflows':
       bp.print_data(data_type='workflows', is_json=args.json)
     elif args.list_type == 'genome':
@@ -655,12 +655,22 @@ def read_args():
     'analyses',
     help='List basic info about your analyses'
   )
+  list_analyses_p.add_argument(
+    '-p',
+    '--project',
+    help='List analyses of the project'
+  )
   list_analyses_p = add_common_args(list_analyses_p)
   list_analyses_p = add_json_parser(list_analyses_p)
 
   list_samples_p = list_sp.add_parser(
     'samples',
     help='List basic info about all your samples.'
+  )
+  list_samples_p.add_argument(
+    '-p',
+    '--project',
+    help='List samples of the project'
   )
   list_samples_p = add_common_args(list_samples_p)
   list_samples_p = add_json_parser(list_samples_p)
