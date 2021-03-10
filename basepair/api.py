@@ -680,10 +680,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       cache='{}/json/upload.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_uploads(self):
+  def get_uploads(self, params={'limit': 0}):
     '''Get resource list'''
     info = (Upload(self.conf.get('api'))).list(
-        params={'limit': 0}
+        params=params
     )
     return info.get('objects', [])
 
