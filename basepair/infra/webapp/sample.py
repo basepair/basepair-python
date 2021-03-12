@@ -20,12 +20,10 @@ class Sample(Abstract):
       if os.path.exists(filename) and os.path.getsize(filename):
         return json.loads(open(filename, 'r').read().strip())
 
-    params = {'name': name, 'project_id': project_id}
-    params.update(self.payload)
     try:
       response = requests.get(
         '{}/by_name'.format(self.endpoint),
-        params=params,
+        params={'name': name, 'project_id': project_id, **self.payload},
         verify=verify,
       )
       parsed = self._parse_response(response)
