@@ -616,16 +616,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get resource list'''
     return (Sample(self.conf.get('api'))).list_all(filters=filters)
 
-  def sample_name_to_id(self, name):
+  def samples_by_name(self, name, project_id=None):
     '''Get sample id from name'''
-    response = (Sample(self.conf.get('api'))).list({'limit': 2, 'name': name})
-    items = response.get('objects')
-    if not items:
-      eprint('WARNING: no sample by name', name)
-      return None
-    if len(items) > 1:
-      eprint('WARNING: multiple sample by name', name)
-    return items[0].get('id')
+    return (Sample(self.conf.get('api'))).by_name(name, project_id)
 
   def update_sample(self, uid, data):
     '''Update resource'''
@@ -687,10 +680,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       cache='{}/json/upload.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_uploads(self):
+  def get_uploads(self, params={'limit': 0}):
     '''Get resource list'''
     info = (Upload(self.conf.get('api'))).list(
-        params={'limit': 0}
+        params=params
     )
     return info.get('objects', [])
 
