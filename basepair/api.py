@@ -277,9 +277,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     user_id = self._get_analysis_owner_id(analysis_id)
     return self.get_user(user_id) if user_id else None
 
-  def get_analyses(self):
+  def get_analyses(self, filters={}):
     '''Get resource list'''
-    return (Analysis(self.conf.get('api'))).list_all()
+    return (Analysis(self.conf.get('api'))).list_all(filters=filters)
 
   def update_analysis(self, uid, data):
     '''Update resource'''
@@ -612,9 +612,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     user_id = self._get_sample_owner_id(sample_id)
     return self.get_user(user_id) if user_id else None
 
-  def get_samples(self):
+  def get_samples(self, filters={}):
     '''Get resource list'''
-    return (Sample(self.conf.get('api'))).list_all()
+    return (Sample(self.conf.get('api'))).list_all(filters=filters)
 
   def samples_by_name(self, name, project_id=None):
     '''Get sample id from name'''
@@ -1205,7 +1205,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     parts = url.rsplit('/', 1)
     return {'id': parts[1]}
 
-  def print_data(self, data_type='', is_json=False, uid=None):
+  def print_data(self, data_type='', is_json=False, uid=None, project=None):
     '''
     Print data associated with genomes, samples, etc..
     Parameters
@@ -1213,6 +1213,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     data_type: {str}   Type of data to print (e.g. workflows)
     is_json:      {bool}  By default, data is printed in a human-readable format
     uid:       {list}  One or more ids of the objects you want
+    project: {int} project id to filter data
     '''
 
     if not isinstance(uid, list):
@@ -1247,12 +1248,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         else:
           eprint('{} with uid {} invalid.'.format(data_type.capitalize(), item_id))
 
+    filters = {}
+    if project:
+      filters['projects__exact'] = project
+
     # if it is a list
     if data_type in list_methods:
-      data = getattr(self, list_methods.get(data_type))()
+      data = getattr(self, list_methods.get(data_type))(filters=filters)
 
     if not data:
-      eprint('Nothing found for the parameters you gave.')
+      eprint('No data found for the parameters you gave.')
       return
 
     if isinstance(data, dict) and data.get('error'):
