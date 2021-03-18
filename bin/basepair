@@ -140,22 +140,19 @@ def main():
   elif args.action == 'list':
 
     if args.list_type == 'analysis':
-      for uid in args.uid:
-        bp.print_data(data_type='analysis', uid=uid, is_json=args.json)
+      _list_item(bp, data_type='analysis', uids=args.uid, is_json=args.json)
     if args.list_type == 'analyses':
       bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
     elif args.list_type == 'genomes':
       bp.print_data(data_type='genomes', is_json=args.json)
     elif args.list_type == 'sample':
-      for uid in args.uid:
-        bp.print_data(data_type='sample', uid=uid, is_json=args.json)
+      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
     elif args.list_type == 'samples':
       bp.print_data(data_type='samples', is_json=args.json, project=args.project)
     elif args.list_type == 'workflows':
       bp.print_data(data_type='workflows', is_json=args.json)
     elif args.list_type == 'genome':
-      for uid in args.uid:
-        bp.print_data(data_type='genome', uid=uid, is_json=args.json)
+      _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
 
 
 def create_project(bp, args):
@@ -736,6 +733,23 @@ def read_args():
 
   return args
 
+def _list_item(bp, data_type=None, uids=None, is_json=False):
+  '''List single item of a type'''
+  if not data_type:
+    eprint('Invalid data type.')
+    return
+
+  list_type = ['analysis', 'genome', 'sample']
+  if data_type not in list_type:
+    eprint('List data type - {} currently not supported.'.format(data_type))
+    return
+
+  if not uids:
+    eprint('At least one uid required.')
+    return
+
+  for uid in uids:
+    bp.print_data(data_type=data_type, uid=uid, is_json=is_json)
 
 if __name__ == '__main__':
   main()
