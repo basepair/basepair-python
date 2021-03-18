@@ -375,9 +375,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_genomes(self):
+  def get_genomes(self, filters={}):
     '''Get resource list'''
-    return (Genome(self.conf.get('api'))).list_all()
+    return (Genome(self.conf.get('api'))).list_all(filters=filters)
 
   def update_genome(self, uid, data):
     '''Update resource'''
@@ -429,9 +429,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_workflows(self):
+  def get_workflows(self, filters={}):
     '''Get resource list'''
-    return (Pipeline(self.conf.get('api'))).list_all()
+    return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
 
   ################################################################################################
   ### PROJECT ####################################################################################
