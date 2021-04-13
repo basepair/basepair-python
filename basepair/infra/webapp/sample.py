@@ -24,7 +24,7 @@ class Sample(Abstract):
 
     try:
       response = requests.get(
-        '{}/by_name'.format(self.endpoint),
+        '{}by_name'.format(self.endpoint),
         params={'name': name, 'project_id': project_id, **self.payload},
         verify=verify,
       )
