@@ -277,7 +277,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     user_id = self._get_analysis_owner_id(analysis_id)
     return self.get_user(user_id) if user_id else None
 
-  def get_analyses(self, filters={}):
+  def get_analyses(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Analysis(self.conf.get('api'))).list_all(filters=filters)
 
@@ -289,7 +289,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     if info.get('error'):
       eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
-      return
+      return None
 
     if self.verbose:
       eprint('analysis', uid, 'updated')
@@ -375,7 +375,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_genomes(self, filters={}):
+  def get_genomes(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Genome(self.conf.get('api'))).list_all(filters=filters)
 
@@ -429,7 +429,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_workflows(self, filters={}):
+  def get_workflows(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
 
@@ -591,7 +591,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
       eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return
+      return None
 
     if self.verbose:
       eprint('deleted sample', uid)
@@ -612,7 +612,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     user_id = self._get_sample_owner_id(sample_id)
     return self.get_user(user_id) if user_id else None
 
-  def get_samples(self, filters={}):
+  def get_samples(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Sample(self.conf.get('api'))).list_all(filters=filters)
 
@@ -680,7 +680,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       cache='{}/json/upload.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_uploads(self, params={'limit': 0}):
+  def get_uploads(self, params={'limit': 0}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     info = (Upload(self.conf.get('api'))).list(
         params=params
