@@ -1116,31 +1116,29 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if len(matches) > 1:
       matches.sort(
-        key=lambda item: datetime.datetime.strptime(item[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
+        key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
         reverse=True,
       )
       if not multiple:
         eprint('WARNING: multiple matching file for', tags)
-      for file in matches:
-        eprint('\t', file[1]['last_updated'], file[1]['path'])
-
-    if multiple:
-      filepath = []
       for match in matches:
-        file1 = match[1]
+        eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-        if download:
-          path = self.download_file(file1['path'], dirname=dirname)
-          filepath.append(path)
-        else:
-          filepath.append(file1['path'])
-    else:
-      file1 = matches[0][1]
+
+    filepath = []
+    for match in matches:
       if download:
-        filepath = self.download_file(file1['path'], filename=dest, dirname=dirname)
+        path = self.download_file(match[1]['path'], dirname=dirname)
+         # if did download it then we added to the filepath else continue
+        if os.path.isfile(path):
+          filepath.append(path)
+          if not multiple:
+            break
       else:
-        filepath = file1['path']
-        eprint('else')
+        filepath.append(match[1]['path'])
+
+    if not multiple:
+      filepath = filepath[0]
     return filepath
 
   def get_filepath(self, filename, dirname=None):
