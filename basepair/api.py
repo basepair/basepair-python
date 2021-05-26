@@ -1103,10 +1103,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
       if matching_file:
         if multiple:
-          for file in matching_file:
-            matches.append([analysis['id'], file])
+          matches += matching_file
         else:
-          matches.append([analysis['id'], matching_file[0]])
+          matches.append(matching_file[0])
 
     if not matches:
       eprint('WARNING: no matching file for', tags)
@@ -1114,7 +1113,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('for sample', sample['id'])
       return None
 
-    if len(matches) > 1:
+    if len(matches) > 2:
       matches.sort(
         key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
         reverse=True,
@@ -1122,24 +1121,22 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if not multiple:
         eprint('WARNING: multiple matching file for', tags)
       for match in matches:
-        eprint('\t', match[1]['last_updated'], match[1]['path'])
+        eprint('\t', match['last_updated'], match['path'])
 
 
     filepath = []
     for match in matches:
       if download:
-        path = self.download_file(match[1]['path'], dirname=dirname)
+        path = self.download_file(match['path'], dirname=dirname)
          # if did download it then we added to the filepath else continue
         if os.path.isfile(path):
           filepath.append(path)
           if not multiple:
             break
       else:
-        filepath.append(match[1]['path'])
+        filepath.append(match['path'])
 
-    if not multiple:
-      filepath = filepath[0]
-    return filepath
+    return filepath if multiple else filepath[0]
 
   def get_filepath(self, filename, dirname=None):
     '''Use scratch and [dirname] to construct a full filepath'''
