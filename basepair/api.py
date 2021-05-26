@@ -1282,6 +1282,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
+    # sort them by latest updated
+    analyses.sort(
+      key=lambda analysis: datetime.datetime.strptime(analysis.get('last_updated'), '%Y-%m-%dT%H:%M:%S.%f'),
+      reverse=True,
+    )
     sample['analyses_full'] = analyses
     return sample
 
