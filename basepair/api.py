@@ -159,7 +159,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return None
 
     # check if all sample ids are valid
-    if not all([self._check_sample(item_id) for item_id in sample_ids]):
+    if not all((self._check_sample(item_id) for item_id in sample_ids)):
       return None
 
     data = {
@@ -886,7 +886,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     # some input checking
     if tags:
-      is_not_valid = not (isinstance(tags, list) and all([isinstance(item, list) for item in tags]))
+      is_not_valid = not (isinstance(tags, list) and all((isinstance(item, list) for item in tags)))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
