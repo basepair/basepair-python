@@ -159,7 +159,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return None
 
     # check if all sample ids are valid
-    if not all([self._check_sample(item_id) for item_id in sample_ids]):
+    if not all((self._check_sample(item_id) for item_id in sample_ids)):
       return None
 
     data = {
@@ -277,7 +277,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     user_id = self._get_analysis_owner_id(analysis_id)
     return self.get_user(user_id) if user_id else None
 
-  def get_analyses(self, filters={}):
+  def get_analyses(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Analysis(self.conf.get('api'))).list_all(filters=filters)
 
@@ -289,7 +289,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     if info.get('error'):
       eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
-      return
+      return None
 
     if self.verbose:
       eprint('analysis', uid, 'updated')
@@ -375,7 +375,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_genomes(self, filters={}):
+  def get_genomes(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Genome(self.conf.get('api'))).list_all(filters=filters)
 
@@ -429,7 +429,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_workflows(self, filters={}):
+  def get_workflows(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
 
@@ -591,7 +591,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
       eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return
+      return None
 
     if self.verbose:
       eprint('deleted sample', uid)
@@ -612,7 +612,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     user_id = self._get_sample_owner_id(sample_id)
     return self.get_user(user_id) if user_id else None
 
-  def get_samples(self, filters={}):
+  def get_samples(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Sample(self.conf.get('api'))).list_all(filters=filters)
 
@@ -680,7 +680,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       cache='{}/json/upload.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_uploads(self, params={'limit': 0}):
+  def get_uploads(self, params={'limit': 0}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     info = (Upload(self.conf.get('api'))).list(
         params=params
@@ -886,7 +886,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     # some input checking
     if tags:
-      is_not_valid = not (isinstance(tags, list) and all([isinstance(item, list) for item in tags]))
+      is_not_valid = not (isinstance(tags, list) and all((isinstance(item, list) for item in tags)))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
@@ -999,26 +999,28 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if len(matches) > 1:
       matches.sort(
-        key=lambda item: datetime.datetime.strptime(item[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
+        key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
         reverse=True,
       )
       if not multiple:
         eprint('WARNING: multiple matching file for', node)
-      for file in matches:
-        eprint('\t', file[1]['last_updated'], file[1]['path'])
-
-    if multiple:
-      filepath = []
       for match in matches:
-        file1 = match[1]
-        path = self.download_file(file1['path'], dirname=dirname)
+        eprint('\t', match[1]['last_updated'], match[1]['path'])
+
+    filepath = []
+    for match in matches:
+      path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
+        else self.download_file(match[1]['path'], dirname=dirname)
+
+      # if did download it then we added to the filepath else continue
+      if os.path.isfile(path):
         filepath.append(path)
+        if not multiple:
+          break
     else:
-      file1 = matches[0][1]
-      if dest:
-        dirname = dest
-      filepath = self.download_file(file1['path'], filename=dest, dirname=dirname)
-    return filepath
+      filepath.append(match[1]['path'])
+
+    return filepath if multiple else filepath[0]
 
   def get_file_by_tags(
     self,
@@ -1116,32 +1118,30 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if len(matches) > 1:
       matches.sort(
-        key=lambda item: datetime.datetime.strptime(item[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
+        key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
         reverse=True,
       )
       if not multiple:
         eprint('WARNING: multiple matching file for', tags)
-      for file in matches:
-        eprint('\t', file[1]['last_updated'], file[1]['path'])
-
-    if multiple:
-      filepath = []
       for match in matches:
-        file1 = match[1]
+        eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-        if download:
-          path = self.download_file(file1['path'], dirname=dirname)
-          filepath.append(path)
-        else:
-          filepath.append(file1['path'])
-    else:
-      file1 = matches[0][1]
+
+    filepath = []
+    for match in matches:
       if download:
-        filepath = self.download_file(file1['path'], filename=dest, dirname=dirname)
+        path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
+          else self.download_file(match[1]['path'], dirname=dirname)
+
+         # if did download it then we added to the filepath else continue
+        if os.path.isfile(path):
+          filepath.append(path)
+          if not multiple:
+            break
       else:
-        filepath = file1['path']
-        eprint('else')
-    return filepath
+        filepath.append(match[1]['path'])
+
+    return filepath if multiple else filepath[0]
 
   def get_filepath(self, filename, dirname=None):
     '''Use scratch and [dirname] to construct a full filepath'''
@@ -1282,6 +1282,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
+    # sort them by latest updated
+    analyses.sort(
+      key=lambda analysis: datetime.datetime.strptime(analysis.get('last_updated'), '%Y-%m-%dT%H:%M:%S.%f'),
+      reverse=True,
+    )
     sample['analyses_full'] = analyses
     return sample
 
