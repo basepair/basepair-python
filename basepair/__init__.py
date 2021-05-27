@@ -9,7 +9,7 @@ from .utils import colors
 
 __title__ = 'basepair'
 __version__ = '1.7.1'
-__copyright__ = 'Copyright [2017] - [2020] Basepair INC'
+__copyright__ = 'Copyright [2017] - [2021] Basepair INC'
 
 
 JSON_URL = 'https://pypi.python.org/pypi/{}/json'.format(__title__)
