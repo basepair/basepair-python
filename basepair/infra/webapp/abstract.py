@@ -119,7 +119,6 @@ class Abstract(object):
       404: 'Resource not found.',
       500: 'Error retrieving data from API!'
     }
-
     if response.status_code in error_msgs:
       eprint('ERROR: {}'.format(error_msgs[response.status_code]))
       return {'error': True, 'msg': error_msgs[response.status_code]}
@@ -131,14 +130,17 @@ class Abstract(object):
       response = response.json()
 
       error = response and response.get('error')
-      if error and isinstance(error, dict):
-        response = error
+      if error:
+        if isinstance(error, dict):
+          response = error
 
-        if response.get('error_msgs'):
-          eprint('ERROR: {}'.format(response['error_msgs']))
+          if response.get('error_msgs'):
+            eprint('ERROR: {}'.format(response['error_msgs']))
 
-        if response.get('warning_msgs'):
-          eprint('WARNING: {}'.format(response['warning_msgs']))
+          if response.get('warning_msgs'):
+            eprint('WARNING: {}'.format(response['warning_msgs']))
+        else:
+          eprint('ERROR: {}'.format(error))
 
       return response
     except json.decoder.JSONDecodeError as error:
