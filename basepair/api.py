@@ -166,6 +166,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'controls': self._parsed_sample_list(control_ids, prefix),
       'samples': self._parsed_sample_list(sample_ids, prefix),
       'ignore_validation_warning': ignore_validation_warnings,
+      'meta': {'source': 'cli'},
       'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
     }
 
