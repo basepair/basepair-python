@@ -83,7 +83,10 @@ class Abstract(object):
     offset = 0
     total_count = 1
     while len(item_list) < total_count:
-      response = self.list({**filters, 'limit': limit, 'offset': offset})
+      params = {'limit': limit, 'offset': offset}
+      params.update(filters)
+      # response = self.list({**filters, 'limit': limit, 'offset': offset}) #TODO: Uncomment when everything moved to py3
+      response = self.list(params=params)
       if response.get('error'):
         return {'error': True, 'msg': response.get('msg')}
       total_count = response.get('meta', {}).get('total_count')
