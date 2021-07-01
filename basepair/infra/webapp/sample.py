@@ -23,9 +23,12 @@ class Sample(Abstract):
         return json.loads(open(filename, 'r').read().strip())
 
     try:
+      params = {'name': name, 'project_id': project_id}
+      params.update(self.payload)
       response = requests.get(
         '{}by_name'.format(self.endpoint),
-        params={'name': name, 'project_id': project_id, **self.payload},
+        params=params,
+        # params={'name': name, 'project_id': project_id, **self.payload}, #TODO: Uncomment when everything moved to py3
         verify=verify,
       )
       parsed = self._parse_response(response)
