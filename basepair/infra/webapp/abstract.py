@@ -132,7 +132,7 @@ class Abstract(object):
     try:
       response = response.json()
 
-      error = response and response.get('error')
+      error = isinstance(response, dict) and response.get('error')
       if error:
         if isinstance(error, dict):
           response = error
