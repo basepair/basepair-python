@@ -172,7 +172,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
-    eprint(json.dumps(data, indent=2))
+
+    if self.verbose:
+      eprint(json.dumps(data, indent=2))
 
     if params:
       data['params'] = params
