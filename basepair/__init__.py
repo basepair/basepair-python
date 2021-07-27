@@ -5,7 +5,9 @@ import sys
 import requests
 
 from .utils import colors
-# from .api import basepair
+
+# Exposing infra webapp library
+from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
 
 __title__ = 'basepair'
 __version__ = '1.7.5'
