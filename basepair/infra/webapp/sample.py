@@ -15,6 +15,22 @@ class Sample(Abstract):
     super(Sample, self).__init__(cfg)
     self.endpoint += 'samples/'
 
+  def bulk_import(self, payload={}, verify=True):
+    '''Import sample from s3'''
+    try:
+      response = requests.post(
+        '{}bulk_import'.format(self.endpoint),
+        data=json.dumps(payload),
+        headers=self.headers,
+        params=self.payload,
+        verify=verify,
+      )
+      print(response.content)
+      return self._parse_response(response)
+    except requests.exceptions.RequestException as error:
+      eprint('ERROR: {}'.format(error))
+      return {'error': True, 'msg': error}
+
   def by_name(self, name, project_id, cache=False, verify=True): # pylint: disable=dangerous-default-value
     '''Get detail of an resource'''
     if cache:
