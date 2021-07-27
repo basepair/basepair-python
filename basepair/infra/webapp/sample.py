@@ -25,7 +25,6 @@ class Sample(Abstract):
         params=self.payload,
         verify=verify,
       )
-      print(response.content)
       return self._parse_response(response)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
