@@ -165,6 +165,7 @@ class Abstract(object):
   @staticmethod
   def _save_cache(cache, content):
     '''Helper to save the content in the cache'''
+    filename = os.path.expanduser(cache)
     if cache and content and not content.get('error'):
       directory = os.path.dirname(filename)
       if not os.path.exists(directory):
