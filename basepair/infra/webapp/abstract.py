@@ -36,10 +36,9 @@ class Abstract(object):
 
   def get(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
     '''Get detail of an resource'''
+    cache = Abstract._get_from_cache(cache)
     if cache:
-      filename = os.path.expanduser(cache)
-      if os.path.exists(filename) and os.path.getsize(filename):
-        return json.loads(open(filename, 'r').read().strip())
+      return cache
 
     params.update(self.payload)
     try:
@@ -51,19 +50,18 @@ class Abstract(object):
       parsed = self._parse_response(response)
 
       # save in cache if required
-      if cache and parsed and not parsed.get('error'):
-        directory = os.path.dirname(filename)
-        if not os.path.exists(directory):
-          os.makedirs(directory)
-        with open(filename, 'w') as handle:
-          handle.write(json.dumps(parsed, indent=2))
+      Abstract._save_cache(cache, parsed)
       return parsed
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
-  def list(self, params={'limit': 100}, verify=True): # pylint: disable=dangerous-default-value
+  def list(self, cache=False, params={'limit': 100}, verify=True): # pylint: disable=dangerous-default-value
     '''Get a list of items'''
+    cache = Abstract._get_from_cache(cache)
+    if cache:
+      return cache
+
     params.update(self.payload)
     try:
       response = requests.get(
@@ -71,7 +69,11 @@ class Abstract(object):
         params=params,
         verify=verify,
       )
-      return self._parse_response(response)
+      parsed = self._parse_response(response)
+
+      # save in cache if required
+      Abstract._save_cache(cache, parsed)
+      return parsed
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
@@ -114,6 +116,15 @@ class Abstract(object):
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
+  @staticmethod
+  def _get_from_cache(cache):
+    '''Helper to get data from cache'''
+    if cache:
+      filename = os.path.expanduser(cache)
+      if os.path.exists(filename) and os.path.getsize(filename):
+        return json.loads(open(filename, 'r').read().strip())
+    return cache
+
   @classmethod
   def _parse_response(cls, response):
     '''General response parser'''
@@ -150,3 +161,13 @@ class Abstract(object):
       msg = 'ERROR: Not able to parse response: {}.'.format(error)
       eprint(msg)
       return {'error': True, 'msg': msg}
+
+  @staticmethod
+  def _save_cache(cache, content):
+    '''Helper to save the content in the cache'''
+    if cache and content and not content.get('error'):
+      directory = os.path.dirname(filename)
+      if not os.path.exists(directory):
+        os.makedirs(directory)
+      with open(filename, 'w') as handle:
+        handle.write(json.dumps(content, indent=2))
