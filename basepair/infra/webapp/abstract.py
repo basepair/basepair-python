@@ -58,9 +58,9 @@ class Abstract(object):
 
   def list(self, cache=False, params={'limit': 100}, verify=True): # pylint: disable=dangerous-default-value
     '''Get a list of items'''
-    cache = Abstract._get_from_cache(cache)
-    if cache:
-      return cache
+    _cache = Abstract._get_from_cache(cache)
+    if _cache:
+      return _cache
 
     params.update(self.payload)
     try:
