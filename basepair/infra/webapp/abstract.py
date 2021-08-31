@@ -123,7 +123,7 @@ class Abstract(object):
       filename = os.path.expanduser(cache)
       if os.path.exists(filename) and os.path.getsize(filename):
         return json.loads(open(filename, 'r').read().strip())
-    return cache
+    return None
 
   @classmethod
   def _parse_response(cls, response):
