@@ -36,9 +36,9 @@ class Abstract(object):
 
   def get(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
     '''Get detail of an resource'''
-    cache = Abstract._get_from_cache(cache)
-    if cache:
-      return cache
+    _cache = Abstract._get_from_cache(cache)
+    if _cache:
+      return _cache
 
     params.update(self.payload)
     try:
