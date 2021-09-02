@@ -1,5 +1,8 @@
 '''Upload webapp api wrapper'''
 
+# General imports
+import json
+
 # Lib imports
 import requests
 
