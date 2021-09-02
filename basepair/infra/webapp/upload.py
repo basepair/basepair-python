@@ -1,5 +1,8 @@
 '''Upload webapp api wrapper'''
 
+# Lib imports
+import requests
+
 # App imports
 from .abstract import Abstract
 
