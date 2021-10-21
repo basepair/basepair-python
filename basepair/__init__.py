@@ -10,7 +10,7 @@ from .utils import colors
 from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
 
 __title__ = 'basepair'
-__version__ = '1.7.7'
+__version__ = '1.7.8'
 __copyright__ = 'Copyright [2017] - [2021] Basepair INC'
 
 
