@@ -116,12 +116,6 @@ def main():
       create_sample(bp, args)
     if args.create_type == 'analysis':
       create_analysis(bp, args)
-  elif args.action == 'updateProject':
-    update_project(bp, args)
-  elif args.action == 'updateSample':
-    update_sample(bp, args)
-  elif args.action == 'updateAnalysis':
-    update_analysis(bp, args.analysis, args.key, args.val)
   elif args.action == 'download':
     if args.download_type == 'analysis':
       download_analysis(bp, args)
@@ -134,7 +128,6 @@ def main():
 
     elif args.download_type == 'sample':
       download_sample(bp, args)
-
   elif args.action == 'delete':
     delete(bp, args.type, args.uid)
   elif args.action == 'list':
@@ -153,6 +146,13 @@ def main():
       bp.print_data(data_type='workflows', is_json=args.json)
     elif args.list_type == 'genome':
       _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
+  elif args.action == 'update':
+    if args.update_type == 'analysis':
+      update_analysis(bp, args.analysis, args.key, args.val)
+    if args.update_type == 'project':
+      update_project(bp, args)
+    if args.update_type == 'sample':
+      update_sample(bp, args)
 
 
 def create_project(bp, args):
@@ -525,9 +525,19 @@ def read_args():
     help='Ignore validation warnings',
   )
 
+  # update parser
+  update_p = actions_p.add_parser(
+    'update',
+    help='Update analyses, samples, project.'
+  )
+  update_sp = update_p.add_subparsers(
+    help='Type of item to update',
+    dest='update_type'
+  )
+
   # update project parser
-  update_project_parser = actions_p.add_parser(
-    'updateProject',
+  update_project_parser = update_sp.add_parser(
+    'project',
     help='Update information associated with a project.'
   )
   update_project_parser = add_common_args(update_project_parser)
@@ -539,8 +549,8 @@ def read_args():
   update_project_parser.add_argument('--name')
 
   # update sample parser
-  update_sample_parser = actions_p.add_parser(
-    'updateSample',
+  update_sample_parser = update_sp.add_parser(
+    'sample',
     help='Update information associated with a sample.'
   )
   update_sample_parser = add_common_args(update_sample_parser)
@@ -560,8 +570,8 @@ def read_args():
   update_sample_parser.add_argument('--val', action='append')
 
   # update analysis parser
-  update_analysis_parser = actions_p.add_parser(
-    'updateAnalysis',
+  update_analysis_parser = update_sp.add_parser(
+    'analysis',
     help='Update information associated with an analysis.'
   )
   update_analysis_parser = add_common_args(update_analysis_parser)
