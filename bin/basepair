@@ -153,6 +153,8 @@ def main():
       update_project(bp, args)
     if args.update_type == 'sample':
       update_sample(bp, args)
+  elif args.action == 'reanalyze':
+    reanalyze(bp, args.uid)
 
 
 def create_project(bp, args):
@@ -361,6 +363,16 @@ def delete(bp, data_type, uid):
         bp.delete_sample(uid)
       elif data_type == 'analysis':
         bp.delete_analysis(uid)
+
+
+def reanalyze(bp, uid):
+  '''Restart analysis'''
+  if not uid:
+    eprint('Please add one or more uid')
+    return
+
+  for uid in uid:
+    bp.restart_analysis(uid)
 
 
 def add_common_args(parser):
@@ -711,6 +723,14 @@ def read_args():
   )
   list_workflows_p = add_common_args(list_workflows_p)
   list_workflows_p = add_json_parser(list_workflows_p)
+
+  # reanalyze parser
+  reanalyze_p = actions_p.add_parser(
+    'reanalyze',
+    help='Reanalyze analyses.'
+  )
+  reanalyze_p = add_common_args(reanalyze_p)
+  reanalyze_p = add_uid_parser(reanalyze_p)
 
   parser.set_defaults(params=[],)
   args = parser.parse_args()
