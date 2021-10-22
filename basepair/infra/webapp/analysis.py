@@ -29,14 +29,15 @@ class Analysis(Abstract):
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
-  def reanalyze(self, payload={}, verify=True):
+  def reanalyze(self, params={}, payload={}, verify=True):
     '''Restart analysis'''
+    params.update(self.payload)
     try:
       response = requests.post(
         '{}reanalyze'.format(self.endpoint),
         data=json.dumps(payload),
         headers=self.headers,
-        params=self.payload,
+        params=params,
         verify=verify,
       )
       return self._parse_response(response)
