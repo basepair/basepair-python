@@ -430,6 +430,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
+  def get_workflow_modules(self, uid):
+    '''Get resources for a workflow'''
+    return (Module(self.conf.get('api'))).get_pipeline_modules(
+        uid,
+        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
   ################################################################################################
@@ -1234,6 +1241,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'analysis': 'get_analysis',
       'genome': 'get_genome',
       'sample': 'get_sample',
+      'module': 'get_module',
     }
 
     list_methods = {
@@ -1241,6 +1249,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'genomes': 'get_genomes',
       'samples': 'get_samples',
       'workflows': 'get_workflows',
+      'modules':'get_workflow_modules'
     }
 
     # get the appropriate data
@@ -1264,8 +1273,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       filters['projects__exact'] = project
 
     # if it is a list
-    if data_type in list_methods:
+    if data_type in list_methods and data_type != 'modules':
       data = getattr(self, list_methods.get(data_type))(filters=filters)
+    elif data_type in list_methods and data_type == 'modules':
+      data = getattr(self, list_methods.get(data_type))(uid[0])
+
+      
 
     if not data:
       eprint('No data found for the parameters you gave.')

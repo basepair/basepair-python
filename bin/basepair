@@ -146,6 +146,10 @@ def main():
       bp.print_data(data_type='workflows', is_json=args.json)
     elif args.list_type == 'genome':
       _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
+    elif args.list_type == 'modules':
+      _list_item(bp, data_type='modules', uids=args.wid, is_json=args.json)
+    elif args.list_type == 'module':
+      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
   elif args.action == 'update':
     if args.update_type == 'analysis':
       update_analysis(bp, args.analysis, args.key, args.val)
@@ -408,6 +412,17 @@ def add_uid_parser(parser):
     nargs='+',
     default=None,
     help='The unique analysis id(s) to download'
+  )
+  return parser
+
+def add_wid_parser(parser):
+  '''Add uid parser'''
+  parser.add_argument(
+    '-w',
+    '--wid',
+    nargs='+',
+    default=None,
+    help='The unique workflow id'
   )
   return parser
 
@@ -724,6 +739,23 @@ def read_args():
   list_workflows_p = add_common_args(list_workflows_p)
   list_workflows_p = add_json_parser(list_workflows_p)
 
+  list_modules_p = list_sp.add_parser(
+    'modules',
+    help='List available modules of a workflow'
+  )
+  list_modules_p = add_common_args(list_modules_p)
+  list_modules_p = add_wid_parser(list_modules_p)
+  list_modules_p = add_json_parser(list_modules_p)
+
+
+  list_modules_p = list_sp.add_parser(
+    'module',
+    help='List a module'
+  )
+  list_modules_p = add_common_args(list_modules_p)
+  list_modules_p = add_uid_parser(list_modules_p)
+  list_modules_p = add_json_parser(list_modules_p)
+
   # reanalyze parser
   reanalyze_p = actions_p.add_parser(
     'reanalyze',
@@ -769,13 +801,16 @@ def _list_item(bp, data_type=None, uids=None, is_json=False):
     eprint('Invalid data type.')
     return
 
-  list_type = ['analysis', 'genome', 'sample']
+  list_type = ['analysis', 'genome', 'sample','module','modules']
   if data_type not in list_type:
     eprint('List data type - {} currently not supported.'.format(data_type))
     return
 
   if not uids:
-    eprint('At least one uid required.')
+    if data_type == 'modules':
+      eprint('At least one workflow id required.')
+    else:
+      eprint('At least one uid required.')
     return
 
   for uid in uids:

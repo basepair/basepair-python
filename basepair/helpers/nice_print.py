@@ -172,3 +172,41 @@ class NicePrint:
       'description',
       'tags',
     ]))
+
+  @staticmethod
+  def modules(data):
+    '''Print modules'''
+    to_print = [
+      [
+        module['id'],
+        module['name'],
+        module['owner'],
+        module['created']
+      ] for module in data
+    ]
+    print(tabulate(to_print, headers=[
+      'id',
+      'name',
+      'owner',
+      'date_created'
+    ]))
+
+  @staticmethod
+  def module(data):
+    '''Print module'''
+    to_print = [
+      [
+        module['id'],
+        module['name'],
+        module['date_created'],
+        module['visibility'],
+        module['status']
+      ] for module in data
+    ]
+    print(tabulate(to_print, headers=[
+      'id',
+      'name',
+      'date_created',
+      'visibility',
+      'status'
+    ]))
