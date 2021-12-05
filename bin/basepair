@@ -116,6 +116,8 @@ def main():
       create_sample(bp, args)
     if args.create_type == 'analysis':
       create_analysis(bp, args)
+    if args.create_type == 'module':
+      create_module(bp, args)
   elif args.action == 'download':
     if args.download_type == 'analysis':
       download_analysis(bp, args)
@@ -185,6 +187,17 @@ def create_sample(bp, args):
       data[key] = val
 
   bp.create_sample(data, upload=True, source='cli')
+
+
+def create_module(bp, args):
+  '''Create module'''
+  data = {
+    'yamlpath': args.yaml
+  }
+  if args.yaml.endswith('.yaml'):
+    bp.create_module(data)
+  else:
+    eprint('Please provide yaml file only')
 
 
 def create_analysis(bp, args):
@@ -420,7 +433,7 @@ def add_uid_parser(parser):
   return parser
 
 def add_wid_parser(parser):
-  '''Add uid parser'''
+  '''Add wid parser'''
   parser.add_argument(
     '-w',
     '--wid',
@@ -428,6 +441,17 @@ def add_wid_parser(parser):
     default=None,
     required=True,
     help='The unique workflow id'
+  )
+  return parser
+
+def add_yaml_parser(parser):
+  '''Add uid parser'''
+  parser.add_argument(
+    '-y',
+    '--yaml',
+    default=None,
+    required=True,
+    help='The filepath of YAML'
   )
   return parser
 
@@ -495,7 +519,7 @@ def read_args():
     help='Create samples, analyses, etc.'
   )
   create_sp = create_p.add_subparsers(
-    help='Type of item to download',
+    help='Type of item to create',
     dest='create_type'
   )
 
@@ -556,6 +580,15 @@ def read_args():
     default=False,
     help='Ignore validation warnings',
   )
+
+  # create module parser
+  create_module_p = create_sp.add_parser(
+    'module',
+    help='Create module.'
+  )
+  create_module_p = add_common_args(create_module_p)
+  create_module_p = add_yaml_parser(create_module_p)
+  
 
   # update parser
   update_p = actions_p.add_parser(

@@ -27,6 +27,9 @@ import subprocess
 from subprocess import CalledProcessError
 import time
 import datetime
+import yaml
+
+from basepair.infra.webapp import module
 
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
@@ -423,6 +426,28 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### MODULE #####################################################################################
   ################################################################################################
+
+  def create_module(self,data):
+    path = os.path.abspath(os.path.expanduser(
+          os.path.expandvars(data['yamlpath'])
+      ))
+    with open(path,'r') as fp:
+      yaml_string = fp.read()
+    yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
+    if yaml_data.get('name') == None:
+      eprint('Please provide module name in YAML')
+      return None
+    payload = {"data":yaml_string}
+    info = (Module(self.conf.get('api'))).save(payload=payload)
+    module_id = info.get('id')
+    module_name = info.get('name')
+    if module_id:  # success
+      if self.verbose:
+        eprint('created: module '+module_name+' with id', module_id)
+    else:  # failure
+      eprint('failed module creation:', info.get('msg'))
+    return module_id
+
   def get_module(self, uid):
     '''Get resource'''
     return (Module(self.conf.get('api'))).get(
