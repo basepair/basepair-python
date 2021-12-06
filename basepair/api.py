@@ -448,6 +448,31 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('failed module creation:', info.get('msg'))
     return module_id
 
+  def update_module(self,data):
+    path = os.path.abspath(os.path.expanduser(
+          os.path.expandvars(data['yamlpath'])
+      ))
+    with open(path,'r') as fp:
+      yaml_string = fp.read()
+    yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
+    module_id = yaml_data.get('id')
+    if yaml_data.get('name') == None:
+      eprint('Please provide module name in YAML')
+      return None
+    if yaml_data.get('id') == None:
+      eprint('Please provide module id in YAML')
+      return None
+    payload = {"data":yaml_string}
+    info = (Module(self.conf.get('api'))).save(obj_id=module_id,payload=payload)
+    module_id = info.get('id')
+    if module_id:  # success
+      if self.verbose:
+        module_name = info.get('name')
+        eprint('updated: module '+module_name+' with id', module_id)
+    else:  # failure
+      eprint('failed module creation:', info.get('msg'))
+    return module_id
+
   def get_module(self, uid):
     '''Get resource'''
     return (Module(self.conf.get('api'))).get(
@@ -469,6 +494,53 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
   ################################################################################################
+
+  def create_workflow(self,data):
+    path = os.path.abspath(os.path.expanduser(
+          os.path.expandvars(data['yamlpath'])
+      ))
+    with open(path,'r') as fp:
+      yaml_string = fp.read()
+    yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
+    if yaml_data.get('name') == None:
+      eprint('Please provide workflow name in YAML')
+      return None
+    payload = {"data":yaml_string}
+    info = (Pipeline(self.conf.get('api'))).save(payload=payload)
+    workflow_id = info.get('id')
+    workflow_name = info.get('name')
+    if workflow_id:  # success
+      if self.verbose:
+        eprint('created: workflow '+workflow_name+' with id', workflow_id)
+    else:  # failure
+      eprint('failed workflow creation:')
+    return workflow_id
+
+  def update_workflow(self,data):
+    path = os.path.abspath(os.path.expanduser(
+          os.path.expandvars(data['yamlpath'])
+      ))
+    with open(path,'r') as fp:
+      yaml_string = fp.read()
+    yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
+    workflow_id = yaml_data.get('id')
+    if yaml_data.get('name') == None:
+      eprint('Please provide workflow name in YAML')
+      return None
+    if yaml_data.get('id') == None:
+      eprint('Please provide workflow id in YAML')
+      return None
+    payload = {"data":yaml_string}
+    info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id,payload=payload)
+    workflow_id = info.get('id')
+    if workflow_id:  # success
+      if self.verbose:
+        workflow_name = info.get('name')
+        eprint('updated: workflow '+workflow_name+' with id', workflow_id)
+    else:  # failure
+      eprint('failed workflow update:', info.get('msg'))
+    return workflow_id
+
   def get_workflow(self, uid):
     '''Get resource'''
     return (Pipeline(self.conf.get('api'))).get(
