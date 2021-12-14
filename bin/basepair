@@ -164,7 +164,6 @@ def create_project(bp, args):
   data = {'name': args.name}
   bp.create_project(data=data)
 
-
 def create_sample(bp, args):
   '''Create sample'''
   data = {
@@ -365,6 +364,10 @@ def delete(bp, data_type, uid):
         bp.delete_sample(uid)
       elif data_type == 'analysis':
         bp.delete_analysis(uid)
+      elif data_type == 'workflow':
+        bp.delete_workflow(uid)
+      elif data_type == 'module':
+        bp.delete_module(uid)
 
 
 def add_common_args(parser):
@@ -634,8 +637,8 @@ def read_args():
   delete_parser.add_argument(
     '-t',
     '--type',
-    choices=['analysis', 'sample'],
-    help='Type of data to delete. Options: sample, analysis',
+    choices=['analysis', 'sample','workflow','module'],
+    help='Type of data to delete. Options: sample, analysis, workflow, module',
     required=True,
   )
   delete_parser.add_argument(
