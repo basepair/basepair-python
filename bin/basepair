@@ -98,6 +98,10 @@ def main():
   if args.action == 'create':
     if args.create_type == 'project':
       create_project(bp, args)
+    if args.create_type == 'module':
+      create_module(bp, args)
+    if args.create_type == 'workflow':
+      create_workflow(bp, args)
 
     if args.create_type == 'sample':
 
@@ -116,12 +120,17 @@ def main():
       create_sample(bp, args)
     if args.create_type == 'analysis':
       create_analysis(bp, args)
-  elif args.action == 'updateProject':
-    update_project(bp, args)
-  elif args.action == 'updateSample':
-    update_sample(bp, args)
-  elif args.action == 'updateAnalysis':
-    update_analysis(bp, args.analysis, args.key, args.val)
+  elif args.action == 'update':
+    if args.update_type == 'analysis':
+      update_analysis(bp, args.analysis, args.key, args.val)
+    if args.update_type == 'project':
+      update_project(bp, args)
+    if args.update_type == 'sample':
+      update_sample(bp, args)
+    if args.update_type == 'module':
+      update_module(bp, args)
+    if args.update_type == 'workflow':
+      update_workflow(bp, args)
   elif args.action == 'download':
     if args.download_type == 'analysis':
       download_analysis(bp, args)
@@ -210,6 +219,32 @@ def create_analysis(bp, args):
     sample_ids=args.sample,
     workflow_id=args.workflow,
   )
+
+def create_module(bp, args):
+  '''Create module'''
+  if not args.yaml:
+    eprint('ERROR: Yaml required.')
+    return
+  data = {
+    'yamlpath': args.yaml
+  }
+  if args.yaml.endswith('.yaml'):
+    bp.create_module(data)
+  else:
+    eprint('Please provide yaml file only')
+
+def create_workflow(bp, args):
+  '''Create workflow'''
+  if not args.yaml:
+    eprint('ERROR: Yaml required.')
+    return
+  data = {
+    'yamlpath': args.yaml
+  }
+  if args.yaml.endswith('.yaml'):
+    bp.create_workflow(data)
+  else:
+    eprint('Please provide yaml file only')
 
 
 def download_analysis(bp, args):
@@ -347,6 +382,32 @@ def update_analysis(bp, analysis_id, keys, vals):
     return
   update_info(bp, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
 
+def update_module(bp, args):
+  '''Update module'''
+  if not args.yaml:
+    eprint('ERROR: Yaml required.')
+    return
+  data = {
+    'yamlpath': args.yaml
+  }
+  if args.yaml.endswith('.yaml'):
+    bp.update_module(data)
+  else:
+    eprint('Please provide yaml file only')
+
+
+def update_workflow(bp, args):
+  '''Update workflow'''
+  if not args.yaml:
+    eprint('ERROR: Yaml required.')
+    return
+  data = {
+    'yamlpath': args.yaml
+  }
+  if args.yaml.endswith('.yaml'):
+    bp.update_workflow(data)
+  else:
+    eprint('Please provide yaml file only')
 
 def delete(bp, data_type, uid):
   '''Delete object'''
@@ -443,6 +504,16 @@ def add_tags_parser(parser):
   )
   return parser
 
+def add_yaml_parser(parser):
+  '''Add uid parser'''
+  parser.add_argument(
+    '-y',
+    '--yaml',
+    default=None,
+    required=True,
+    help='The filepath of YAML'
+  )
+  return parser
 
 def read_args():
   '''Read args'''
@@ -525,9 +596,34 @@ def read_args():
     help='Ignore validation warnings',
   )
 
+  # create module parser
+  create_module_p = create_sp.add_parser(
+    'module',
+    help='Create module.'
+  )
+  create_module_p = add_common_args(create_module_p)
+  create_module_p = add_yaml_parser(create_module_p)
+
+  # create workflow parser
+  create_workflow_p = create_sp.add_parser(
+    'workflow',
+    help='Create workflow.'
+  )
+  create_workflow_p = add_common_args(create_workflow_p)
+  create_workflow_p = add_yaml_parser(create_workflow_p)
+
+  # update parser
+  update_p = actions_p.add_parser(
+    'update',
+    help='Update analyses, samples, project.'
+  )
+  update_sp = update_p.add_subparsers(
+    help='Type of item to update',
+    dest='update_type'
+  )
   # update project parser
-  update_project_parser = actions_p.add_parser(
-    'updateProject',
+  update_project_parser = update_sp.add_parser(
+    'project',
     help='Update information associated with a project.'
   )
   update_project_parser = add_common_args(update_project_parser)
@@ -537,10 +633,9 @@ def read_args():
   update_project_parser.add_argument('--emails', default=[], nargs='+')
   update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
   update_project_parser.add_argument('--name')
-
   # update sample parser
-  update_sample_parser = actions_p.add_parser(
-    'updateSample',
+  update_sample_parser = update_sp.add_parser(
+    'sample',
     help='Update information associated with a sample.'
   )
   update_sample_parser = add_common_args(update_sample_parser)
@@ -558,16 +653,31 @@ def read_args():
   )
   update_sample_parser.add_argument('--key', action='append')
   update_sample_parser.add_argument('--val', action='append')
-
   # update analysis parser
-  update_analysis_parser = actions_p.add_parser(
-    'updateAnalysis',
+  update_analysis_parser = update_sp.add_parser(
+    'analysis',
     help='Update information associated with an analysis.'
   )
   update_analysis_parser = add_common_args(update_analysis_parser)
   update_analysis_parser.add_argument('-a', '--analysis', help='Analysis id')
   update_analysis_parser.add_argument('--key', action='append')
   update_analysis_parser.add_argument('--val', action='append')
+
+  # update module parser
+  update_module_parser = update_sp.add_parser(
+    'module',
+    help='Update information associated with a module.'
+  )
+  update_module_parser = add_common_args(update_module_parser)
+  update_module_parser = add_yaml_parser(update_module_parser)
+
+  # update workflow parser
+  update_workflow_parser = update_sp.add_parser(
+    'workflow',
+    help='Update information associated with a workflow.'
+  )
+  update_workflow_parser = add_common_args(update_workflow_parser)
+  update_workflow_parser = add_yaml_parser(update_workflow_parser)
 
   # download parsers
   download_p = actions_p.add_parser('download', help='Download items.')
