@@ -164,6 +164,8 @@ def main():
       bp.print_data(data_type='samples', is_json=args.json, project=args.project)
     elif args.list_type == 'workflows':
       bp.print_data(data_type='workflows', is_json=args.json)
+    elif args.list_type == 'workflow':
+      _list_item(bp, data_type='workflow', uids=args.uid, is_json=args.json)
     elif args.list_type == 'genome':
       _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
 
@@ -228,27 +230,34 @@ def create_module(bp, args):
   if not args.yaml:
     eprint('ERROR: Yaml required.')
     return
+  if len(args.yaml) != 1:
+    eprint('Please provide only one yaml')
+    return
   data = {
-    'yamlpath': args.yaml
+    'yamlpath': args.yaml[0]
   }
-  if args.yaml.endswith('.yaml'):
+  if args.yaml[0].endswith('.yaml'):
     bp.create_module(data)
   else:
     eprint('Please provide yaml file only')
+    return
 
 def create_workflow(bp, args):
   '''Create workflow'''
   if not args.yaml:
     eprint('ERROR: Yaml required.')
     return
+  if len(args.yaml) != 1:
+    eprint('Please provide only one yaml')
+    return
   data = {
-    'yamlpath': args.yaml
+    'yamlpath': args.yaml[0]
   }
-  if args.yaml.endswith('.yaml'):
+  if args.yaml[0].endswith('.yaml'):
     bp.create_workflow(data)
   else:
     eprint('Please provide yaml file only')
-
+    return
 
 def download_analysis(bp, args):
   '''Download analysis'''
@@ -390,10 +399,13 @@ def update_module(bp, args):
   if not args.yaml:
     eprint('ERROR: Yaml required.')
     return
+  if len(args.yaml) != 1:
+    eprint('Please provide only one yaml')
+    return
   data = {
-    'yamlpath': args.yaml
+    'yamlpath': args.yaml[0]
   }
-  if args.yaml.endswith('.yaml'):
+  if args.yaml[0].endswith('.yaml'):
     bp.update_module(data)
   else:
     eprint('Please provide yaml file only')
@@ -404,10 +416,13 @@ def update_workflow(bp, args):
   if not args.yaml:
     eprint('ERROR: Yaml required.')
     return
+  if len(args.yaml) != 1:
+    eprint('Please provide only one yaml')
+    return
   data = {
-    'yamlpath': args.yaml
+    'yamlpath': args.yaml[0]
   }
-  if args.yaml.endswith('.yaml'):
+  if args.yaml[0].endswith('.yaml'):
     bp.update_workflow(data)
   else:
     eprint('Please provide yaml file only')
@@ -528,7 +543,8 @@ def add_yaml_parser(parser):
     '--yaml',
     default=None,
     required=True,
-    help='The filepath of YAML'
+    help='The filepath of YAML',
+    nargs='+'
   )
   return parser
 
@@ -747,7 +763,7 @@ def read_args():
   delete_parser.add_argument(
     '-t',
     '--type',
-    choices=['analysis', 'sample','workflow','module'],
+    choices=['analysis', 'sample', 'workflow', 'module'],
     help='Type of data to delete. Options: sample, analysis, workflow, module',
     required=True,
   )
@@ -829,6 +845,14 @@ def read_args():
   list_workflows_p = add_common_args(list_workflows_p)
   list_workflows_p = add_json_parser(list_workflows_p)
 
+  list_workflow_p = list_sp.add_parser(
+    'workflow',
+    help='Detail a workflow'
+  )
+  list_module_p = add_common_args(list_workflow_p)
+  list_module_p = add_uid_parser(list_workflow_p)
+  list_module_p = add_json_parser(list_workflow_p)
+
   list_modules_p = list_sp.add_parser(
     'modules',
     help='List available modules of a workflow'
@@ -882,7 +906,7 @@ def _list_item(bp, data_type=None, uids=None, is_json=False):
     eprint('Invalid data type.')
     return
 
-  list_type = ['analysis', 'genome', 'sample', 'module', 'modules']
+  list_type = ['analysis', 'genome', 'sample', 'module', 'modules', 'workflow']
   if data_type not in list_type:
     eprint('List data type - {} currently not supported.'.format(data_type))
     return

@@ -210,3 +210,23 @@ class NicePrint:
       'description',
       'tags',
     ]))
+
+  @staticmethod
+  def workflow(data):
+    '''Print pipeline'''
+    to_print = [
+      [
+        pipeline['id'],
+        pipeline['name'],
+        pipeline['datatype'],
+        pipeline['description'],
+        pipeline['tags']
+      ] for pipeline in data
+    ]
+    print(tabulate(to_print, headers=[
+      'id',
+      'name',
+      'datatype',
+      'description',
+      'tags',
+    ]))
