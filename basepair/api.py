@@ -462,7 +462,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('failed module creation:', info.get('msg'))
     return module_id
   
-  def get_module(self, uid,filters={}):
+  def get_module(self, uid):
     '''Get resource'''
     return (Module(self.conf.get('api'))).get(
         uid,
