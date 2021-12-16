@@ -468,6 +468,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         uid,
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
+  
+  def delete_module(self, uid):
+    '''Delete method'''
+    return (Module(self.conf.get('api'))).delete(uid)
 
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
@@ -490,7 +494,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if self.verbose:
         eprint('created: workflow '+workflow_name+' with id', workflow_id)
     else:  # failure
-      eprint('failed workflow creation:')
+      eprint('failed workflow creation:',info.get('msg'))
     return workflow_id
 
   def update_workflow(self,data):
@@ -525,9 +529,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
+  def get_workflow_modules(self, uid):
+    '''Get resources for a workflow'''
+    return (Module(self.conf.get('api'))).get_pipeline_modules(
+        uid,
+        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
   def get_workflows(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
+
+  def delete_workflow(self, uid):
+    '''Delete method'''
+    return (Pipeline(self.conf.get('api'))).delete(uid)
 
   ################################################################################################
   ### PROJECT ####################################################################################
@@ -1319,13 +1334,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'analysis': 'get_analysis',
       'genome': 'get_genome',
       'sample': 'get_sample',
+      'module': 'get_module',
+      'workflow': 'get_workflow'
     }
 
     list_methods = {
       'analyses': 'get_analyses',
       'genomes': 'get_genomes',
+      'modules':'get_workflow_modules',
       'samples': 'get_samples',
-      'workflows': 'get_workflows',
+      'workflows': 'get_workflows'
     }
 
     # get the appropriate data
@@ -1349,8 +1367,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       filters['projects__exact'] = project
 
     # if it is a list
-    if data_type in list_methods:
+    if data_type in list_methods and data_type != 'modules':
       data = getattr(self, list_methods.get(data_type))(filters=filters)
+    elif data_type in list_methods and data_type == 'modules':
+      data = getattr(self, list_methods.get(data_type))(uid[0])
+
+
+    # if data_type in list_methods:
+    #   method = list_methods.get(data_type)
+    #   if data_type == 'modules':
+    #     data = getattr(self, method)(uid[0])
+    #   else:
+    #     data = getattr(self, method)(filters=filters)
 
     if not data:
       eprint('No data found for the parameters you gave.')
