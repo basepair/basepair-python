@@ -147,26 +147,27 @@ def main():
   elif args.action == 'delete':
     delete(bp, args.type, args.uid)
   elif args.action == 'list':
-
-    if args.list_type == 'analysis':
-      _list_item(bp, data_type='analysis', uids=args.uid, is_json=args.json)
     if args.list_type == 'analyses':
       bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
     elif args.list_type == 'genomes':
       bp.print_data(data_type='genomes', is_json=args.json)
-    elif args.list_type == 'sample':
-      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
     elif args.list_type == 'modules':
       _list_item(bp, data_type='modules', uids=args.wid, is_json=args.json)
-    elif args.list_type == 'module':
-      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
     elif args.list_type == 'samples':
       bp.print_data(data_type='samples', is_json=args.json, project=args.project)
     elif args.list_type == 'workflows':
       bp.print_data(data_type='workflows', is_json=args.json)
-    elif args.list_type == 'workflow':
+
+  elif args.action == 'get':
+    if args.get_type == 'analysis':
+      _list_item(bp, data_type='analysis', uids=args.uid, is_json=args.json)
+    elif args.get_type == 'sample':
+      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
+    elif args.get_type == 'module':
+      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
+    elif args.get_type == 'workflow':
       _list_item(bp, data_type='workflow', uids=args.uid, is_json=args.json)
-    elif args.list_type == 'genome':
+    elif args.get_type == 'genome':
       _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
 
 
@@ -775,6 +776,55 @@ def read_args():
     nargs='+',
   )
 
+  # get parser
+  get_p = actions_p.add_parser('get', help='Detail of an item.')
+
+  get_sp = get_p.add_subparsers(
+    dest='get_type',
+    help='Type of item to get detail',
+  )
+
+  get_analysis_p = get_sp.add_parser(
+    'analysis',
+    help='get files and other info for one or more analyses.'
+  )
+  get_analysis_p = add_common_args(get_analysis_p)
+  get_analysis_p = add_uid_parser(get_analysis_p)
+  get_analysis_p = add_json_parser(get_analysis_p)
+
+  get_sample_p = get_sp.add_parser(
+    'sample',
+    help='List detail info about one or more samples.'
+  )
+  get_sample_p = add_common_args(get_sample_p)
+  get_sample_p = add_uid_parser(get_sample_p)
+  get_sample_p = add_json_parser(get_sample_p)
+
+  get_workflow_p = get_sp.add_parser(
+    'workflow',
+    help='Detail a workflow'
+  )
+  get_workflow_p = add_common_args(get_workflow_p)
+  get_workflow_p = add_uid_parser(get_workflow_p)
+  get_workflow_p = add_json_parser(get_workflow_p)
+
+  get_module_p = get_sp.add_parser(
+    'module',
+    help='Detail a module'
+  )
+  get_module_p = add_common_args(get_module_p)
+  get_module_p = add_uid_parser(get_module_p)
+  get_module_p = add_json_parser(get_module_p)
+
+  get_genome_p = get_sp.add_parser(
+    'genome',
+    help='List detail info about one or more genomes.'
+  )
+  get_genome_p = add_common_args(get_genome_p)
+  get_genome_p = add_uid_parser(get_genome_p)
+  get_genome_p = add_json_parser(get_genome_p)
+
+
   # list parser
   list_p = actions_p.add_parser('list', help='List of items.')
 
@@ -782,14 +832,6 @@ def read_args():
     dest='list_type',
     help='Type of item to list',
   )
-
-  list_analysis_p = list_sp.add_parser(
-    'analysis',
-    help='List files and other info for one or more analyses.'
-  )
-  list_analysis_p = add_common_args(list_analysis_p)
-  list_analysis_p = add_uid_parser(list_analysis_p)
-  list_analysis_p = add_json_parser(list_analysis_p)
 
   list_analyses_p = list_sp.add_parser(
     'analyses',
@@ -815,28 +857,12 @@ def read_args():
   list_samples_p = add_common_args(list_samples_p)
   list_samples_p = add_json_parser(list_samples_p)
 
-  list_sample_p = list_sp.add_parser(
-    'sample',
-    help='List detail info about one or more samples.'
-  )
-  list_sample_p = add_common_args(list_sample_p)
-  list_sample_p = add_uid_parser(list_sample_p)
-  list_sample_p = add_json_parser(list_sample_p)
-
   list_genomes_p = list_sp.add_parser(
     'genomes',
     help='List available genomes.'
   )
   list_genomes_p = add_common_args(list_genomes_p)
   list_genomes_p = add_json_parser(list_genomes_p)
-
-  list_genome_p = list_sp.add_parser(
-    'genome',
-    help='List detail info about one or more genomes.'
-  )
-  list_genome_p = add_common_args(list_genome_p)
-  list_genome_p = add_uid_parser(list_genome_p)
-  list_genome_p = add_json_parser(list_genome_p)
 
   list_workflows_p = list_sp.add_parser(
     'workflows',
@@ -845,14 +871,6 @@ def read_args():
   list_workflows_p = add_common_args(list_workflows_p)
   list_workflows_p = add_json_parser(list_workflows_p)
 
-  list_workflow_p = list_sp.add_parser(
-    'workflow',
-    help='Detail a workflow'
-  )
-  list_module_p = add_common_args(list_workflow_p)
-  list_module_p = add_uid_parser(list_workflow_p)
-  list_module_p = add_json_parser(list_workflow_p)
-
   list_modules_p = list_sp.add_parser(
     'modules',
     help='List available modules of a workflow'
@@ -860,14 +878,6 @@ def read_args():
   list_modules_p = add_common_args(list_modules_p)
   list_modules_p = add_wid_parser(list_modules_p)
   list_modules_p = add_json_parser(list_modules_p)
-
-  list_module_p = list_sp.add_parser(
-    'module',
-    help='Detail a module'
-  )
-  list_module_p = add_common_args(list_module_p)
-  list_module_p = add_uid_parser(list_module_p)
-  list_module_p = add_json_parser(list_module_p)
 
   parser.set_defaults(params=[],)
   args = parser.parse_args()
