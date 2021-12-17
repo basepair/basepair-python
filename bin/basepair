@@ -783,7 +783,7 @@ def read_args():
 
   delete_workflow_p = delete_sp.add_parser(
     'workflow',
-    help='delete a sample.'
+    help='delete a workflow.'
   )
   delete_workflow_p = add_common_args(delete_workflow_p)
   delete_workflow_p = add_uid_parser(delete_workflow_p)
