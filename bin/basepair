@@ -100,8 +100,8 @@ def main():
       create_project(bp, args)
     if args.create_type == 'module':
       create_module(bp, args)
-    if args.create_type == 'workflow':
-      create_workflow(bp, args)
+    if args.create_type == 'pipeline':
+      create_pipeline(bp, args)
 
     if args.create_type == 'sample':
 
@@ -129,8 +129,8 @@ def main():
       update_sample(bp, args)
     if args.update_type == 'module':
       update_module(bp, args)
-    if args.update_type == 'workflow':
-      update_workflow(bp, args)
+    if args.update_type == 'pipeline':
+      update_pipeline(bp, args)
   elif args.action == 'download':
     if args.download_type == 'analysis':
       download_analysis(bp, args)
@@ -155,8 +155,8 @@ def main():
       _list_item(bp, data_type='modules', uids=args.wid, is_json=args.json)
     elif args.list_type == 'samples':
       bp.print_data(data_type='samples', is_json=args.json, project=args.project)
-    elif args.list_type == 'workflows':
-      bp.print_data(data_type='workflows', is_json=args.json)
+    elif args.list_type == 'pipelines':
+      bp.print_data(data_type='pipelines', is_json=args.json)
 
   elif args.action == 'get':
     if args.get_type == 'analysis':
@@ -165,8 +165,8 @@ def main():
       _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
     elif args.get_type == 'module':
       _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
-    elif args.get_type == 'workflow':
-      _list_item(bp, data_type='workflow', uids=args.uid, is_json=args.json)
+    elif args.get_type == 'pipeline':
+      _list_item(bp, data_type='pipeline', uids=args.uid, is_json=args.json)
     elif args.get_type == 'genome':
       _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
 
@@ -243,8 +243,8 @@ def create_module(bp, args):
     eprint('Please provide yaml file only')
     return
 
-def create_workflow(bp, args):
-  '''Create workflow'''
+def create_pipeline(bp, args):
+  '''Create pipeline'''
   if not args.yaml:
     eprint('ERROR: Yaml required.')
     return
@@ -255,7 +255,7 @@ def create_workflow(bp, args):
     'yamlpath': args.yaml[0]
   }
   if args.yaml[0].endswith('.yaml'):
-    bp.create_workflow(data)
+    bp.create_pipeline(data)
   else:
     eprint('Please provide yaml file only')
     return
@@ -412,8 +412,8 @@ def update_module(bp, args):
     eprint('Please provide yaml file only')
 
 
-def update_workflow(bp, args):
-  '''Update workflow'''
+def update_pipeline(bp, args):
+  '''Update pipeline'''
   if not args.yaml:
     eprint('ERROR: Yaml required.')
     return
@@ -424,7 +424,7 @@ def update_workflow(bp, args):
     'yamlpath': args.yaml[0]
   }
   if args.yaml[0].endswith('.yaml'):
-    bp.update_workflow(data)
+    bp.update_pipeline(data)
   else:
     eprint('Please provide yaml file only')
 
@@ -441,8 +441,8 @@ def delete(bp, data_type, uid):
         bp.delete_sample(uid)
       elif data_type == 'analysis':
         bp.delete_analysis(uid)
-      elif data_type == 'workflow':
-        bp.delete_workflow(uid)
+      elif data_type == 'pipeline':
+        bp.delete_pipeline(uid)
       elif data_type == 'module':
         bp.delete_module(uid)
 
@@ -639,12 +639,12 @@ def read_args():
   create_module_p = add_yaml_parser(create_module_p)
 
   # create workflow parser
-  create_workflow_p = create_sp.add_parser(
-    'workflow',
-    help='Create workflow.'
+  create_pipeline_p = create_sp.add_parser(
+    'pipeline',
+    help='Create pipeline'
   )
-  create_workflow_p = add_common_args(create_workflow_p)
-  create_workflow_p = add_yaml_parser(create_workflow_p)
+  create_pipeline_p = add_common_args(create_pipeline_p)
+  create_pipeline_p = add_yaml_parser(create_pipeline_p)
 
   # update parser
   update_p = actions_p.add_parser(
@@ -706,12 +706,12 @@ def read_args():
   update_module_parser = add_yaml_parser(update_module_parser)
 
   # update workflow parser
-  update_workflow_parser = update_sp.add_parser(
-    'workflow',
-    help='Update information associated with a workflow.'
+  update_pipeline_parser = update_sp.add_parser(
+    'pipeline',
+    help='Update information associated with a pipeline'
   )
-  update_workflow_parser = add_common_args(update_workflow_parser)
-  update_workflow_parser = add_yaml_parser(update_workflow_parser)
+  update_pipeline_parser = add_common_args(update_pipeline_parser)
+  update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
 
   # download parsers
   download_p = actions_p.add_parser('download', help='Download items.')
@@ -800,13 +800,13 @@ def read_args():
   get_sample_p = add_uid_parser(get_sample_p)
   get_sample_p = add_json_parser(get_sample_p)
 
-  get_workflow_p = get_sp.add_parser(
-    'workflow',
-    help='Detail a workflow'
+  get_pipeline_p = get_sp.add_parser(
+    'pipeline',
+    help='Detail a pipeline'
   )
-  get_workflow_p = add_common_args(get_workflow_p)
-  get_workflow_p = add_uid_parser(get_workflow_p)
-  get_workflow_p = add_json_parser(get_workflow_p)
+  get_pipeline_p = add_common_args(get_pipeline_p)
+  get_pipeline_p = add_uid_parser(get_pipeline_p)
+  get_pipeline_p = add_json_parser(get_pipeline_p)
 
   get_module_p = get_sp.add_parser(
     'module',
@@ -864,12 +864,12 @@ def read_args():
   list_genomes_p = add_common_args(list_genomes_p)
   list_genomes_p = add_json_parser(list_genomes_p)
 
-  list_workflows_p = list_sp.add_parser(
-    'workflows',
+  list_pipelines_p = list_sp.add_parser(
+    'pipelines',
     help='List available workflows.'
   )
-  list_workflows_p = add_common_args(list_workflows_p)
-  list_workflows_p = add_json_parser(list_workflows_p)
+  list_pipelines_p = add_common_args(list_pipelines_p)
+  list_pipelines_p = add_json_parser(list_pipelines_p)
 
   list_modules_p = list_sp.add_parser(
     'modules',
@@ -916,7 +916,7 @@ def _list_item(bp, data_type=None, uids=None, is_json=False):
     eprint('Invalid data type.')
     return
 
-  list_type = ['analysis', 'genome', 'sample', 'module', 'modules', 'workflow']
+  list_type = ['analysis', 'genome', 'sample', 'module', 'modules', 'pipeline']
   if data_type not in list_type:
     eprint('List data type - {} currently not supported.'.format(data_type))
     return

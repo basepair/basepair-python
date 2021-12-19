@@ -476,7 +476,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
   ################################################################################################
-  def create_workflow(self,data):
+  def create_pipeline(self,data):
     path = os.path.abspath(os.path.expanduser(
           os.path.expandvars(data['yamlpath'])
       ))
@@ -497,7 +497,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('failed workflow creation:',info.get('msg'))
     return workflow_id
 
-  def update_workflow(self,data):
+  def update_pipeline(self,data):
     path = os.path.abspath(os.path.expanduser(
           os.path.expandvars(data['yamlpath'])
       ))
@@ -522,7 +522,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('failed workflow update:', info.get('msg'))
     return workflow_id
   
-  def get_workflow(self, uid):
+  def get_pipeline(self, uid):
     '''Get resource'''
     return (Pipeline(self.conf.get('api'))).get(
         uid,
@@ -536,11 +536,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_workflows(self, filters={}): # pylint: disable=dangerous-default-value
+  def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
 
-  def delete_workflow(self, uid):
+  def delete_pipeline(self, uid):
     '''Delete method'''
     return (Pipeline(self.conf.get('api'))).delete(uid)
 
@@ -1335,7 +1335,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'genome': 'get_genome',
       'sample': 'get_sample',
       'module': 'get_module',
-      'workflow': 'get_workflow'
+      'pipeline': 'get_pipeline'
     }
 
     list_methods = {
@@ -1343,7 +1343,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'genomes': 'get_genomes',
       'modules':'get_workflow_modules',
       'samples': 'get_samples',
-      'workflows': 'get_workflows'
+      'pipelines': 'get_pipelines'
     }
 
     # get the appropriate data
