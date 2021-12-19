@@ -782,12 +782,12 @@ def read_args():
   delete_sample_p = add_common_args(delete_sample_p)
   delete_sample_p = add_uid_parser(delete_sample_p)
 
-  delete_workflow_p = delete_sp.add_parser(
-    'workflow',
-    help='delete a workflow.'
+  delete_pipeline_p = delete_sp.add_parser(
+    'pipeline',
+    help='delete a pipeline.'
   )
-  delete_workflow_p = add_common_args(delete_workflow_p)
-  delete_workflow_p = add_uid_parser(delete_workflow_p)
+  delete_pipeline_p = add_common_args(delete_pipeline_p)
+  delete_pipeline_p = add_uid_parser(delete_pipeline_p)
 
   delete_module_p = delete_sp.add_parser(
     'module',
