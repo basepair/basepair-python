@@ -145,7 +145,7 @@ def main():
       download_sample(bp, args)
 
   elif args.action == 'delete':
-    delete(bp, args.type, args.uid)
+    delete(bp, args.delete_type, args.uid)
   elif args.action == 'list':
     if args.list_type == 'analyses':
       bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
@@ -432,6 +432,10 @@ def delete(bp, data_type, uid):
   '''Delete object'''
   if not uid:
     eprint('Please add one or more uid')
+    return
+  
+  if not data_type:
+    eprint('Please add a datatype')
     return
 
   for uid in uid:
@@ -760,21 +764,37 @@ def read_args():
     'delete',
     help='Delete a sample or analysis from your Basepair account.'
   )
-  delete_parser = add_common_args(delete_parser)
-  delete_parser.add_argument(
-    '-t',
-    '--type',
-    choices=['analysis', 'sample', 'workflow', 'module'],
+  delete_sp = delete_parser.add_subparsers(
+    dest='delete_type',
     help='Type of data to delete. Options: sample, analysis, workflow, module',
-    required=True,
   )
-  delete_parser.add_argument(
-    '-u',
-    '--uid',
-    default=None,
-    help=' The unique sample or analysis id(s)',
-    nargs='+',
+  delete_analysis_p = delete_sp.add_parser(
+    'analysis',
+    help='delete an analysis.'
   )
+  delete_analysis_p = add_common_args(delete_analysis_p)
+  delete_analysis_p = add_uid_parser(delete_analysis_p)
+
+  delete_sample_p = delete_sp.add_parser(
+    'sample',
+    help='delete a sample.'
+  )
+  delete_sample_p = add_common_args(delete_sample_p)
+  delete_sample_p = add_uid_parser(delete_sample_p)
+
+  delete_workflow_p = delete_sp.add_parser(
+    'workflow',
+    help='delete a workflow.'
+  )
+  delete_workflow_p = add_common_args(delete_workflow_p)
+  delete_workflow_p = add_uid_parser(delete_workflow_p)
+
+  delete_module_p = delete_sp.add_parser(
+    'module',
+    help='delete a module.'
+  )
+  delete_module_p = add_common_args(delete_module_p)
+  delete_module_p = add_uid_parser(delete_module_p)
 
   # get parser
   get_p = actions_p.add_parser('get', help='Detail of an item.')
