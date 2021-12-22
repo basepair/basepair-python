@@ -432,7 +432,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_workflow_modules(self, uid):
+  def get_pipeline_modules(self, uid):
     '''Get resources for a workflow'''
     return (Module(self.conf.get('api'))).get_pipeline_modules(
         uid,
@@ -1239,7 +1239,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'analyses': 'get_analyses',
       'genomes': 'get_genomes',
       'module': 'get_module',
-      'modules':'get_workflow_modules',
+      'pipeline_modules':'get_pipeline_modules',
       'samples': 'get_samples',
       'workflows': 'get_workflows'
     }
@@ -1267,7 +1267,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # if it is a list
     if data_type in list_methods:
       method = list_methods.get(data_type)
-      if data_type == 'modules':
+      if data_type == 'pipeline_modules':
         data = getattr(self, method)(uid[0])
       else:
         data = getattr(self, method)(filters=filters)

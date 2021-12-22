@@ -147,8 +147,8 @@ def main():
       bp.print_data(data_type='genomes', is_json=args.json)
     elif args.list_type == 'sample':
       _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
-    elif args.list_type == 'modules':
-      _list_item(bp, data_type='modules', uids=args.wid, is_json=args.json)
+    elif args.list_type == 'pipeline_modules':
+      _list_item(bp, data_type='pipeline_modules', uids=args.uid, is_json=args.json)
     elif args.list_type == 'module':
       _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
     elif args.list_type == 'samples':
@@ -422,17 +422,6 @@ def add_outdir_parser(parser):
     required=False,
     default='.',
     help='Base directory to save files to (default \'.\').'
-  )
-  return parser
-
-def add_wid_parser(parser):
-  '''Add uid parser'''
-  parser.add_argument(
-    '-w',
-    '--wid',
-    nargs='+',
-    default=None,
-    help='The unique workflow id'
   )
   return parser
 
@@ -717,11 +706,11 @@ def read_args():
   list_workflows_p = add_json_parser(list_workflows_p)
 
   list_modules_p = list_sp.add_parser(
-    'modules',
-    help='List available modules of a workflow'
+    'pipeline_modules',
+    help='List available modules of a pipeline'
   )
   list_modules_p = add_common_args(list_modules_p)
-  list_modules_p = add_wid_parser(list_modules_p)
+  list_modules_p = add_uid_parser(list_modules_p)
   list_modules_p = add_json_parser(list_modules_p)
 
   list_module_p = list_sp.add_parser(
@@ -769,16 +758,17 @@ def _list_item(bp, data_type=None, uids=None, is_json=False):
     eprint('Invalid data type.')
     return
 
-  list_type = ['analysis', 'genome', 'sample', 'module', 'modules']
+  list_type = ['analysis', 'genome', 'sample', 'module', 'pipeline_modules']
   if data_type not in list_type:
     eprint('List data type - {} currently not supported.'.format(data_type))
     return
 
   if not uids:
-    if data_type == 'modules':
-      eprint('At least one workflow id required.')
-    else:
-      eprint('At least one uid required.')
+    eprint('At least one uid required.')
+    return
+
+  if data_type == 'pipeline_modules' and len(uids) > 1:
+    eprint('Please provide only one pipeline uid.')
     return
 
   for uid in uids:

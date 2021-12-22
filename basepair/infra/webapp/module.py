@@ -14,21 +14,14 @@ class Module(Abstract):
 
   def get_pipeline_modules(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
     '''Get modules of an pipeline'''
-    _cache = Abstract._get_from_cache(cache)
-    if _cache:
-      return _cache
-
     params.update(self.payload)
     try:
       response = requests.get(
         '{}?workflow={}'.format(self.api_endpoint, obj_id),
-      params=params,
+        params=params,
         verify=verify,
       )
       parsed = self._parse_response(response)
-
-      # save in cache if required
-      Abstract._save_cache(cache, parsed)
       result = parsed.get('objects')
       return result
     except requests.exceptions.RequestException as error:
