@@ -119,8 +119,8 @@ class NicePrint:
     ]))
 
   @staticmethod
-  def modules(data):
-    '''Print modules'''
+  def pipeline_modules(data):
+    '''Print modules of a pipeline'''
     to_print = [
       [
         module['id'],

@@ -18,7 +18,7 @@ class Module(Abstract):
     try:
       response = requests.get(
         '{}?workflow={}'.format(self.api_endpoint, obj_id),
-      params=params,
+        params=params,
         verify=verify,
       )
       parsed = self._parse_response(response)
