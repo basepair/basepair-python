@@ -228,16 +228,14 @@ def create_analysis(bp, args):
 def create_module(bp, args):
   '''Create module'''
   if not args.yaml:
-    eprint('ERROR: Yaml required.')
+    eprint('ERROR: Yaml file required.')
     return
   if len(args.yaml) != 1:
     eprint('Please provide only one yaml')
     return
-  data = {
-    'yamlpath': args.yaml[0]
-  }
+  yaml_path = args.yaml[0]
   if args.yaml[0].endswith('.yaml'):
-    bp.create_module(data)
+    bp.create_module({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
     return
@@ -245,16 +243,14 @@ def create_module(bp, args):
 def create_workflow(bp, args):
   '''Create workflow'''
   if not args.yaml:
-    eprint('ERROR: Yaml required.')
+    eprint('ERROR: Yaml file required.')
     return
   if len(args.yaml) != 1:
     eprint('Please provide only one yaml')
     return
-  data = {
-    'yamlpath': args.yaml[0]
-  }
+  yaml_path = args.yaml[0]
   if args.yaml[0].endswith('.yaml'):
-    bp.create_workflow(data)
+    bp.create_workflow({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
     return
@@ -397,33 +393,28 @@ def update_analysis(bp, analysis_id, keys, vals):
 def update_module(bp, args):
   '''Update module'''
   if not args.yaml:
-    eprint('ERROR: Yaml required.')
+    eprint('ERROR: Yaml file required.')
     return
   if len(args.yaml) != 1:
     eprint('Please provide only one yaml')
     return
-  data = {
-    'yamlpath': args.yaml[0]
-  }
+  yaml_path = args.yaml[0]
   if args.yaml[0].endswith('.yaml'):
-    bp.update_module(data)
+    bp.update_module({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
-
 
 def update_workflow(bp, args):
   '''Update workflow'''
   if not args.yaml:
-    eprint('ERROR: Yaml required.')
+    eprint('ERROR: Yaml file required.')
     return
   if len(args.yaml) != 1:
     eprint('Please provide only one yaml')
     return
-  data = {
-    'yamlpath': args.yaml[0]
-  }
+  yaml_path = args.yaml[0]
   if args.yaml[0].endswith('.yaml'):
-    bp.update_workflow(data)
+    bp.update_workflow({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
 

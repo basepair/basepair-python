@@ -22,8 +22,7 @@ class Module(Abstract):
         verify=verify,
       )
       parsed = self._parse_response(response)
-      result = parsed.get('objects')
-      return result
+      return parsed.get('objects')
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
