@@ -228,14 +228,14 @@ def create_analysis(bp, args):
 
 def create_module(bp, args):
   '''Create module'''
-  if not args.yaml:
+  if not args.file1:
     eprint('ERROR: Yaml file required.')
     return
-  if len(args.yaml) != 1:
+  if len(args.file1) != 1:
     eprint('Please provide only one yaml')
     return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
+  yaml_path = args.file1[0]
+  if args.file1[0].endswith('.yaml') or args.file1[0].endswith('.yml'):
     bp.create_module({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
@@ -243,14 +243,14 @@ def create_module(bp, args):
 
 def create_pipeline(bp, args):
   '''Create pipeline'''
-  if not args.yaml:
+  if not args.file1:
     eprint('ERROR: Yaml file required.')
     return
-  if len(args.yaml) != 1:
+  if len(args.file1) != 1:
     eprint('Please provide only one yaml')
     return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
+  yaml_path = args.file1[0]
+  if args.file1[0].endswith('.yaml') or args.file1[0].endswith('.yml'):
     bp.create_pipeline({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
@@ -393,14 +393,14 @@ def update_analysis(bp, analysis_id, keys, vals):
 
 def update_module(bp, args):
   '''Update module'''
-  if not args.yaml:
+  if not args.file1:
     eprint('ERROR: Yaml file required.')
     return
-  if len(args.yaml) != 1:
+  if len(args.file1) != 1:
     eprint('Please provide only one yaml')
     return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
+  yaml_path = args.file1[0]
+  if args.file1[0].endswith('.yaml') or args.file1[0].endswith('.yml'):
     bp.update_module({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
@@ -408,14 +408,14 @@ def update_module(bp, args):
 
 def update_pipeline(bp, args):
   '''Update pipeline'''
-  if not args.yaml:
+  if not args.file1:
     eprint('ERROR: Yaml file required.')
     return
-  if len(args.yaml) != 1:
+  if len(args.file1) != 1:
     eprint('Please provide only one yaml')
     return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
+  yaml_path = args.file1[0]
+  if args.file1[0].endswith('.yaml') or args.file1[0].endswith('.yml'):
     bp.update_pipeline({'yamlpath': yaml_path})
   else:
     eprint('Please provide yaml file only')
@@ -523,10 +523,10 @@ def add_tags_parser(parser):
   return parser
 
 def add_yaml_parser(parser):
-  '''Add uid parser'''
+  '''Add yaml file parser'''
   parser.add_argument(
-    '-y',
-    '--yaml',
+    '-f',
+    '--file1',
     default=None,
     required=True,
     help='The filepath of YAML',

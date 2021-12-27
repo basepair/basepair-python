@@ -445,9 +445,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def update_module(self,data):
     '''update module from yaml'''
-    path = os.path.abspath(os.path.expanduser(
-          os.path.expandvars(data['yamlpath'])
-      ))
+    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
     with open(path,'r') as fp:
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
