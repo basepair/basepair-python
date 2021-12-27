@@ -151,12 +151,8 @@ def main():
       bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
     elif args.list_type == 'genomes':
       bp.print_data(data_type='genomes', is_json=args.json)
-    elif args.list_type == 'sample':
-      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
     elif args.list_type == 'pipeline_modules':
       _list_item(bp, data_type='pipeline_modules', uids=args.uid, is_json=args.json)
-    elif args.list_type == 'module':
-      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
     elif args.list_type == 'samples':
       bp.print_data(data_type='samples', is_json=args.json, project=args.project)
     elif args.list_type == 'pipelines':
@@ -751,7 +747,7 @@ def read_args():
   )
   delete_sp = delete_parser.add_subparsers(
     dest='delete_type',
-    help='Type of data to delete. Options: sample, analysis, workflow, module',
+    help='Type of data to delete. Options: sample, analysis, pipeline, module',
   )
   delete_analysis_p = delete_sp.add_parser(
     'analysis',

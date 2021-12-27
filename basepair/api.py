@@ -192,7 +192,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def delete_analysis(self, uid):
     '''Delete method'''
-    return (Analysis(self.conf.get('api'))).delete(uid)
+    info = (Analysis(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
+
+    if self.verbose:
+      eprint('deleted analysis', uid)
+    return info
 
   def download_analysis(self, uid, outdir='.', tagkind=None, tags=None):
     '''
@@ -471,7 +478,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   
   def delete_module(self, uid):
     '''Delete method'''
-    return (Module(self.conf.get('api'))).delete(uid)
+    info = (Module(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
+
+    if self.verbose:
+      eprint('deleted module', uid)
+    return info
 
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
@@ -538,7 +552,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def delete_pipeline(self, uid):
     '''Delete method'''
-    return (Pipeline(self.conf.get('api'))).delete(uid)
+    info = (Pipeline(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
+
+    if self.verbose:
+      eprint('deleted pipeline', uid)
+    return info
 
   ################################################################################################
   ### PROJECT ####################################################################################
@@ -1337,7 +1358,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     list_methods = {
       'analyses': 'get_analyses',
       'genomes': 'get_genomes',
-      'module': 'get_module',
       'pipeline_modules':'get_pipeline_modules',
       'samples': 'get_samples',
       'pipelines': 'get_pipelines'
