@@ -470,7 +470,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return None
   
   def get_module(self, uid):
-    '''Get resource'''
+    '''Get module resource'''
     return (Module(self.conf.get('api'))).get(
         uid,
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
@@ -491,6 +491,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### PIPELINE / WORKFLOW ########################################################################
   ################################################################################################
   def create_pipeline(self,data):
+    '''create pipeline from yaml'''
     path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
     with open(path,'r') as fp:
       yaml_string = fp.read()
@@ -510,6 +511,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return None
 
   def update_pipeline(self,data):
+    '''update pipeline from yaml'''
     path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
     with open(path,'r') as fp:
       yaml_string = fp.read()
