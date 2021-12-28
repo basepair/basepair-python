@@ -434,13 +434,24 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return None
     payload = {'data':yaml_string}
     info = (Module(self.conf.get('api'))).save(payload=payload)
+    if info.get('error'):
+      if 'already exists' in info['error']:
+        if data['force']:
+          eprint('Using force override the existing resource')
+          self.update_module(data)
+          return None
+        else:
+          answer = self.yes_or_no('A module with ID {} already exists, do you want to overwrite it? (y/n)?'.format(yaml_data.get('id')))
+          if answer:
+            self.update_module(data)
+            return None
     module_id = info.get('id')
     module_name = info.get('name')
     if module_id:  # success
       if self.verbose:
         eprint(f'created: module {module_name} with id {module_id}')
     else:  # failure
-      eprint('failed module creation:', info.get('error'))
+      eprint('failed creating module')
     return None
 
   def update_module(self,data):
@@ -464,7 +475,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         module_name = info.get('name')
         eprint(f'updated: module {module_name} with id {module_id}')
     else:  # failure
-      eprint('failed module creation:', info.get('error'))
+      eprint('failed updating module')
     return None
   
   def get_module(self, uid):
@@ -499,13 +510,24 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return None
     payload = {'data':yaml_string}
     info = (Pipeline(self.conf.get('api'))).save(payload=payload)
+    if info.get('error'):
+      if 'already exists' in info['error']:
+        if data['force']:
+          eprint('Using force override the existing resource')
+          self.update_pipeline(data)
+          return None
+        else:
+          answer = self.yes_or_no('A pipeline with ID {} already exists, do you want to overwrite it? (y/n)?'.format(yaml_data.get('id')))
+          if answer:
+            self.update_pipeline(data)
+            return None
     workflow_id = info.get('id')
     workflow_name = info.get('name')
     if workflow_id:  # success
       if self.verbose:
         eprint(f'created: workflow {workflow_name} with id {workflow_id}')
     else:  # failure
-      eprint('failed workflow creation:',info.get('error'))
+      eprint('failed creating pipeline')
     return None
 
   def update_pipeline(self,data):
@@ -529,7 +551,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         workflow_name = info.get('name')
         eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
     else:  # failure
-      eprint('failed workflow update:', info.get('error'))
+      eprint('failed updating pipeline')
     return None
   
   def get_pipeline(self, uid):
@@ -1498,6 +1520,33 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       params={'limit': 1, 'username': self.conf['api']['username']}
     )
     self.conf['user'] = user.get('objects', [None])[0]
+
+  def yes_or_no(self,question):
+    valid = {
+      'yes': True,
+      'y': True,
+      'ye': True,
+      'no': False,
+      'n': False
+    }
+
+    prompt = ' [y/n] '
+
+    while True:
+
+      # get input function for py 2 and 3
+      get_input = input
+      if sys.version_info[:2] <= (2, 7):
+        get_input = raw_input
+
+      # get input from user
+      sys.stdout.write(question + prompt)
+      choice = get_input().lower()
+
+      # check answer
+      if choice in valid:
+        return valid[choice]
+      sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
 
   @classmethod
   def _parsed_sample_list(cls, items, prefix):
