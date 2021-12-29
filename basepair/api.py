@@ -1525,7 +1525,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     valid = {
       'yes': True,
       'y': True,
-      'ye': True,
       'no': False,
       'n': False
     }
@@ -1536,8 +1535,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
       # get input function for py 2 and 3
       get_input = input
-      if sys.version_info[:2] <= (2, 7):
-        get_input = raw_input
 
       # get input from user
       sys.stdout.write(question + prompt)
