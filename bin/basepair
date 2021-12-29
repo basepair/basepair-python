@@ -226,35 +226,36 @@ def create_analysis(bp, args):
     workflow_id=args.workflow,
   )
 
+def check_yaml(args):
+  '''Checks yaml file'''
+  if not args.file:
+    eprint('ERROR: Yaml file required.')
+    return False
+  if len(args.file) != 1:
+    eprint('Please provide only one yaml')
+    return False
+  yaml_path = args.file[0]
+  valid_extensions = ('.yaml', '.yml')
+  if yaml_path.endsWith(valid_extensions):
+    return True
+  eprint('Please provide yaml file only')
+  return False
+
 def create_module(bp, args):
   '''Create module'''
-  if not args.yaml:
-    eprint('ERROR: Yaml file required.')
+  valid = check_yaml(args)
+  if valid:
+    bp.create_module({'yamlpath': args.file[0], 'force':args.force})
     return
-  if len(args.yaml) != 1:
-    eprint('Please provide only one yaml')
-    return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
-    bp.create_module({'yamlpath': yaml_path})
-  else:
-    eprint('Please provide yaml file only')
-    return
+  return
 
 def create_pipeline(bp, args):
   '''Create pipeline'''
-  if not args.yaml:
-    eprint('ERROR: Yaml file required.')
+  valid = check_yaml(args)
+  if valid:
+    bp.create_pipeline({'yamlpath': args.file[0], 'force':args.force})
     return
-  if len(args.yaml) != 1:
-    eprint('Please provide only one yaml')
-    return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
-    bp.create_pipeline({'yamlpath': yaml_path})
-  else:
-    eprint('Please provide yaml file only')
-    return
+  return
 
 def download_analysis(bp, args):
   '''Download analysis'''
@@ -393,32 +394,19 @@ def update_analysis(bp, analysis_id, keys, vals):
 
 def update_module(bp, args):
   '''Update module'''
-  if not args.yaml:
-    eprint('ERROR: Yaml file required.')
+  valid = check_yaml(args)
+  if valid:
+    bp.update_module({'yamlpath': args.file[0]})
     return
-  if len(args.yaml) != 1:
-    eprint('Please provide only one yaml')
-    return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
-    bp.update_module({'yamlpath': yaml_path})
-  else:
-    eprint('Please provide yaml file only')
-
+  return
 
 def update_pipeline(bp, args):
   '''Update pipeline'''
-  if not args.yaml:
-    eprint('ERROR: Yaml file required.')
+  valid = check_yaml(args)
+  if valid:
+    bp.update_pipeline({'yamlpath': args.file[0]})
     return
-  if len(args.yaml) != 1:
-    eprint('Please provide only one yaml')
-    return
-  yaml_path = args.yaml[0]
-  if args.yaml[0].endswith('.yaml'):
-    bp.update_pipeline({'yamlpath': yaml_path})
-  else:
-    eprint('Please provide yaml file only')
+  return
 
 def delete(bp, data_type, uid):
   '''Delete object'''
@@ -523,14 +511,23 @@ def add_tags_parser(parser):
   return parser
 
 def add_yaml_parser(parser):
-  '''Add uid parser'''
+  '''Add yaml file parser'''
   parser.add_argument(
-    '-y',
-    '--yaml',
+    '-f',
+    '--file',
     default=None,
     required=True,
     help='The filepath of YAML',
     nargs='+'
+  )
+  return parser
+
+def add_force_parser(parser):
+  '''Add force parser'''
+  parser.add_argument(
+    '--force',
+    action='store_true',
+    help='(Optional) Override existing resource.'
   )
   return parser
 
@@ -622,6 +619,7 @@ def read_args():
   )
   create_module_p = add_common_args(create_module_p)
   create_module_p = add_yaml_parser(create_module_p)
+  create_module_p = add_force_parser(create_module_p)
 
   # create workflow parser
   create_pipeline_p = create_sp.add_parser(
@@ -630,6 +628,7 @@ def read_args():
   )
   create_pipeline_p = add_common_args(create_pipeline_p)
   create_pipeline_p = add_yaml_parser(create_pipeline_p)
+  create_pipeline_p = add_force_parser(create_pipeline_p)
 
   # update parser
   update_p = actions_p.add_parser(
