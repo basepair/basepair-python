@@ -192,7 +192,7 @@ class NicePrint:
     ]))
 
   @staticmethod
-  def workflows(data):
+  def pipelines(data):
     '''Print pipelines'''
     to_print = [
       [
@@ -212,7 +212,7 @@ class NicePrint:
     ]))
 
   @staticmethod
-  def workflow(data):
+  def pipeline(data):
     '''Print pipeline'''
     to_print = [
       [
