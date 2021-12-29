@@ -429,9 +429,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     with open(path,'r') as fp:
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
-    if yaml_data.get('name') == None:
+    if not yaml_data.get('name'):
       eprint('Please provide module name in YAML')
-      return None
+      return
     payload = {'data':yaml_string}
     info = (Module(self.conf.get('api'))).save(payload=payload)
     if info.get('error'):
@@ -439,12 +439,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if data['force']:
           eprint('Using force override the existing resource')
           self.update_module(data)
-          return None
+          return
         else:
           answer = self.yes_or_no('A module with ID {} already exists, do you want to overwrite it? (y/n)?'.format(yaml_data.get('id')))
           if answer:
             self.update_module(data)
-            return None
+            return
+          return
     module_id = info.get('id')
     module_name = info.get('name')
     if module_id:  # success
@@ -452,7 +453,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint(f'created: module {module_name} with id {module_id}')
     else:  # failure
       eprint('failed module creation')
-    return None
+    return
 
   def update_module(self,data):
     '''update module from yaml'''
@@ -461,10 +462,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
     module_id = yaml_data.get('id')
-    if yaml_data.get('name') == None:
+    if not yaml_data.get('name'):
       eprint('Please provide module name in YAML')
       return None
-    if module_id == None:
+    if not module_id:
       eprint('Please provide module id in YAML')
       return None
     payload = {'data':yaml_string}
@@ -476,7 +477,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint(f'updated: module {module_name} with id {module_id}')
     else:  # failure
       eprint('failed module update')
-    return None
+    return
   
   def get_module(self, uid):
     '''Get module resource'''
@@ -505,9 +506,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     with open(path,'r') as fp:
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
-    if yaml_data.get('name') == None:
+    if not yaml_data.get('name'):
       eprint('Please provide workflow name in YAML')
-      return None
+      return
     payload = {'data':yaml_string}
     info = (Pipeline(self.conf.get('api'))).save(payload=payload)
     if info.get('error'):
@@ -515,12 +516,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if data['force']:
           eprint('Using force override the existing resource')
           self.update_pipeline(data)
-          return None
+          return
         else:
           answer = self.yes_or_no('A pipeline with ID {} already exists, do you want to overwrite it? (y/n)?'.format(yaml_data.get('id')))
           if answer:
             self.update_pipeline(data)
-            return None
+            return
+          return
     workflow_id = info.get('id')
     workflow_name = info.get('name')
     if workflow_id:  # success
@@ -528,7 +530,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint(f'created: workflow {workflow_name} with id {workflow_id}')
     else:  # failure
       eprint('failed pipeline creation')
-    return None
+    return
 
   def update_pipeline(self,data):
     '''update pipeline from yaml'''
@@ -537,12 +539,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
     workflow_id = yaml_data.get('id')
-    if yaml_data.get('name') == None:
+    if not yaml_data.get('name'):
       eprint('Please provide workflow name in YAML')
-      return None
-    if yaml_data.get('id') == None:
+      return
+    if not yaml_data.get('id'):
       eprint('Please provide workflow id in YAML')
-      return None
+      return
     payload = {'data':yaml_string}
     info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id,payload=payload)
     workflow_id = info.get('id')
@@ -552,7 +554,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
     else:  # failure
       eprint('failed pipeline update')
-    return None
+    return
   
   def get_pipeline(self, uid):
     '''Get resource'''
