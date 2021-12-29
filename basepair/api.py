@@ -451,7 +451,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if self.verbose:
         eprint(f'created: module {module_name} with id {module_id}')
     else:  # failure
-      eprint('failed creating module')
+      eprint('failed module creation')
     return None
 
   def update_module(self,data):
@@ -475,7 +475,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         module_name = info.get('name')
         eprint(f'updated: module {module_name} with id {module_id}')
     else:  # failure
-      eprint('failed updating module')
+      eprint('failed module update')
     return None
   
   def get_module(self, uid):
@@ -527,7 +527,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if self.verbose:
         eprint(f'created: workflow {workflow_name} with id {workflow_id}')
     else:  # failure
-      eprint('failed creating pipeline')
+      eprint('failed pipeline creation')
     return None
 
   def update_pipeline(self,data):
@@ -551,7 +551,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         workflow_name = info.get('name')
         eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
     else:  # failure
-      eprint('failed updating pipeline')
+      eprint('failed pipeline update')
     return None
   
   def get_pipeline(self, uid):
@@ -1532,13 +1532,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     prompt = ' [y/n] '
 
     while True:
-
-      # get input function for py 2 and 3
-      get_input = input
-
       # get input from user
       sys.stdout.write(question + prompt)
-      choice = get_input().lower()
+      choice = input().lower()
 
       # check answer
       if choice in valid:
