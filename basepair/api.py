@@ -137,7 +137,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Create analysis
     Parameters
     ----------
-    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
+    workflow_id:                {str}   Workflow id. Run bp.get_pipelines() to see what is available.  [Required]
 
     control_id:                 {str}   Control sample id.
     control_ids:                {list}  Control sample id.
@@ -242,7 +242,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     ----------
     Parameters
     ----------
-    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
+    workflow_id:                {str}   Workflow id. Run bp.get_pipelines() to see what is available.  [Required]
 
     control_id:                 {str}   Control sample id.
     control_ids:                {list}  Control sample id.
@@ -507,7 +507,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
     if not yaml_data.get('name'):
-      eprint('Please provide workflow name in YAML')
+      eprint('Please provide pipeline name in YAML')
       return
     payload = {'data':yaml_string}
     info = (Pipeline(self.conf.get('api'))).save(payload=payload)
@@ -523,11 +523,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
             self.update_pipeline(data)
             return
           return
-    workflow_id = info.get('id')
-    workflow_name = info.get('name')
-    if workflow_id:  # success
+    pipeline_id = info.get('id')
+    pipeline_name = info.get('name')
+    if pipeline_id:  # success
       if self.verbose:
-        eprint(f'created: workflow {workflow_name} with id {workflow_id}')
+        eprint(f'created: pipeline {pipeline_name} with id {pipeline_id}')
     else:  # failure
       eprint('failed pipeline creation')
     return
@@ -538,20 +538,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     with open(path,'r') as fp:
       yaml_string = fp.read()
     yaml_data = yaml.load(yaml_string,Loader=yaml.FullLoader)
-    workflow_id = yaml_data.get('id')
+    pipeline_id = yaml_data.get('id')
     if not yaml_data.get('name'):
-      eprint('Please provide workflow name in YAML')
+      eprint('Please provide pipeline name in YAML')
       return
     if not yaml_data.get('id'):
-      eprint('Please provide workflow id in YAML')
+      eprint('Please provide pipeline id in YAML')
       return
     payload = {'data':yaml_string}
-    info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id,payload=payload)
-    workflow_id = info.get('id')
-    if workflow_id:  # success
+    info = (Pipeline(self.conf.get('api'))).save(obj_id=pipeline_id,payload=payload)
+    pipeline_id = info.get('id')
+    if pipeline_id:  # success
       if self.verbose:
-        workflow_name = info.get('name')
-        eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
+        pipeline_name = info.get('name')
+        eprint(f'updated: pipeline {pipeline_name} with id {pipeline_id}')
     else:  # failure
       eprint('failed pipeline update')
     return
@@ -564,7 +564,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
 
   def get_pipeline_modules(self, uid):
-    '''Get resources for a workflow'''
+    '''Get resources for a pipeline'''
     return (Module(self.conf.get('api'))).get_pipeline_modules(
         uid,
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
@@ -642,7 +642,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if data.get('default_workflow'):
       if not self._check_workflow(data['default_workflow']):
         del data['default_workflow']
-        eprint('Provided workflow is not valid.')
+        eprint('Provided pipeline is not valid.')
 
     if 'filepaths1' in data and data['filepaths1'] is None:
       if self.verbose:
@@ -1200,7 +1200,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     kind:          {str}  Type of tag filtering to do. Options: exact, diff, or subset
     multiple:      {bool} Whether to return multiple files or just the first one
     tags:          {list} List of list of tags for file filtering. If just list of tags, will convert to list of lists.
-    workflow_id:   {int}  Workflow id to look for files in. NOT IMPLEMENTED YE
+    workflow_id:   {int}  Pipeline id to look for files in. NOT IMPLEMENTED YE
     '''
     # some error checking
     if tags is None:
@@ -1362,7 +1362,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Print data associated with genomes, samples, etc..
     Parameters
     ----------
-    data_type: {str}   Type of data to print (e.g. workflows)
+    data_type: {str}   Type of data to print (e.g. pipelines)
     is_json:      {bool}  By default, data is printed in a human-readable format
     uid:       {list}  One or more ids of the objects you want
     project: {int} project id to filter data
@@ -1458,11 +1458,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return False
 
   def _check_workflow(self, uid):
-    '''Check if the workflow is in the Basepair database'''
-    info = self.get_workflow(uid)
+    '''Check if the pipeline is in the Basepair database'''
+    info = self.get_pipeline(uid)
     if info.get('id'):
       return True
-    eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
+    eprint('The provided pipeline id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):

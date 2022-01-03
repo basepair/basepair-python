@@ -113,7 +113,7 @@ def main():
 def read_args():
     parser = argparse.ArgumentParser(description='cmd line instance control')
     parser.add_argument('-t', '--terminate', action='store_true',
-                        help='terminate open workflows')
+                        help='terminate open pipelines')
     parser.add_argument('-r', '--register', action='store_true')
     parser.add_argument('-c', '--config-file')
     parser.set_defaults(
