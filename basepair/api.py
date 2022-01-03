@@ -445,13 +445,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           if answer:
             self.update_module(data)
         return
+      eprint('failed module creation')
+      return
     module_id = info.get('id')
     module_name = info.get('name')
-    if module_id:  # success
-      if self.verbose:
-        eprint(f'created: module {module_name} with id {module_id}')
-    else:  # failure
-      eprint('failed module creation')
+    if self.verbose:
+      eprint(f'created: module {module_name} with id {module_id}')
     return
 
   def update_module(self, data):
@@ -469,13 +468,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return
     payload = {'data': yaml_string}
     info = (Module(self.conf.get('api'))).save(obj_id=module_id, payload=payload)
-    module_id = info.get('id')
-    if module_id:  # success
-      if self.verbose:
-        module_name = info.get('name')
-        eprint(f'updated: module {module_name} with id {module_id}')
-    else:  # failure
+    if info.get('error'):
       eprint('failed module update')
+      return
+
+    module_id = info.get('id')
+    if self.verbose:
+      module_name = info.get('name')
+      eprint(f'updated: module {module_name} with id {module_id}')
     return
 
   def get_module(self, uid):
@@ -521,13 +521,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           if answer:
             self.update_pipeline(data)
         return
+      eprint('failed pipeline creation')
+      return
     workflow_id = info.get('id')
     workflow_name = info.get('name')
-    if workflow_id:  # success
-      if self.verbose:
-        eprint(f'created: workflow {workflow_name} with id {workflow_id}')
-    else:  # failure
-      eprint('failed pipeline creation')
+    if self.verbose:
+      eprint(f'created: workflow {workflow_name} with id {workflow_id}')
     return
 
   def update_pipeline(self,data):
@@ -545,13 +544,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return
     payload = {'data': yaml_string}
     info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
-    workflow_id = info.get('id')
-    if workflow_id:  # success
-      if self.verbose:
-        workflow_name = info.get('name')
-        eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
-    else:  # failure
+    if info.get('error'):
       eprint('failed pipeline update')
+      return
+
+    workflow_id = info.get('id')
+    if self.verbose:
+      workflow_name = info.get('name')
+      eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
     return
 
   def get_pipeline(self, uid):
