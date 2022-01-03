@@ -27,6 +27,7 @@ import subprocess
 from subprocess import CalledProcessError
 import time
 import datetime
+import yaml
 
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
@@ -191,7 +192,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def delete_analysis(self, uid):
     '''Delete method'''
-    return (Analysis(self.conf.get('api'))).delete(uid)
+    info = (Analysis(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
+
+    if self.verbose:
+      eprint('deleted analysis', uid)
+    return info
 
   def download_analysis(self, uid, outdir='.', tagkind=None, tags=None):
     '''
@@ -415,26 +423,165 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### MODULE #####################################################################################
   ################################################################################################
+  def create_module(self, data):
+    '''create module from yaml'''
+    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+    with open(path, 'r') as file:
+      yaml_string = file.read()
+    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+    if not yaml_data.get('name'):
+      eprint('Please provide module name in YAML')
+      return
+    payload = {'data': yaml_string}
+    info = (Module(self.conf.get('api'))).save(payload=payload)
+    if info.get('error'):
+      if 'already exists' in info['error']:
+        if data['force']:
+          eprint('Using force override the existing resource')
+          self.update_module(data)
+        else:
+          answer = BpApi.yes_or_no(
+            f'A module with ID {yaml_data.get("id")} already exists, do you want to overwrite it?')
+          if answer:
+            self.update_module(data)
+        return
+      eprint('failed module creation')
+      return
+    module_id = info.get('id')
+    module_name = info.get('name')
+    if self.verbose:
+      eprint(f'created: module {module_name} with id {module_id}')
+    return
+
+  def update_module(self, data):
+    '''update module from yaml'''
+    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+    with open(path, 'r') as file:
+      yaml_string = file.read()
+    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+    module_id = yaml_data.get('id')
+    if not yaml_data.get('name'):
+      eprint('Please provide module name in YAML')
+      return
+    if not module_id:
+      eprint('Please provide module id in YAML')
+      return
+    payload = {'data': yaml_string}
+    info = (Module(self.conf.get('api'))).save(obj_id=module_id, payload=payload)
+    if info.get('error'):
+      eprint('failed module update')
+      return
+
+    module_id = info.get('id')
+    if self.verbose:
+      module_name = info.get('name')
+      eprint(f'updated: module {module_name} with id {module_id}')
+    return
+
   def get_module(self, uid):
-    '''Get resource'''
+    '''Get module resource'''
     return (Module(self.conf.get('api'))).get(
         uid,
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
+  def delete_module(self, uid):
+    '''Delete method'''
+    info = (Module(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
+
+    if self.verbose:
+      eprint('deleted module', uid)
+    return info
+
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
   ################################################################################################
-  def get_workflow(self, uid):
+  def create_pipeline(self,data):
+    '''create pipeline from yaml'''
+    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+    with open(path, 'r') as file:
+      yaml_string = file.read()
+    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+    if not yaml_data.get('name'):
+      eprint('Please provide workflow name in YAML')
+      return
+    payload = {'data': yaml_string}
+    info = (Pipeline(self.conf.get('api'))).save(payload=payload)
+    if info.get('error'):
+      if 'already exists' in info['error']:
+        if data['force']:
+          eprint('Using force override the existing resource')
+          self.update_pipeline(data)
+        else:
+          answer = BpApi.yes_or_no(
+            f'A pipeline with ID {yaml_data.get("id")} already exists, do you want to overwrite it?')
+          if answer:
+            self.update_pipeline(data)
+        return
+      eprint('failed pipeline creation')
+      return
+    workflow_id = info.get('id')
+    workflow_name = info.get('name')
+    if self.verbose:
+      eprint(f'created: workflow {workflow_name} with id {workflow_id}')
+    return
+
+  def update_pipeline(self,data):
+    '''update pipeline from yaml'''
+    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+    with open(path, 'r') as file:
+      yaml_string = file.read()
+    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+    workflow_id = yaml_data.get('id')
+    if not yaml_data.get('name'):
+      eprint('Please provide workflow name in YAML')
+      return
+    if not yaml_data.get('id'):
+      eprint('Please provide workflow id in YAML')
+      return
+    payload = {'data': yaml_string}
+    info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
+    if info.get('error'):
+      eprint('failed pipeline update')
+      return
+
+    workflow_id = info.get('id')
+    if self.verbose:
+      workflow_name = info.get('name')
+      eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
+    return
+
+  def get_pipeline(self, uid):
     '''Get resource'''
     return (Pipeline(self.conf.get('api'))).get(
         uid,
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_workflows(self, filters={}): # pylint: disable=dangerous-default-value
+  def get_pipeline_modules(self, uid):
+    '''Get resources for a workflow'''
+    return (Module(self.conf.get('api'))).get_pipeline_modules(
+        uid,
+        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
+  def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
+
+  def delete_pipeline(self, uid):
+    '''Delete method'''
+    info = (Pipeline(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
+
+    if self.verbose:
+      eprint('deleted pipeline', uid)
+    return info
 
   ################################################################################################
   ### PROJECT ####################################################################################
@@ -1226,13 +1373,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'analysis': 'get_analysis',
       'genome': 'get_genome',
       'sample': 'get_sample',
+      'module': 'get_module',
+      'pipeline': 'get_pipeline'
     }
 
     list_methods = {
       'analyses': 'get_analyses',
       'genomes': 'get_genomes',
+      'pipeline_modules': 'get_pipeline_modules',
       'samples': 'get_samples',
-      'workflows': 'get_workflows',
+      'pipelines': 'get_pipelines'
     }
 
     # get the appropriate data
@@ -1257,7 +1407,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # if it is a list
     if data_type in list_methods:
-      data = getattr(self, list_methods.get(data_type))(filters=filters)
+      method = list_methods.get(data_type)
+      if data_type == 'pipeline_modules':
+        data = getattr(self, method)(uid[0])
+      else:
+        data = getattr(self, method)(filters=filters)
 
     if not data:
       eprint('No data found for the parameters you gave.')
@@ -1303,7 +1457,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def _check_workflow(self, uid):
     '''Check if the workflow is in the Basepair database'''
-    info = self.get_workflow(uid)
+    info = self.get_pipeline(uid)
     if info.get('id'):
       return True
     eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
@@ -1371,3 +1525,25 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def _parsed_sample_list(cls, items, prefix):
     '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
+
+  @staticmethod
+  def yes_or_no(question):
+    '''Helper to get user response'''
+    valid = {
+      'yes': True,
+      'y': True,
+      'no': False,
+      'n': False
+    }
+
+    prompt = ' [y/n] '
+
+    while True:
+      # get input from user
+      sys.stdout.write(f'{question}{prompt}')
+      choice = input().lower()
+
+      # check answer
+      if choice in valid:
+        return valid[choice]
+      sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
