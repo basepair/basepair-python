@@ -95,16 +95,34 @@ def main():
     verbose=args.verbose
   )
 
-  if args.action == 'create':
-    if args.create_type == 'project':
-      create_project(bp, args)
-    if args.create_type == 'module':
+  if args.datatype == 'module':
+    if args.action_type == 'get':
+      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
+    elif args.action_type == 'create':
       create_module(bp, args)
-    if args.create_type == 'pipeline':
+    elif args.action_type == 'update':
+      update_module(bp, args)
+    elif args.action_type == 'delete':
+      delete(bp, args.datatype, args.uid)
+    elif args.action_type == 'list':
+      _list_item(bp, data_type='pipeline_modules', uids=args.uid, is_json=args.json)
+
+  if args.datatype == 'pipeline':
+    if args.action_type == 'get':
+      _list_item(bp, data_type='pipeline', uids=args.uid, is_json=args.json)
+    elif args.action_type == 'create':
       create_pipeline(bp, args)
+    elif args.action_type == 'update':
+      update_pipeline(bp, args)
+    elif args.action_type == 'delete':
+      delete(bp, args.datatype, args.uid)
+    elif args.action_type == 'list':
+      bp.print_data(data_type='pipelines', is_json=args.json)
 
-    if args.create_type == 'sample':
-
+  if args.datatype == 'sample':
+    if args.action_type == 'get':
+      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
+    elif args.action_type == 'create':
       # if payload username or api key specified, make sure both are present
       if args.payload_username is not None and args.payload_api_key is None:
         eprint('specify parameter --payload-api-key!')
@@ -118,66 +136,49 @@ def main():
           'api_key': args.payload_api_key,
         }
       create_sample(bp, args)
-    if args.create_type == 'analysis':
-      create_analysis(bp, args)
-  elif args.action == 'update':
-    if args.update_type == 'analysis':
-      update_analysis(bp, args.analysis, args.key, args.val)
-    if args.update_type == 'project':
-      update_project(bp, args)
-    if args.update_type == 'sample':
+    elif args.action_type == 'update':
       update_sample(bp, args)
-    if args.update_type == 'module':
-      update_module(bp, args)
-    if args.update_type == 'pipeline':
-      update_pipeline(bp, args)
-  elif args.action == 'download':
-    if args.download_type == 'analysis':
-      download_analysis(bp, args)
-
-    elif args.download_type == 'file':
-      download_file(bp, args)
-
-    elif args.download_type == 'log':
-      download_log(bp, args)
-
-    elif args.download_type == 'sample':
-      download_sample(bp, args)
-  elif args.action == 'delete':
-    delete(bp, args.delete_type, args.uid)
-  elif args.action == 'list':
-    if args.list_type == 'analyses':
-      bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
-    elif args.list_type == 'genomes':
-      bp.print_data(data_type='genomes', is_json=args.json)
-    elif args.list_type == 'pipeline_modules':
-      _list_item(bp, data_type='pipeline_modules', uids=args.uid, is_json=args.json)
-    elif args.list_type == 'samples':
+    elif args.action_type == 'delete':
+      delete(bp, args.datatype, args.uid)
+    elif args.action_type == 'list':
       bp.print_data(data_type='samples', is_json=args.json, project=args.project)
-    elif args.list_type == 'pipelines':
-      bp.print_data(data_type='pipelines', is_json=args.json)
+    elif args.action_type == 'download':
+      download_sample(bp, args)
 
-  elif args.action == 'get':
-    if args.get_type == 'analysis':
+  if args.datatype == 'analysis':
+    if args.action_type == 'get':
       _list_item(bp, data_type='analysis', uids=args.uid, is_json=args.json)
-    elif args.get_type == 'sample':
-      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
-    elif args.get_type == 'module':
-      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
-    elif args.get_type == 'pipeline':
-      _list_item(bp, data_type='pipeline', uids=args.uid, is_json=args.json)
-    elif args.get_type == 'genome':
-      _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
-  elif args.action == 'update':
-    if args.update_type == 'analysis':
+    elif args.action_type == 'create':
+      create_analysis(bp, args)
+    elif args.action_type == 'update':
       update_analysis(bp, args.analysis, args.key, args.val)
-    if args.update_type == 'project':
-      update_project(bp, args)
-    if args.update_type == 'sample':
-      update_sample(bp, args)
-  elif args.action == 'reanalyze':
-    reanalyze(bp, args.uid)
+    elif args.action_type == 'delete':
+      delete(bp, args.datatype, args.uid)
+    elif args.action_type == 'list':
+      bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
+    elif args.action_type == 'reanalyze':
+      reanalyze(bp, args.uid)
+    elif args.action_type == 'download':
+      if args.download_type == 'log':
+        download_log(bp, args)
+      else:
+        download_analysis(bp, args)
 
+  if args.datatype == 'genome':
+    if args.action_type == 'get':
+      _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
+    elif args.action_type == 'list':
+      bp.print_data(data_type='genomes', is_json=args.json)
+
+  if args.datatype == 'project':
+    if args.action_type == 'create':
+      create_project(bp, args)
+    elif args.action_type == 'update':
+      update_project(bp, args)
+
+  if args.datatype == 'file':
+    if args.action_type == 'download':
+      download_file(bp, args)
 
 def create_project(bp, args):
   '''Create project'''
@@ -556,59 +557,139 @@ def read_args():
     formatter_class=argparse.RawDescriptionHelpFormatter
   )
 
-  actions_p = parser.add_subparsers(
-    help='Basepair actions.',
-    dest='action'
+  datatype_p = parser.add_subparsers(
+    help='Basepair datatype.',
+    dest='datatype'
   )
-  actions_p.required = True
+  datatype_p.required = True
 
-  # create parser
-  create_p = actions_p.add_parser(
+  # module parser
+  module_p = datatype_p.add_parser(
+    'module',
+    help='module create, module update, etc.'
+  )
+  module_action_sp = module_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
+  )
+
+  # get module parser
+  get_module_p = module_action_sp.add_parser(
+    'get',
+    help='Detail a module'
+  )
+  get_module_p = add_common_args(get_module_p)
+  get_module_p = add_uid_parser(get_module_p)
+  get_module_p = add_json_parser(get_module_p)
+
+  # create module parser
+  create_module_p = module_action_sp.add_parser(
     'create',
-    help='Create samples, analyses, etc.'
+    help='Create module.'
   )
-  create_sp = create_p.add_subparsers(
-    help='Type of item to download',
-    dest='create_type'
+  create_module_p = add_common_args(create_module_p)
+  create_module_p = add_yaml_parser(create_module_p)
+  create_module_p = add_force_parser(create_module_p)
+
+  # update module parser
+  update_module_parser = module_action_sp.add_parser(
+    'update',
+    help='Update information associated with a module.'
+  )
+  update_module_parser = add_common_args(update_module_parser)
+  update_module_parser = add_yaml_parser(update_module_parser)
+
+  # delete module parser
+  delete_module_p = module_action_sp.add_parser(
+    'delete',
+    help='delete a module.'
+  )
+  delete_module_p = add_common_args(delete_module_p)
+  delete_module_p = add_uid_parser(delete_module_p)
+
+  # list module parser
+  list_modules_p = module_action_sp.add_parser(
+    'list',
+    help='List available modules of a pipeline'
+  )
+  list_modules_p = add_common_args(list_modules_p)
+  list_modules_p = add_uid_parser(list_modules_p)
+  list_modules_p = add_json_parser(list_modules_p)
+
+  # pipeline parser
+  pipeline_p = datatype_p.add_parser(
+    'pipeline',
+    help='pipeline create, pipeline update, etc.'
+  )
+  pipeline_action_sp = pipeline_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
   )
 
-  # create project parser
-  create_project_p = create_sp.add_parser(
-    'project',
-    help='Add a project to your account on Basepair.'
+  # get pipeline parser
+  get_pipeline_p = pipeline_action_sp.add_parser(
+    'get',
+    help='Detail a pipeline'
   )
-  create_project_p = add_common_args(create_project_p)
-  create_project_p.add_argument('--name')
-  create_project_p = add_payload_args(create_project_p)
+  get_pipeline_p = add_common_args(get_pipeline_p)
+  get_pipeline_p = add_uid_parser(get_pipeline_p)
+  get_pipeline_p = add_json_parser(get_pipeline_p)
 
-  # create sample parser
-  create_sample_p = create_sp.add_parser(
-    'sample',
-    help='Add a sample to your account on Basepair.'
+  # create pipeline parser
+  create_pipeline_p = pipeline_action_sp.add_parser(
+    'create',
+    help='Create pipeline'
   )
-  create_sample_p = add_common_args(create_sample_p)
-  create_sample_p.add_argument('--name')
-  create_sample_p.add_argument('--genome')
-  create_sample_p.add_argument('--platform')
-  create_sample_p.add_argument(
-    '--datatype',
-    choices=[
-      'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-      'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
-    ],
-    default='rna-seq'
+  create_pipeline_p = add_common_args(create_pipeline_p)
+  create_pipeline_p = add_yaml_parser(create_pipeline_p)
+  create_pipeline_p = add_force_parser(create_pipeline_p)
+
+  # update pipeline parser
+  update_pipeline_parser = pipeline_action_sp.add_parser(
+    'udpate',
+    help='Update information associated with a pipeline'
   )
-  create_sample_p.add_argument('--file1', nargs='+')
-  create_sample_p.add_argument('--file2', nargs='+')
-  create_sample_p.add_argument('-w', '--workflow', help='Workflow id')
-  create_sample_p.add_argument('-p', '--project', help='Project id')
-  create_sample_p.add_argument('--key', action='append')
-  create_sample_p.add_argument('--val', action='append')
-  create_sample_p = add_payload_args(create_sample_p)
+  update_pipeline_parser = add_common_args(update_pipeline_parser)
+  update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
+
+  # delete pipeline parser
+  delete_pipeline_p = pipeline_action_sp.add_parser(
+    'delete',
+    help='delete a pipeline.'
+  )
+  delete_pipeline_p = add_common_args(delete_pipeline_p)
+  delete_pipeline_p = add_uid_parser(delete_pipeline_p)
+
+  # list pipeline parser
+  list_pipelines_p = pipeline_action_sp.add_parser(
+    'list',
+    help='List available pipelines.'
+  )
+  list_pipelines_p = add_common_args(list_pipelines_p)
+  list_pipelines_p = add_json_parser(list_pipelines_p)
+
+  # analysis parser
+  analysis_p = datatype_p.add_parser(
+    'analysis',
+    help='analysis create, analysis update, etc.'
+  )
+  analysis_action_sp = analysis_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
+  )
+
+  # get analysis parser
+  get_analysis_p = analysis_action_sp.add_parser(
+    'get',
+    help='Detail a analysis'
+  )
+  get_analysis_p = add_common_args(get_analysis_p)
+  get_analysis_p = add_uid_parser(get_analysis_p)
+  get_analysis_p = add_json_parser(get_analysis_p)
 
   # create analysis parser
-  create_analysis_p = create_sp.add_parser(
-    'analysis',
+  create_analysis_p = analysis_action_sp.add_parser(
+    'create',
     help='Create and run an analysis.'
   )
   create_analysis_p = add_common_args(create_analysis_p)
@@ -630,48 +711,115 @@ def read_args():
     help='Ignore validation warnings',
   )
 
-  # create module parser
-  create_module_p = create_sp.add_parser(
-    'module',
-    help='Create module.'
-  )
-  create_module_p = add_common_args(create_module_p)
-  create_module_p = add_yaml_parser(create_module_p)
-  create_module_p = add_force_parser(create_module_p)
-
-  # create workflow parser
-  create_pipeline_p = create_sp.add_parser(
-    'pipeline',
-    help='Create pipeline'
-  )
-  create_pipeline_p = add_common_args(create_pipeline_p)
-  create_pipeline_p = add_yaml_parser(create_pipeline_p)
-  create_pipeline_p = add_force_parser(create_pipeline_p)
-
-  # update parser
-  update_p = actions_p.add_parser(
+  # update an analysis parser
+  update_analysis_parser = analysis_action_sp.add_parser(
     'update',
-    help='Update analyses, samples, project.'
+    help='Update information associated with an analysis.'
   )
-  update_sp = update_p.add_subparsers(
-    help='Type of item to update',
-    dest='update_type'
+  update_analysis_parser = add_common_args(update_analysis_parser)
+  update_analysis_parser.add_argument('-a', '--analysis', help='Analysis id')
+  update_analysis_parser.add_argument('--key', action='append')
+  update_analysis_parser.add_argument('--val', action='append')
+
+  # delete analysis parser
+  delete_analysis_p = analysis_action_sp.add_parser(
+    'delete',
+    help='delete an analysis.'
   )
-  # update project parser
-  update_project_parser = update_sp.add_parser(
-    'project',
-    help='Update information associated with a project.'
+  delete_analysis_p = add_common_args(delete_analysis_p)
+  delete_analysis_p = add_uid_parser(delete_analysis_p)
+
+  # list analysis parser
+  list_analyses_p = analysis_action_sp.add_parser(
+    'list',
+    help='List basic info about your analyses'
   )
-  update_project_parser = add_common_args(update_project_parser)
-  update_project_parser.add_argument(
-    '-p', '--project', nargs='+', help='project id'
+  list_analyses_p.add_argument(
+    '-p',
+    '--project',
+    help='List analyses of the project'
   )
-  update_project_parser.add_argument('--emails', default=[], nargs='+')
-  update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
-  update_project_parser.add_argument('--name')
-  # update sample parser
-  update_sample_parser = update_sp.add_parser(
+  list_analyses_p = add_common_args(list_analyses_p)
+  list_analyses_p = add_json_parser(list_analyses_p)
+
+  # download analysis parser
+  download_analysis_p = analysis_action_sp.add_parser(
+    'download',
+    help='Download files for one or more analyses. Can filter by file tags.'
+  )
+  download_analysis_log_sp = download_analysis_p.add_subparsers(
+    help='Type of action to perform',
+    dest='download_type'
+  )
+  download_analysis_p = add_uid_parser(download_analysis_p)
+  download_analysis_p = add_tags_parser(download_analysis_p)
+  download_analysis_p = add_outdir_parser(download_analysis_p)
+  download_analysis_p = add_common_args(download_analysis_p)
+
+  # reanalyze parser
+  reanalyze_p = analysis_action_sp.add_parser(
+    'reanalyze',
+    help='Reanalyze analyses.'
+  )
+  reanalyze_p = add_common_args(reanalyze_p)
+  reanalyze_p = add_uid_parser(reanalyze_p)
+
+  # download analysis log parser
+  download_log_p = download_analysis_log_sp.add_parser(
+    'log',
+    help='Download analysis logs from one or more analyses.'
+  )
+  download_log_p = add_uid_parser(download_log_p)
+  download_log_p = add_outdir_parser(download_log_p)
+  download_log_p = add_common_args(download_log_p)
+
+  # sample parser
+  sample_p = datatype_p.add_parser(
     'sample',
+    help='sample create, sample update, etc.'
+  )
+  sample_action_sp = sample_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
+  )
+
+  # get sample parser
+  get_sample_p = sample_action_sp.add_parser(
+    'get',
+    help='List detail info about one or more samples.'
+  )
+  get_sample_p = add_common_args(get_sample_p)
+  get_sample_p = add_uid_parser(get_sample_p)
+  get_sample_p = add_json_parser(get_sample_p)
+
+  # create sample parser
+  create_sample_p = sample_action_sp.add_parser(
+    'create',
+    help='Create a datatype.'
+  )
+  create_sample_p = add_common_args(create_sample_p)
+  create_sample_p.add_argument('--name')
+  create_sample_p.add_argument('--genome')
+  create_sample_p.add_argument('--platform')
+  create_sample_p.add_argument(
+    '--datatype',
+    choices=[
+      'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+      'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+    ],
+    default='rna-seq'
+  )
+  create_sample_p.add_argument('--file1', nargs='+')
+  create_sample_p.add_argument('--file2', nargs='+')
+  create_sample_p.add_argument('-w', '--workflow', help='Workflow id')
+  create_sample_p.add_argument('-p', '--project', help='Project id')
+  create_sample_p.add_argument('--key', action='append')
+  create_sample_p.add_argument('--val', action='append')
+  create_sample_p = add_payload_args(create_sample_p)
+
+  # update sample parser
+  update_sample_parser = sample_action_sp.add_parser(
+    'update',
     help='Update information associated with a sample.'
   )
   update_sample_parser = add_common_args(update_sample_parser)
@@ -689,182 +837,18 @@ def read_args():
   )
   update_sample_parser.add_argument('--key', action='append')
   update_sample_parser.add_argument('--val', action='append')
-  # update analysis parser
-  update_analysis_parser = update_sp.add_parser(
-    'analysis',
-    help='Update information associated with an analysis.'
-  )
-  update_analysis_parser = add_common_args(update_analysis_parser)
-  update_analysis_parser.add_argument('-a', '--analysis', help='Analysis id')
-  update_analysis_parser.add_argument('--key', action='append')
-  update_analysis_parser.add_argument('--val', action='append')
 
-  # update module parser
-  update_module_parser = update_sp.add_parser(
-    'module',
-    help='Update information associated with a module.'
-  )
-  update_module_parser = add_common_args(update_module_parser)
-  update_module_parser = add_yaml_parser(update_module_parser)
-
-  # update workflow parser
-  update_pipeline_parser = update_sp.add_parser(
-    'pipeline',
-    help='Update information associated with a pipeline'
-  )
-  update_pipeline_parser = add_common_args(update_pipeline_parser)
-  update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
-
-  # download parsers
-  download_p = actions_p.add_parser('download', help='Download items.')
-
-  download_sp = download_p.add_subparsers(
-    help='Type of item to download',
-    dest='download_type'
-  )
-
-  download_analysis_p = download_sp.add_parser(
-    'analysis',
-    help='Download files for one or more analyses. Can filter by file tags.'
-  )
-  download_analysis_p = add_uid_parser(download_analysis_p)
-  download_analysis_p = add_tags_parser(download_analysis_p)
-  download_analysis_p = add_outdir_parser(download_analysis_p)
-  download_analysis_p = add_common_args(download_analysis_p)
-
-  download_file_p = download_sp.add_parser(
-    'file',
-    help='Download one or more files by uid.'
-  )
-  download_file_p = add_uid_parser(download_file_p)
-  download_file_p = add_outdir_parser(download_file_p)
-  download_file_p = add_common_args(download_file_p)
-
-  download_log_p = download_sp.add_parser(
-    'log',
-    help='Download analysis logs from one or more analyses.'
-  )
-  download_log_p = add_uid_parser(download_log_p)
-  download_log_p = add_outdir_parser(download_log_p)
-  download_log_p = add_common_args(download_log_p)
-
-  download_sample_p = download_sp.add_parser(
-    'sample',
-    help='Download raw data or analysis files by tags from one or more samples.'
-  )
-  download_sample_p = add_uid_parser(download_sample_p)
-  download_sample_p = add_tags_parser(download_sample_p)
-  download_sample_p = add_outdir_parser(download_sample_p)
-  download_sample_p = add_common_args(download_sample_p)
-
-  # delete parser
-  delete_parser = actions_p.add_parser(
+  # delete sample parser
+  delete_sample_p = sample_action_sp.add_parser(
     'delete',
-    help='Delete a sample or analysis from your Basepair account.'
-  )
-  delete_sp = delete_parser.add_subparsers(
-    dest='delete_type',
-    help='Type of data to delete. Options: sample, analysis, pipeline, module',
-  )
-  delete_analysis_p = delete_sp.add_parser(
-    'analysis',
-    help='delete an analysis.'
-  )
-  delete_analysis_p = add_common_args(delete_analysis_p)
-  delete_analysis_p = add_uid_parser(delete_analysis_p)
-
-  delete_sample_p = delete_sp.add_parser(
-    'sample',
     help='delete a sample.'
   )
   delete_sample_p = add_common_args(delete_sample_p)
   delete_sample_p = add_uid_parser(delete_sample_p)
 
-  delete_pipeline_p = delete_sp.add_parser(
-    'pipeline',
-    help='delete a pipeline.'
-  )
-  delete_pipeline_p = add_common_args(delete_pipeline_p)
-  delete_pipeline_p = add_uid_parser(delete_pipeline_p)
-
-  delete_module_p = delete_sp.add_parser(
-    'module',
-    help='delete a module.'
-  )
-  delete_module_p = add_common_args(delete_module_p)
-  delete_module_p = add_uid_parser(delete_module_p)
-
-  # get parser
-  get_p = actions_p.add_parser('get', help='Detail of an item.')
-
-  get_sp = get_p.add_subparsers(
-    dest='get_type',
-    help='Type of item to get detail',
-  )
-
-  get_analysis_p = get_sp.add_parser(
-    'analysis',
-    help='get files and other info for one or more analyses.'
-  )
-  get_analysis_p = add_common_args(get_analysis_p)
-  get_analysis_p = add_uid_parser(get_analysis_p)
-  get_analysis_p = add_json_parser(get_analysis_p)
-
-  get_sample_p = get_sp.add_parser(
-    'sample',
-    help='List detail info about one or more samples.'
-  )
-  get_sample_p = add_common_args(get_sample_p)
-  get_sample_p = add_uid_parser(get_sample_p)
-  get_sample_p = add_json_parser(get_sample_p)
-
-  get_pipeline_p = get_sp.add_parser(
-    'pipeline',
-    help='Detail a pipeline'
-  )
-  get_pipeline_p = add_common_args(get_pipeline_p)
-  get_pipeline_p = add_uid_parser(get_pipeline_p)
-  get_pipeline_p = add_json_parser(get_pipeline_p)
-
-  get_module_p = get_sp.add_parser(
-    'module',
-    help='Detail a module'
-  )
-  get_module_p = add_common_args(get_module_p)
-  get_module_p = add_uid_parser(get_module_p)
-  get_module_p = add_json_parser(get_module_p)
-
-  get_genome_p = get_sp.add_parser(
-    'genome',
-    help='List detail info about one or more genomes.'
-  )
-  get_genome_p = add_common_args(get_genome_p)
-  get_genome_p = add_uid_parser(get_genome_p)
-  get_genome_p = add_json_parser(get_genome_p)
-
-
-  # list parser
-  list_p = actions_p.add_parser('list', help='List of items.')
-
-  list_sp = list_p.add_subparsers(
-    dest='list_type',
-    help='Type of item to list',
-  )
-
-  list_analyses_p = list_sp.add_parser(
-    'analyses',
-    help='List basic info about your analyses'
-  )
-  list_analyses_p.add_argument(
-    '-p',
-    '--project',
-    help='List analyses of the project'
-  )
-  list_analyses_p = add_common_args(list_analyses_p)
-  list_analyses_p = add_json_parser(list_analyses_p)
-
-  list_samples_p = list_sp.add_parser(
-    'samples',
+  # list sample parser
+  list_samples_p = sample_action_sp.add_parser(
+    'list',
     help='List basic info about all your samples.'
   )
   list_samples_p.add_argument(
@@ -873,37 +857,96 @@ def read_args():
     help='List samples of the project'
   )
   list_samples_p = add_common_args(list_samples_p)
-  list_samples_p = add_json_parser(list_samples_p)
+  list_samples_p = add_json_parser(list_samples_p)  
 
-  list_genomes_p = list_sp.add_parser(
-    'genomes',
+  # download sample parser
+  download_sample_p = sample_action_sp.add_parser(
+    'download',
+    help='Download raw data or analysis files by tags from one or more samples.'
+  )
+  download_sample_p = add_uid_parser(download_sample_p)
+  download_sample_p = add_tags_parser(download_sample_p)
+  download_sample_p = add_outdir_parser(download_sample_p)
+  download_sample_p = add_common_args(download_sample_p)
+
+  # genome parser
+  genome_p = datatype_p.add_parser(
+    'genome',
+    help='genome create, genome update, etc.'
+  )
+  genome_action_sp = genome_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
+  )
+
+  # get genome parser
+  get_genome_p = genome_action_sp.add_parser(
+    'get',
+    help='List detail info about one or more genomes.'
+  )
+  get_genome_p = add_common_args(get_genome_p)
+  get_genome_p = add_uid_parser(get_genome_p)
+  get_genome_p = add_json_parser(get_genome_p)
+
+  # list genome parser
+  list_genomes_p = genome_action_sp.add_parser(
+    'list',
     help='List available genomes.'
   )
   list_genomes_p = add_common_args(list_genomes_p)
   list_genomes_p = add_json_parser(list_genomes_p)
 
-  list_pipelines_p = list_sp.add_parser(
-    'pipelines',
-    help='List available workflows.'
+  # project parser
+  project_p = datatype_p.add_parser(
+    'project',
+    help='project create, project update, etc.'
   )
-  list_pipelines_p = add_common_args(list_pipelines_p)
-  list_pipelines_p = add_json_parser(list_pipelines_p)
+  project_action_sp = project_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
+  )
 
-  list_modules_p = list_sp.add_parser(
-    'pipeline_modules',
-    help='List available modules of a pipeline'
+  # create project parser
+  create_project_p = project_action_sp.add_parser(
+    'create',
+    help='Add a project to your account on Basepair.'
   )
-  list_modules_p = add_common_args(list_modules_p)
-  list_modules_p = add_uid_parser(list_modules_p)
-  list_modules_p = add_json_parser(list_modules_p)
+  create_project_p = add_common_args(create_project_p)
+  create_project_p.add_argument('--name')
+  create_project_p = add_payload_args(create_project_p)
 
-  # reanalyze parser
-  reanalyze_p = actions_p.add_parser(
-    'reanalyze',
-    help='Reanalyze analyses.'
+  # update project parser
+  update_project_parser = project_action_sp.add_parser(
+    'update',
+    help='Update information associated with a project.'
   )
-  reanalyze_p = add_common_args(reanalyze_p)
-  reanalyze_p = add_uid_parser(reanalyze_p)
+  update_project_parser = add_common_args(update_project_parser)
+  update_project_parser.add_argument(
+    '-p', '--project', nargs='+', help='project id'
+  )
+  update_project_parser.add_argument('--emails', default=[], nargs='+')
+  update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
+  update_project_parser.add_argument('--name')
+
+  # file parser
+  file_p = datatype_p.add_parser(
+    'file',
+    help='file download, etc.'
+  )
+  file_action_sp = file_p.add_subparsers(
+    help='Type of action to perform',
+    dest='action_type'
+  )
+
+  # download file parser
+  download_file_p = file_action_sp.add_parser(
+    'download',
+    help='Download one or more files by uid.'
+  )
+  download_file_p = add_uid_parser(download_file_p)
+  download_file_p = add_outdir_parser(download_file_p)
+  download_file_p = add_common_args(download_file_p)
+  
 
   parser.set_defaults(params=[],)
   args = parser.parse_args()
