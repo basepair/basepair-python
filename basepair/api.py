@@ -29,6 +29,8 @@ import time
 import datetime
 import yaml
 
+from basepair.infra.webapp import user
+
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
@@ -594,6 +596,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### PROJECT ####################################################################################
   ################################################################################################
+
+  def get_projects(self, filters={}): # pylint: disable=dangerous-default-value
+    '''Get project list'''
+    return (Project(self.conf.get('api'))).list_all(filters=filters)
+
   def create_project(self, data):
     '''Create resource'''
     info = (Project(self.conf.get('api'))).save(payload=data)
@@ -1390,7 +1397,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'genomes': 'get_genomes',
       'pipeline_modules': 'get_pipeline_modules',
       'samples': 'get_samples',
-      'pipelines': 'get_pipelines'
+      'pipelines': 'get_pipelines',
+      'projects': 'get_projects'
     }
 
     # get the appropriate data
@@ -1536,7 +1544,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   @staticmethod
   def yes_or_no(question):
-    '''Helper to get user response'''
+    '''
+    Ask a yes/no question via raw_input() and return their answer.
+
+    Parameters
+    ----------
+    question - str
+        Is a string that is presented to the user.
+
+    default - str
+        is the presumed answer if the user just hits <Enter>.
+        It must be "yes" (the default), "no" or None (meaning
+        an answer is required of the user).
+
+    '''
     valid = {
       'yes': True,
       'y': True,

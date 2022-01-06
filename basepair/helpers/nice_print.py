@@ -230,3 +230,23 @@ class NicePrint:
       'description',
       'tags',
     ]))
+
+  @staticmethod
+  def projects(data):
+    '''Print projects'''
+    to_print = [
+      [
+        pipeline['id'],
+        pipeline['name'],
+        pipeline['owner_fullname'],
+        pipeline['last_updated'],
+        pipeline['visibility']
+      ] for pipeline in data
+    ]
+    print(tabulate(to_print, headers=[
+      'id',
+      'name',
+      'owner_fullname',
+      'last_updated',
+      'visibility',
+    ]))

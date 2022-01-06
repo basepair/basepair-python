@@ -25,51 +25,10 @@ import os
 
 # App imports
 from basepair.helpers import eprint
+from datatypes import Analysis, File, Genome, Module, Project, Pipeline, Sample
 
 sys.path.insert(0, '/home/ec2-user/basepair')
 import basepair
-
-
-def yes_or_no(question):
-  '''
-  Ask a yes/no question via raw_input() and return their answer.
-
-  Parameters
-  ----------
-  question - str
-      Is a string that is presented to the user.
-
-  default - str
-      is the presumed answer if the user just hits <Enter>.
-      It must be "yes" (the default), "no" or None (meaning
-      an answer is required of the user).
-
-  '''
-  valid = {
-    'yes': True,
-    'y': True,
-    'ye': True,
-    'no': False,
-    'n': False
-  }
-
-  prompt = ' [y/n] '
-
-  while True:
-
-    # get input function for py 2 and 3
-    get_input = input
-    if sys.version_info[:2] <= (2, 7):
-      get_input = raw_input
-
-    # get input from user
-    sys.stdout.write(question + prompt)
-    choice = get_input().lower()
-
-    # check answer
-    if choice in valid:
-      return valid[choice]
-    sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
 
 
 def main():
@@ -81,12 +40,6 @@ def main():
   else:
     conf = None
 
-  # will override default and use these as owner for all actions
-  # if args.username:
-  #     conf['api']['username'] = args.username
-  # if args.api_key:
-  #     conf['api']['api_key'] = args.api_key
-
   bp = basepair.connect(
     conf=conf,
     scratch=args.scratch,
@@ -95,469 +48,11 @@ def main():
     verbose=args.verbose
   )
 
-  if args.datatype == 'module':
-    if args.action_type == 'get':
-      _list_item(bp, data_type='module', uids=args.uid, is_json=args.json)
-    elif args.action_type == 'create':
-      create_module(bp, args)
-    elif args.action_type == 'update':
-      update_module(bp, args)
-    elif args.action_type == 'delete':
-      delete(bp, args.datatype, args.uid)
-    elif args.action_type == 'list':
-      _list_item(bp, data_type='pipeline_modules', uids=args.uid, is_json=args.json)
+  method_name = f'{args.action_type}_{args.datatype}'
+  method = getattr(eval(args.datatype.title()), method_name)
+  if callable(method):
+    method(bp, args)
 
-  if args.datatype == 'pipeline':
-    if args.action_type == 'get':
-      _list_item(bp, data_type='pipeline', uids=args.uid, is_json=args.json)
-    elif args.action_type == 'create':
-      create_pipeline(bp, args)
-    elif args.action_type == 'update':
-      update_pipeline(bp, args)
-    elif args.action_type == 'delete':
-      delete(bp, args.datatype, args.uid)
-    elif args.action_type == 'list':
-      bp.print_data(data_type='pipelines', is_json=args.json)
-
-  if args.datatype == 'sample':
-    if args.action_type == 'get':
-      _list_item(bp, data_type='sample', uids=args.uid, is_json=args.json)
-    elif args.action_type == 'create':
-      # if payload username or api key specified, make sure both are present
-      if args.payload_username is not None and args.payload_api_key is None:
-        eprint('specify parameter --payload-api-key!')
-        sys.exit(1)
-      elif args.payload_api_key is not None and args.payload_username is None:
-        eprint('specify parameter --payload-username!')
-        sys.exit(1)
-      elif args.payload_username is not None and args.payload_username is not None:
-        bp.payload = {
-          'username': args.payload_username,
-          'api_key': args.payload_api_key,
-        }
-      create_sample(bp, args)
-    elif args.action_type == 'update':
-      update_sample(bp, args)
-    elif args.action_type == 'delete':
-      delete(bp, args.datatype, args.uid)
-    elif args.action_type == 'list':
-      bp.print_data(data_type='samples', is_json=args.json, project=args.project)
-    elif args.action_type == 'download':
-      download_sample(bp, args)
-
-  if args.datatype == 'analysis':
-    if args.action_type == 'get':
-      _list_item(bp, data_type='analysis', uids=args.uid, is_json=args.json)
-    elif args.action_type == 'create':
-      create_analysis(bp, args)
-    elif args.action_type == 'update':
-      update_analysis(bp, args.analysis, args.key, args.val)
-    elif args.action_type == 'delete':
-      delete(bp, args.datatype, args.uid)
-    elif args.action_type == 'list':
-      bp.print_data(data_type='analyses', is_json=args.json, project=args.project)
-    elif args.action_type == 'reanalyze':
-      reanalyze(bp, args.uid)
-    elif args.action_type == 'download':
-      if args.download_type == 'log':
-        download_log(bp, args)
-      else:
-        download_analysis(bp, args)
-
-  if args.datatype == 'genome':
-    if args.action_type == 'get':
-      _list_item(bp, data_type='genome', uids=args.uid, is_json=args.json)
-    elif args.action_type == 'list':
-      bp.print_data(data_type='genomes', is_json=args.json)
-
-  if args.datatype == 'project':
-    if args.action_type == 'create':
-      create_project(bp, args)
-    elif args.action_type == 'update':
-      update_project(bp, args)
-
-  if args.datatype == 'file':
-    if args.action_type == 'download':
-      download_file(bp, args)
-
-def create_project(bp, args):
-  '''Create project'''
-  data = {'name': args.name}
-  bp.create_project(data=data)
-
-def create_sample(bp, args):
-  '''Create sample'''
-  data = {
-    'datatype': args.datatype,
-    'default_workflow': int(args.workflow) if args.workflow else None,
-    'filepaths1': args.file1,
-    'filepaths2': args.file2,
-    'genome': args.genome,
-    'name': args.name,
-    'platform': args.platform,
-    'projects': int(args.project) if args.project else None,
-  }
-
-  if args.key and args.val:
-    for key, val in zip(args.key, args.val):
-      data[key] = val
-
-  bp.create_sample(data, upload=True, source='cli')
-
-
-def create_analysis(bp, args):
-  '''Create and submit an analysis'''
-  params = {'node': {}}
-
-  if not args.workflow:
-    eprint('ERROR: Workflow required.')
-    return
-
-  if not args.sample:
-    eprint('ERROR: Minimum one sample required.')
-    return
-
-  if args.params:
-    for param in args.params:
-      node_id, arg, val = param.split(':')
-      if node_id not in params['node']:
-        params['node'][node_id] = {}
-      params['node'][node_id][arg] = val
-  else:
-    eprint('You specified no parameters, submitting with default ones...')
-
-  bp.create_analysis(
-    control_ids=args.control or [],
-    ignore_validation_warnings=args.ignore_warning,
-    params=params,
-    project_id=args.project,
-    sample_ids=args.sample,
-    workflow_id=args.workflow,
-  )
-
-def check_yaml(args):
-  '''Checks yaml file'''
-  if not args.file:
-    eprint('ERROR: Yaml file required.')
-    return False
-  if len(args.file) != 1:
-    eprint('Please provide only one yaml')
-    return False
-  yaml_path = args.file[0]
-  valid_extensions = ('.yaml', '.yml')
-  if yaml_path.endswith(valid_extensions):
-    return True
-  eprint('Please provide yaml file only')
-  return False
-
-def create_module(bp, args):
-  '''Create module'''
-  valid = check_yaml(args)
-  if valid:
-    bp.create_module({'yamlpath': args.file[0], 'force':args.force})
-    return
-  return
-
-def create_pipeline(bp, args):
-  '''Create pipeline'''
-  valid = check_yaml(args)
-  if valid:
-    bp.create_pipeline({'yamlpath': args.file[0], 'force':args.force})
-    return
-  return
-
-def download_analysis(bp, args):
-  '''Download analysis'''
-  if not args.uid:
-    eprint('ERROR: Minimum one analysis uid required.')
-    return
-
-  # download a file from an analysis by tags
-  for uid in args.uid:
-    bp.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
-
-
-def download_file(bp, args):
-  '''Download file by uid'''
-  if not args.uid:
-    eprint('ERROR: Minimum one file uid required.')
-    return
-
-  for uid in args.uid:
-    file_i = bp.get_file(uid)
-    bp.download_file(file_i['path'], dirname=args.outdir)
-
-
-def download_log(bp, args):
-  '''Download analysis log'''
-  if not args.uid:
-    eprint('ERROR: Minimum one analysis uid required.')
-    return
-
-  for uid in args.uid:
-    info, res = bp.get_analysis(uid)  # check analysis id is valid
-    if info is None:
-      eprint('{} is not a valid analysis id!'.format(uid))
-      continue
-
-    if args.outdir:
-      bp.get_log(uid, args.outdir)
-    else:
-      bp.get_log(uid)
-
-
-def download_sample(bp, args):
-  '''Download sample'''
-  if not args.uid:
-    eprint('ERROR: Minimum one sample uid required.')
-    return
-
-  for uid in args.uid:
-    sample = bp.get_sample(uid, add_analysis=True)  # check sample id is valid
-    if sample is None:
-      eprint('{} is not a valid sample id!'.format(uid))
-      continue
-
-    # if tags provided, download file by tags
-    if args.tags:
-      bp.get_file_by_tags(sample, tags=args.tags, kind=args.tagkind, dirname=args.outdir)
-    else:
-      bp.download_raw_files(sample, args.outdir)
-
-
-def update_info(bp, kind=None, uid=None, keys=None, vals=None, data={}):
-  '''Update object info'''
-  if keys and vals:
-    for key, val in zip(keys, vals):
-      if kind == 'sample' and key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
-        data['info'] = data.get('info', {})
-        data['info'][key] = val  # set sample info field
-      else:
-        data[key] = val
-
-  if kind == 'sample':
-    res = bp.update_sample(uid, data)
-  elif kind == 'analysis':
-    res = bp.update_analysis(uid, data)
-  if res.get('error'):
-    eprint('error: {}'.format(res.get('msg')))
-
-
-def update_project(bp, args):
-  '''Update project'''
-  if not args.project:
-    eprint('ERROR: Minimum one project required.')
-    return
-
-  data = {}
-  if args.name:
-    data = {'name': args.name}
-
-  params = {}
-  if args.emails and args.perm:
-    params = {
-      'params': json.dumps({
-        'permission_data': {
-          'emails': args.emails,
-          'perm': args.perm,
-        }
-      })
-    }
-
-  if not data and not params:
-    eprint('WARNING: No data to update.')
-    return
-
-  for project_id in args.project:
-    res = bp.update_project(project_id, data=data, params=params)
-
-    if res.get('error'):
-      eprint('error: {}'.format(res.get('msg')))
-
-
-def update_sample(bp, args):
-  '''Update sample'''
-  if not args.sample:
-    eprint('ERROR: Sample required.')
-    return
-
-  data = {}
-  if args.name:
-    data['name'] = args.name
-
-  if args.genome:
-    data['genome'] = args.genome
-
-  if args.datatype:
-    data['datatype'] = args.datatype
-
-  update_info(bp, kind='sample', uid=args.sample, keys=args.key, vals=args.val, data=data)
-
-
-def update_analysis(bp, analysis_id, keys, vals):
-  '''Update analysis'''
-  if not analysis_id:
-    eprint('Error: Analysis required.')
-    return
-  update_info(bp, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
-
-def update_module(bp, args):
-  '''Update module'''
-  valid = check_yaml(args)
-  if valid:
-    bp.update_module({'yamlpath': args.file[0]})
-    return
-  return
-
-def update_pipeline(bp, args):
-  '''Update pipeline'''
-  valid = check_yaml(args)
-  if valid:
-    bp.update_pipeline({'yamlpath': args.file[0]})
-    return
-  return
-
-def delete(bp, data_type, uid):
-  '''Delete object'''
-  if not uid:
-    eprint('Please add one or more uid')
-    return
-  
-  if not data_type:
-    eprint('Please add a datatype')
-    return
-
-  for uid in uid:
-    answer = yes_or_no('Are you sure you want to delete {}?'.format(uid))
-    if answer:
-      if data_type == 'sample':
-        bp.delete_sample(uid)
-      elif data_type == 'analysis':
-        bp.delete_analysis(uid)
-      elif data_type == 'pipeline':
-        bp.delete_pipeline(uid)
-      elif data_type == 'module':
-        bp.delete_module(uid)
-
-
-def reanalyze(bp, uid):
-  '''Restart analysis'''
-  if not uid:
-    eprint('Please add one or more uid')
-    return
-
-  for uid in uid:
-    bp.restart_analysis(uid)
-
-
-def add_common_args(parser):
-  '''Add common args'''
-  parser.add_argument('-c', '--config', help='API config info')
-  parser.add_argument('--quiet', action='store_true')
-  parser.add_argument('--keep-cloud-service-conf', action='store_true')
-  parser.add_argument('--use-cache', action='store_true')
-  parser.add_argument('--scratch', help='Scratch dir for files')
-  parser.add_argument('--verbose', action='store_true')
-  parser.set_defaults(scratch='.')
-  return parser
-
-
-def add_payload_args(parser):
-  '''Add payload args'''
-  parser.add_argument(
-    '--payload-username',
-    help='Replace payload api key. Must also specify --payload-api-key'
-  )
-  parser.add_argument(
-    '--payload-api-key',
-    help='Replace payload api key. Must also specify --payload-username'
-  )
-  return parser
-
-
-def add_uid_parser(parser,datatype):
-  '''Add uid parser'''
-  parser.add_argument(
-    '-u',
-    '--uid',
-    nargs='+',
-    default=None,
-    help=f'The unique id(s) for {datatype}'
-  )
-  return parser
-
-def add_pid_parser(parser):
-  '''Add pipeline id parser'''
-  parser.add_argument(
-    '--pipeline',
-    nargs='+',
-    default=None,
-    help='The unique pipeline id'
-  )
-  return parser
-
-
-def add_json_parser(parser):
-  '''Add json parser'''
-  parser.add_argument(
-    '--json',
-    action='store_true',
-    help='(Optional) Print the data in JSON format (this shows all data associated with each item).'
-  )
-  return parser
-
-
-def add_outdir_parser(parser):
-  '''Add outdir parser'''
-  parser.add_argument(
-    '-o',
-    '--outdir',
-    required=False,
-    default='.',
-    help='Base directory to save files to (default \'.\').'
-  )
-  return parser
-
-def add_tags_parser(parser):
-  '''Add tags parser'''
-  parser.add_argument(
-    '--tags',
-    nargs='+',
-    action='append',
-    default=None
-  )
-  parser.add_argument(
-    '--tagkind',
-    choices=['diff', 'exact', 'subset'],
-    default='exact',
-    help='''
-             Tag filtering strategy. Options:\n
-             (1) exact (default): only get files with exactly these tags.
-             (2) diff: exclude files with this tag.
-             (3) subset: any files with one or more of these tags.
-             '''
-  )
-  return parser
-
-def add_yaml_parser(parser):
-  '''Add yaml file parser'''
-  parser.add_argument(
-    '--file',
-    default=None,
-    required=True,
-    help='The filepath of YAML',
-    nargs='+'
-  )
-  return parser
-
-def add_force_parser(parser, datatype):
-  '''Add force parser'''
-  parser.add_argument(
-    '--force',
-    action='store_true',
-    help=f'(Optional) Override existing {datatype}.'
-  )
-  return parser
 
 def read_args():
   '''Read args'''
@@ -582,48 +77,7 @@ def read_args():
     dest='action_type'
   )
 
-  # get module parser
-  get_module_p = module_action_sp.add_parser(
-    'get',
-    help='Get details of a module'
-  )
-  get_module_p = add_common_args(get_module_p)
-  get_module_p = add_uid_parser(get_module_p, 'module')
-  get_module_p = add_json_parser(get_module_p)
-
-  # create module parser
-  create_module_p = module_action_sp.add_parser(
-    'create',
-    help='Create module from yaml.'
-  )
-  create_module_p = add_common_args(create_module_p)
-  create_module_p = add_yaml_parser(create_module_p)
-  create_module_p = add_force_parser(create_module_p, 'module')
-
-  # update module parser
-  update_module_parser = module_action_sp.add_parser(
-    'update',
-    help='Update information associated with a module.'
-  )
-  update_module_parser = add_common_args(update_module_parser)
-  update_module_parser = add_yaml_parser(update_module_parser)
-
-  # delete module parser
-  delete_module_p = module_action_sp.add_parser(
-    'delete',
-    help='delete a module.'
-  )
-  delete_module_p = add_common_args(delete_module_p)
-  delete_module_p = add_uid_parser(delete_module_p, 'module')
-
-  # list module parser
-  list_modules_p = module_action_sp.add_parser(
-    'list',
-    help='List available modules of a pipeline.'
-  )
-  list_modules_p = add_common_args(list_modules_p)
-  list_modules_p = add_pid_parser(list_modules_p)
-  list_modules_p = add_json_parser(list_modules_p)
+  Module.module_action_parser(module_action_sp)
 
   # pipeline parser
   pipeline_p = datatype_p.add_parser(
@@ -635,47 +89,7 @@ def read_args():
     dest='action_type'
   )
 
-  # get pipeline parser
-  get_pipeline_p = pipeline_action_sp.add_parser(
-    'get',
-    help='Get details of a pipeline.'
-  )
-  get_pipeline_p = add_common_args(get_pipeline_p)
-  get_pipeline_p = add_uid_parser(get_pipeline_p, 'pipeline')
-  get_pipeline_p = add_json_parser(get_pipeline_p)
-
-  # create pipeline parser
-  create_pipeline_p = pipeline_action_sp.add_parser(
-    'create',
-    help='Create pipeline from yaml.'
-  )
-  create_pipeline_p = add_common_args(create_pipeline_p)
-  create_pipeline_p = add_yaml_parser(create_pipeline_p)
-  create_pipeline_p = add_force_parser(create_pipeline_p, 'pipeline')
-
-  # update pipeline parser
-  update_pipeline_parser = pipeline_action_sp.add_parser(
-    'udpate',
-    help='Update information associated with a pipeline.'
-  )
-  update_pipeline_parser = add_common_args(update_pipeline_parser)
-  update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
-
-  # delete pipeline parser
-  delete_pipeline_p = pipeline_action_sp.add_parser(
-    'delete',
-    help='delete a pipeline.'
-  )
-  delete_pipeline_p = add_common_args(delete_pipeline_p)
-  delete_pipeline_p = add_uid_parser(delete_pipeline_p, 'pipeline')
-
-  # list pipeline parser
-  list_pipelines_p = pipeline_action_sp.add_parser(
-    'list',
-    help='List available pipelines.'
-  )
-  list_pipelines_p = add_common_args(list_pipelines_p)
-  list_pipelines_p = add_json_parser(list_pipelines_p)
+  Pipeline.pipeline_action_parser(pipeline_action_sp)
 
   # analysis parser
   analysis_p = datatype_p.add_parser(
@@ -687,99 +101,7 @@ def read_args():
     dest='action_type'
   )
 
-  # get analysis parser
-  get_analysis_p = analysis_action_sp.add_parser(
-    'get',
-    help='Get details of an analysis.'
-  )
-  get_analysis_p = add_common_args(get_analysis_p)
-  get_analysis_p = add_uid_parser(get_analysis_p, 'analysis')
-  get_analysis_p = add_json_parser(get_analysis_p)
-
-  # create analysis parser
-  create_analysis_p = analysis_action_sp.add_parser(
-    'create',
-    help='Create and run an analysis.'
-  )
-  create_analysis_p = add_common_args(create_analysis_p)
-  create_analysis_p.add_argument('-p', '--project', help='Project id')
-  create_analysis_p.add_argument(
-    '--workflow', help='Workflow id'
-  )
-  create_analysis_p.add_argument(
-    '--sample', nargs='+', help='Sample id'
-  )
-  create_analysis_p.add_argument(
-    '--control', nargs='+', help='Control id'
-  )
-  create_analysis_p.add_argument('--params', nargs='+')
-  create_analysis_p.add_argument(
-    '--ignore-warning',
-    action='store_true',
-    default=False,
-    help='Ignore validation warnings',
-  )
-
-  # update an analysis parser
-  update_analysis_parser = analysis_action_sp.add_parser(
-    'update',
-    help='Update information associated with an analysis.'
-  )
-  update_analysis_parser = add_common_args(update_analysis_parser)
-  update_analysis_parser = add_uid_parser(update_analysis_parser,'analysis')
-  update_analysis_parser.add_argument('--key', action='append')
-  update_analysis_parser.add_argument('--val', action='append')
-
-  # delete analysis parser
-  delete_analysis_p = analysis_action_sp.add_parser(
-    'delete',
-    help='delete an analysis.'
-  )
-  delete_analysis_p = add_common_args(delete_analysis_p)
-  delete_analysis_p = add_uid_parser(delete_analysis_p, 'analysis')
-
-  # list analysis parser
-  list_analyses_p = analysis_action_sp.add_parser(
-    'list',
-    help='List basic info about your analyses.'
-  )
-  list_analyses_p.add_argument(
-    '--project',
-    help='List analyses of the project.'
-  )
-  list_analyses_p = add_common_args(list_analyses_p)
-  list_analyses_p = add_json_parser(list_analyses_p)
-
-  # download analysis parser
-  download_analysis_p = analysis_action_sp.add_parser(
-    'download',
-    help='Download files for one or more analyses. Can filter by file tags.'
-  )
-  download_analysis_log_sp = download_analysis_p.add_subparsers(
-    help='download log of an analysis.',
-    dest='download_type'
-  )
-  download_analysis_p = add_uid_parser(download_analysis_p, 'analysis')
-  download_analysis_p = add_tags_parser(download_analysis_p)
-  download_analysis_p = add_outdir_parser(download_analysis_p)
-  download_analysis_p = add_common_args(download_analysis_p)
-
-  # reanalyze parser
-  reanalyze_p = analysis_action_sp.add_parser(
-    'reanalyze',
-    help='Reanalyze analyses.'
-  )
-  reanalyze_p = add_common_args(reanalyze_p)
-  reanalyze_p = add_uid_parser(reanalyze_p, 'analysis')
-
-  # download analysis log parser
-  download_log_p = download_analysis_log_sp.add_parser(
-    'log',
-    help='Download analysis logs from one or more analyses.'
-  )
-  download_log_p = add_uid_parser(download_log_p, 'analysis')
-  download_log_p = add_outdir_parser(download_log_p)
-  download_log_p = add_common_args(download_log_p)
+  Analysis.analysis_action_parser(analysis_action_sp)
 
   # sample parser
   sample_p = datatype_p.add_parser(
@@ -791,88 +113,7 @@ def read_args():
     dest='action_type'
   )
 
-  # get sample parser
-  get_sample_p = sample_action_sp.add_parser(
-    'get',
-    help='List detail info about one or more samples.'
-  )
-  get_sample_p = add_common_args(get_sample_p)
-  get_sample_p = add_uid_parser(get_sample_p, 'sample')
-  get_sample_p = add_json_parser(get_sample_p)
-
-  # create sample parser
-  create_sample_p = sample_action_sp.add_parser(
-    'create',
-    help='Create a sample.'
-  )
-  create_sample_p = add_common_args(create_sample_p)
-  create_sample_p.add_argument('--name')
-  create_sample_p.add_argument('--genome')
-  create_sample_p.add_argument('--platform')
-  create_sample_p.add_argument(
-    '--datatype',
-    choices=[
-      'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-      'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
-    ],
-    default='rna-seq'
-  )
-  create_sample_p.add_argument('--file1', nargs='+')
-  create_sample_p.add_argument('--file2', nargs='+')
-  create_sample_p.add_argument('--workflow', help='Workflow id')
-  create_sample_p.add_argument('--project', help='Project id')
-  create_sample_p.add_argument('--key', action='append')
-  create_sample_p.add_argument('--val', action='append')
-  create_sample_p = add_payload_args(create_sample_p)
-
-  # update sample parser
-  update_sample_parser = sample_action_sp.add_parser(
-    'update',
-    help='Update information associated with a sample.'
-  )
-  update_sample_parser = add_common_args(update_sample_parser)
-  update_sample_parser = add_uid_parser(update_sample_parser, 'sample')
-  update_sample_parser.add_argument('--name')
-  update_sample_parser.add_argument('--genome')
-  update_sample_parser.add_argument(
-    '--datatype',
-    choices=[
-      'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-      'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
-    ],
-  )
-  update_sample_parser.add_argument('--key', action='append')
-  update_sample_parser.add_argument('--val', action='append')
-
-  # delete sample parser
-  delete_sample_p = sample_action_sp.add_parser(
-    'delete',
-    help='delete a sample.'
-  )
-  delete_sample_p = add_common_args(delete_sample_p)
-  delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
-
-  # list sample parser
-  list_samples_p = sample_action_sp.add_parser(
-    'list',
-    help='List basic info about all your samples.'
-  )
-  list_samples_p.add_argument(
-    '--project',
-    help='List samples of the project.'
-  )
-  list_samples_p = add_common_args(list_samples_p)
-  list_samples_p = add_json_parser(list_samples_p)  
-
-  # download sample parser
-  download_sample_p = sample_action_sp.add_parser(
-    'download',
-    help='Download one or more samples.'
-  )
-  download_sample_p = add_uid_parser(download_sample_p, 'sample')
-  download_sample_p = add_tags_parser(download_sample_p)
-  download_sample_p = add_outdir_parser(download_sample_p)
-  download_sample_p = add_common_args(download_sample_p)
+  Sample.sample_action_parser(sample_action_sp)
 
   # genome parser
   genome_p = datatype_p.add_parser(
@@ -884,22 +125,7 @@ def read_args():
     dest='action_type'
   )
 
-  # get genome parser
-  get_genome_p = genome_action_sp.add_parser(
-    'get',
-    help='List detail info about one or more genomes.'
-  )
-  get_genome_p = add_common_args(get_genome_p)
-  get_genome_p = add_uid_parser(get_genome_p, 'genome')
-  get_genome_p = add_json_parser(get_genome_p)
-
-  # list genome parser
-  list_genomes_p = genome_action_sp.add_parser(
-    'list',
-    help='List available genomes.'
-  )
-  list_genomes_p = add_common_args(list_genomes_p)
-  list_genomes_p = add_json_parser(list_genomes_p)
+  Genome.genome_action_parser(genome_action_sp)
 
   # project parser
   project_p = datatype_p.add_parser(
@@ -911,27 +137,7 @@ def read_args():
     dest='action_type'
   )
 
-  # create project parser
-  create_project_p = project_action_sp.add_parser(
-    'create',
-    help='Add a project to your account on Basepair.'
-  )
-  create_project_p = add_common_args(create_project_p)
-  create_project_p.add_argument('--name')
-  create_project_p = add_payload_args(create_project_p)
-
-  # update project parser
-  update_project_parser = project_action_sp.add_parser(
-    'update',
-    help='Update information associated with a project.'
-  )
-  update_project_parser = add_common_args(update_project_parser)
-  update_project_parser.add_argument(
-    '--project', nargs='+', help='project id', required=True
-  )
-  update_project_parser.add_argument('--emails', default=[], nargs='+')
-  update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
-  update_project_parser.add_argument('--name')
+  Project.project_action_parser(project_action_sp)
 
   # file parser
   file_p = datatype_p.add_parser(
@@ -943,14 +149,7 @@ def read_args():
     dest='action_type'
   )
 
-  # download file parser
-  download_file_p = file_action_sp.add_parser(
-    'download',
-    help='Download one or more files by uid.'
-  )
-  download_file_p = add_uid_parser(download_file_p, 'file')
-  download_file_p = add_outdir_parser(download_file_p)
-  download_file_p = add_common_args(download_file_p)
+  File.file_action_parser(file_action_sp)
   
 
   parser.set_defaults(params=[],)
@@ -983,28 +182,6 @@ def read_args():
       sys.exit(1)
 
   return args
-
-def _list_item(bp, data_type=None, uids=None, is_json=False):
-  '''List single item of a type'''
-  if not data_type:
-    eprint('Invalid data type.')
-    return
-
-  list_type = ['analysis', 'genome', 'sample', 'module', 'pipeline_modules', 'pipeline']
-  if data_type not in list_type:
-    eprint('List data type - {} currently not supported.'.format(data_type))
-    return
-
-  if not uids:
-    eprint('At least one uid required.')
-    return
-
-  if data_type == 'pipeline_modules' and len(uids) > 1:
-    eprint('Please provide only one pipeline uid.')
-    return
-
-  for uid in uids:
-    bp.print_data(data_type=data_type, uid=uid, is_json=is_json)
 
 if __name__ == '__main__':
   main()
