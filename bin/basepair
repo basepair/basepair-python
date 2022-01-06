@@ -475,14 +475,14 @@ def add_payload_args(parser):
   return parser
 
 
-def add_uid_parser(parser):
+def add_uid_parser(parser,datatype):
   '''Add uid parser'''
   parser.add_argument(
     '-u',
     '--uid',
     nargs='+',
     default=None,
-    help='The unique analysis id(s) to download'
+    help=f'The unique id(s) for {datatype}'
   )
   return parser
 
@@ -541,12 +541,12 @@ def add_yaml_parser(parser):
   )
   return parser
 
-def add_force_parser(parser):
+def add_force_parser(parser, datatype):
   '''Add force parser'''
   parser.add_argument(
     '--force',
     action='store_true',
-    help='(Optional) Override existing resource.'
+    help=f'(Optional) Override existing {datatype}.'
   )
   return parser
 
@@ -558,7 +558,7 @@ def read_args():
   )
 
   datatype_p = parser.add_subparsers(
-    help='Basepair datatype.',
+    help='Basepair datatype - module, pipeline, sample, analysis etc.',
     dest='datatype'
   )
   datatype_p.required = True
@@ -569,27 +569,27 @@ def read_args():
     help='module create, module update, etc.'
   )
   module_action_sp = module_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
   # get module parser
   get_module_p = module_action_sp.add_parser(
     'get',
-    help='Detail a module'
+    help='Get details of a module'
   )
   get_module_p = add_common_args(get_module_p)
-  get_module_p = add_uid_parser(get_module_p)
+  get_module_p = add_uid_parser(get_module_p, 'module')
   get_module_p = add_json_parser(get_module_p)
 
   # create module parser
   create_module_p = module_action_sp.add_parser(
     'create',
-    help='Create module.'
+    help='Create module from yaml.'
   )
   create_module_p = add_common_args(create_module_p)
   create_module_p = add_yaml_parser(create_module_p)
-  create_module_p = add_force_parser(create_module_p)
+  create_module_p = add_force_parser(create_module_p, 'module')
 
   # update module parser
   update_module_parser = module_action_sp.add_parser(
@@ -605,15 +605,15 @@ def read_args():
     help='delete a module.'
   )
   delete_module_p = add_common_args(delete_module_p)
-  delete_module_p = add_uid_parser(delete_module_p)
+  delete_module_p = add_uid_parser(delete_module_p, 'module')
 
   # list module parser
   list_modules_p = module_action_sp.add_parser(
     'list',
-    help='List available modules of a pipeline'
+    help='List available modules of a pipeline.'
   )
   list_modules_p = add_common_args(list_modules_p)
-  list_modules_p = add_uid_parser(list_modules_p)
+  list_modules_p = add_uid_parser(list_modules_p, 'module')
   list_modules_p = add_json_parser(list_modules_p)
 
   # pipeline parser
@@ -622,32 +622,32 @@ def read_args():
     help='pipeline create, pipeline update, etc.'
   )
   pipeline_action_sp = pipeline_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
   # get pipeline parser
   get_pipeline_p = pipeline_action_sp.add_parser(
     'get',
-    help='Detail a pipeline'
+    help='Get details of a pipeline'
   )
   get_pipeline_p = add_common_args(get_pipeline_p)
-  get_pipeline_p = add_uid_parser(get_pipeline_p)
+  get_pipeline_p = add_uid_parser(get_pipeline_p, 'pipeline')
   get_pipeline_p = add_json_parser(get_pipeline_p)
 
   # create pipeline parser
   create_pipeline_p = pipeline_action_sp.add_parser(
     'create',
-    help='Create pipeline'
+    help='Create pipeline from yaml'
   )
   create_pipeline_p = add_common_args(create_pipeline_p)
   create_pipeline_p = add_yaml_parser(create_pipeline_p)
-  create_pipeline_p = add_force_parser(create_pipeline_p)
+  create_pipeline_p = add_force_parser(create_pipeline_p, 'pipeline')
 
   # update pipeline parser
   update_pipeline_parser = pipeline_action_sp.add_parser(
     'udpate',
-    help='Update information associated with a pipeline'
+    help='Update information associated with a pipeline.'
   )
   update_pipeline_parser = add_common_args(update_pipeline_parser)
   update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
@@ -658,7 +658,7 @@ def read_args():
     help='delete a pipeline.'
   )
   delete_pipeline_p = add_common_args(delete_pipeline_p)
-  delete_pipeline_p = add_uid_parser(delete_pipeline_p)
+  delete_pipeline_p = add_uid_parser(delete_pipeline_p, 'pipeline')
 
   # list pipeline parser
   list_pipelines_p = pipeline_action_sp.add_parser(
@@ -674,17 +674,17 @@ def read_args():
     help='analysis create, analysis update, etc.'
   )
   analysis_action_sp = analysis_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
   # get analysis parser
   get_analysis_p = analysis_action_sp.add_parser(
     'get',
-    help='Detail a analysis'
+    help='Get details of an analysis.'
   )
   get_analysis_p = add_common_args(get_analysis_p)
-  get_analysis_p = add_uid_parser(get_analysis_p)
+  get_analysis_p = add_uid_parser(get_analysis_p, 'analysis')
   get_analysis_p = add_json_parser(get_analysis_p)
 
   # create analysis parser
@@ -727,17 +727,17 @@ def read_args():
     help='delete an analysis.'
   )
   delete_analysis_p = add_common_args(delete_analysis_p)
-  delete_analysis_p = add_uid_parser(delete_analysis_p)
+  delete_analysis_p = add_uid_parser(delete_analysis_p, 'analysis')
 
   # list analysis parser
   list_analyses_p = analysis_action_sp.add_parser(
     'list',
-    help='List basic info about your analyses'
+    help='List basic info about your analyses.'
   )
   list_analyses_p.add_argument(
     '-p',
     '--project',
-    help='List analyses of the project'
+    help='List analyses of the project.'
   )
   list_analyses_p = add_common_args(list_analyses_p)
   list_analyses_p = add_json_parser(list_analyses_p)
@@ -748,10 +748,10 @@ def read_args():
     help='Download files for one or more analyses. Can filter by file tags.'
   )
   download_analysis_log_sp = download_analysis_p.add_subparsers(
-    help='Type of action to perform',
+    help='download log of an analysis.',
     dest='download_type'
   )
-  download_analysis_p = add_uid_parser(download_analysis_p)
+  download_analysis_p = add_uid_parser(download_analysis_p, 'analysis')
   download_analysis_p = add_tags_parser(download_analysis_p)
   download_analysis_p = add_outdir_parser(download_analysis_p)
   download_analysis_p = add_common_args(download_analysis_p)
@@ -762,14 +762,14 @@ def read_args():
     help='Reanalyze analyses.'
   )
   reanalyze_p = add_common_args(reanalyze_p)
-  reanalyze_p = add_uid_parser(reanalyze_p)
+  reanalyze_p = add_uid_parser(reanalyze_p, 'analysis')
 
   # download analysis log parser
   download_log_p = download_analysis_log_sp.add_parser(
     'log',
     help='Download analysis logs from one or more analyses.'
   )
-  download_log_p = add_uid_parser(download_log_p)
+  download_log_p = add_uid_parser(download_log_p, 'analysis')
   download_log_p = add_outdir_parser(download_log_p)
   download_log_p = add_common_args(download_log_p)
 
@@ -779,7 +779,7 @@ def read_args():
     help='sample create, sample update, etc.'
   )
   sample_action_sp = sample_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
@@ -789,13 +789,13 @@ def read_args():
     help='List detail info about one or more samples.'
   )
   get_sample_p = add_common_args(get_sample_p)
-  get_sample_p = add_uid_parser(get_sample_p)
+  get_sample_p = add_uid_parser(get_sample_p, 'sample')
   get_sample_p = add_json_parser(get_sample_p)
 
   # create sample parser
   create_sample_p = sample_action_sp.add_parser(
     'create',
-    help='Create a datatype.'
+    help='Create a sample.'
   )
   create_sample_p = add_common_args(create_sample_p)
   create_sample_p.add_argument('--name')
@@ -844,7 +844,7 @@ def read_args():
     help='delete a sample.'
   )
   delete_sample_p = add_common_args(delete_sample_p)
-  delete_sample_p = add_uid_parser(delete_sample_p)
+  delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
 
   # list sample parser
   list_samples_p = sample_action_sp.add_parser(
@@ -854,7 +854,7 @@ def read_args():
   list_samples_p.add_argument(
     '-p',
     '--project',
-    help='List samples of the project'
+    help='List samples of the project.'
   )
   list_samples_p = add_common_args(list_samples_p)
   list_samples_p = add_json_parser(list_samples_p)  
@@ -862,9 +862,9 @@ def read_args():
   # download sample parser
   download_sample_p = sample_action_sp.add_parser(
     'download',
-    help='Download raw data or analysis files by tags from one or more samples.'
+    help='Download one or more samples.'
   )
-  download_sample_p = add_uid_parser(download_sample_p)
+  download_sample_p = add_uid_parser(download_sample_p, 'sample')
   download_sample_p = add_tags_parser(download_sample_p)
   download_sample_p = add_outdir_parser(download_sample_p)
   download_sample_p = add_common_args(download_sample_p)
@@ -872,10 +872,10 @@ def read_args():
   # genome parser
   genome_p = datatype_p.add_parser(
     'genome',
-    help='genome create, genome update, etc.'
+    help='genome get, genome list etc.'
   )
   genome_action_sp = genome_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
@@ -885,7 +885,7 @@ def read_args():
     help='List detail info about one or more genomes.'
   )
   get_genome_p = add_common_args(get_genome_p)
-  get_genome_p = add_uid_parser(get_genome_p)
+  get_genome_p = add_uid_parser(get_genome_p, 'genome')
   get_genome_p = add_json_parser(get_genome_p)
 
   # list genome parser
@@ -902,7 +902,7 @@ def read_args():
     help='project create, project update, etc.'
   )
   project_action_sp = project_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
@@ -934,7 +934,7 @@ def read_args():
     help='file download, etc.'
   )
   file_action_sp = file_p.add_subparsers(
-    help='Type of action to perform',
+    help='Type of action to perform on datatype..',
     dest='action_type'
   )
 
@@ -943,7 +943,7 @@ def read_args():
     'download',
     help='Download one or more files by uid.'
   )
-  download_file_p = add_uid_parser(download_file_p)
+  download_file_p = add_uid_parser(download_file_p, 'file')
   download_file_p = add_outdir_parser(download_file_p)
   download_file_p = add_common_args(download_file_p)
   
