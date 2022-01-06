@@ -486,6 +486,16 @@ def add_uid_parser(parser,datatype):
   )
   return parser
 
+def add_pid_parser(parser):
+  '''Add pipeline id parser'''
+  parser.add_argument(
+    '--pipeline',
+    nargs='+',
+    default=None,
+    help='The unique pipeline id'
+  )
+  return parser
+
 
 def add_json_parser(parser):
   '''Add json parser'''
@@ -532,7 +542,6 @@ def add_tags_parser(parser):
 def add_yaml_parser(parser):
   '''Add yaml file parser'''
   parser.add_argument(
-    '-f',
     '--file',
     default=None,
     required=True,
@@ -613,7 +622,7 @@ def read_args():
     help='List available modules of a pipeline.'
   )
   list_modules_p = add_common_args(list_modules_p)
-  list_modules_p = add_uid_parser(list_modules_p, 'module')
+  list_modules_p = add_pid_parser(list_modules_p)
   list_modules_p = add_json_parser(list_modules_p)
 
   # pipeline parser
@@ -629,7 +638,7 @@ def read_args():
   # get pipeline parser
   get_pipeline_p = pipeline_action_sp.add_parser(
     'get',
-    help='Get details of a pipeline'
+    help='Get details of a pipeline.'
   )
   get_pipeline_p = add_common_args(get_pipeline_p)
   get_pipeline_p = add_uid_parser(get_pipeline_p, 'pipeline')
@@ -638,7 +647,7 @@ def read_args():
   # create pipeline parser
   create_pipeline_p = pipeline_action_sp.add_parser(
     'create',
-    help='Create pipeline from yaml'
+    help='Create pipeline from yaml.'
   )
   create_pipeline_p = add_common_args(create_pipeline_p)
   create_pipeline_p = add_yaml_parser(create_pipeline_p)
@@ -695,7 +704,7 @@ def read_args():
   create_analysis_p = add_common_args(create_analysis_p)
   create_analysis_p.add_argument('-p', '--project', help='Project id')
   create_analysis_p.add_argument(
-    '-w', '--workflow', help='Workflow id'
+    '--workflow', help='Workflow id'
   )
   create_analysis_p.add_argument(
     '--sample', nargs='+', help='Sample id'
@@ -705,7 +714,7 @@ def read_args():
   )
   create_analysis_p.add_argument('--params', nargs='+')
   create_analysis_p.add_argument(
-    '-i', '--ignore_warning',
+    '--ignore-warning',
     action='store_true',
     default=False,
     help='Ignore validation warnings',
@@ -717,7 +726,7 @@ def read_args():
     help='Update information associated with an analysis.'
   )
   update_analysis_parser = add_common_args(update_analysis_parser)
-  update_analysis_parser.add_argument('-a', '--analysis', help='Analysis id')
+  update_analysis_parser = add_uid_parser(update_analysis_parser,'analysis')
   update_analysis_parser.add_argument('--key', action='append')
   update_analysis_parser.add_argument('--val', action='append')
 
@@ -735,7 +744,6 @@ def read_args():
     help='List basic info about your analyses.'
   )
   list_analyses_p.add_argument(
-    '-p',
     '--project',
     help='List analyses of the project.'
   )
@@ -811,8 +819,8 @@ def read_args():
   )
   create_sample_p.add_argument('--file1', nargs='+')
   create_sample_p.add_argument('--file2', nargs='+')
-  create_sample_p.add_argument('-w', '--workflow', help='Workflow id')
-  create_sample_p.add_argument('-p', '--project', help='Project id')
+  create_sample_p.add_argument('--workflow', help='Workflow id')
+  create_sample_p.add_argument('--project', help='Project id')
   create_sample_p.add_argument('--key', action='append')
   create_sample_p.add_argument('--val', action='append')
   create_sample_p = add_payload_args(create_sample_p)
@@ -823,9 +831,7 @@ def read_args():
     help='Update information associated with a sample.'
   )
   update_sample_parser = add_common_args(update_sample_parser)
-  update_sample_parser.add_argument(
-    '-s', '--sample', help='Sample id'
-  )
+  update_sample_parser = add_uid_parser(update_sample_parser, 'sample')
   update_sample_parser.add_argument('--name')
   update_sample_parser.add_argument('--genome')
   update_sample_parser.add_argument(
@@ -852,7 +858,6 @@ def read_args():
     help='List basic info about all your samples.'
   )
   list_samples_p.add_argument(
-    '-p',
     '--project',
     help='List samples of the project.'
   )
@@ -922,7 +927,7 @@ def read_args():
   )
   update_project_parser = add_common_args(update_project_parser)
   update_project_parser.add_argument(
-    '-p', '--project', nargs='+', help='project id'
+    '--project', nargs='+', help='project id', required=True
   )
   update_project_parser.add_argument('--emails', default=[], nargs='+')
   update_project_parser.add_argument('--perm', choices=['admin', 'edit', 'view'], default='view')
