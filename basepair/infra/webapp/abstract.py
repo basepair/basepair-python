@@ -14,7 +14,8 @@ class Abstract(object):
   '''Webapp abastract class'''
   def __init__(self, cfg):
     protocol = 'https' if cfg.get('ssl', True) else 'http'
-    self.endpoint = protocol + '://' + cfg.get('host') + cfg.get('prefix')
+    self.host = protocol + '://' + cfg.get('host')
+    self.endpoint = self.host + cfg.get('prefix')
     self.payload = {
       'username': cfg.get('username'),
       'api_key': cfg.get('key')
@@ -95,6 +96,11 @@ class Abstract(object):
       item_list += response.get('objects')
       offset += limit
     return item_list
+
+  def resource_uri(self, obj_id):
+    '''Generate resource uri from obj id'''
+    path = self.endpoint.replace(self.host, '')
+    return '{}{}'.format(path, obj_id)
 
   def resource_url(self, obj_id):
     '''Generate resource uri from obj id'''
