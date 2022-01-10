@@ -1,34 +1,34 @@
-import json
+'''File datatype class'''
 
 # App imports
 from basepair.helpers import eprint
-
-from bin.utils import check_yaml
 from bin.common_parser import add_uid_parser, add_common_args, add_outdir_parser
 
 
 class File:
-    
-    '''File action methods'''
 
-    def download_file(bp, args):
-        '''Download file by uid'''
-        if not args.uid:
-            eprint('ERROR: Minimum one file uid required.')
-            return
+  '''File action methods'''
 
-        for uid in args.uid:
-            file_i = bp.get_file(uid)
-            bp.download_file(file_i['path'], dirname=args.outdir)
+  @staticmethod
+  def download_file(bp_api, args):
+    '''Download file by uid'''
+    if not args.uid:
+      eprint('ERROR: Minimum one file uid required.')
+      return
 
-    def file_action_parser(action_parser):
-        # download file parser
-        download_file_p = action_parser.add_parser(
-          'download',
-          help='Download one or more files by uid.'
-        )
-        download_file_p = add_uid_parser(download_file_p, 'file')
-        download_file_p = add_outdir_parser(download_file_p)
-        download_file_p = add_common_args(download_file_p)
+    for uid in args.uid:
+      file_i = bp_api.get_file(uid)
+      bp_api.download_file(file_i['path'], dirname=args.outdir)
 
-        return action_parser
+  @staticmethod
+  def file_action_parser(action_parser):
+    '''File datatype action parser'''
+    download_file_p = action_parser.add_parser(
+        'download',
+        help='Download one or more files by uid.'
+    )
+    download_file_p = add_uid_parser(download_file_p, 'file')
+    download_file_p = add_outdir_parser(download_file_p)
+    download_file_p = add_common_args(download_file_p)
+
+    return action_parser
