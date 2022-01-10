@@ -26,7 +26,6 @@ class Module:
     valid = check_yaml(args)
     if valid:
       bp_api.create_module({'yamlpath': args.file[0], 'force': args.force})
-      return
     return
 
   @staticmethod
@@ -35,7 +34,6 @@ class Module:
     valid = check_yaml(args)
     if valid:
       bp_api.update_module({'yamlpath': args.file[0]})
-      return
     return
 
   @staticmethod

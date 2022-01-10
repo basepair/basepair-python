@@ -4,7 +4,6 @@ from basepair.helpers import eprint
 from bin.utils import check_yaml
 from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser
 
-
 class Pipeline:
 
   '''Pipeline action methods'''
@@ -26,7 +25,6 @@ class Pipeline:
     valid = check_yaml(args)
     if valid:
       bp.create_pipeline({'yamlpath': args.file[0], 'force': args.force})
-      return
     return
 
   @staticmethod
@@ -35,7 +33,6 @@ class Pipeline:
     valid = check_yaml(args)
     if valid:
       bp.update_pipeline({'yamlpath': args.file[0]})
-      return
     return
 
   @staticmethod
