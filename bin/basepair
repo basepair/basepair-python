@@ -155,7 +155,7 @@ def read_args():
     help='file download, etc.'
   )
   file_action_sp = file_p.add_subparsers(
-    help='Type of action to perform on datatype..',
+    help='Type of action to perform on datatype.',
     dest='action_type'
   )
 

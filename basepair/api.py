@@ -1370,7 +1370,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def print_data(self, data_type='', is_json=False, uid=None, project=None):
     '''
-    Print data associated with genomes, samples, etc..
+    Print data associated with genomes, samples, etc.
     Parameters
     ----------
     data_type: {str}   Type of data to print (e.g. workflows)
@@ -1489,7 +1489,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('Return code: {}'.format(error.returncode))
       if current_try >= retry:
         return None
-      eprint('retrying in {} seconds...'.format(sleep_time))
+      eprint('retrying in {} seconds.'.format(sleep_time))
       time.sleep(sleep_time)
       return self._execute_command(cmd=cmd, current_try=current_try + 1)
 

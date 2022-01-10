@@ -38,7 +38,7 @@ class Analysis:
           params['node'][node_id] = {}
         params['node'][node_id][arg] = val
     else:
-      eprint('You specified no parameters, submitting with default ones...')
+      eprint('You specified no parameters, submitting with default ones.')
 
     bp_api.create_analysis(
       control_ids=args.control or [],
