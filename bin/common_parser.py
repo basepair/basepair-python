@@ -33,6 +33,16 @@ def add_uid_parser(parser,datatype):
   )
   return parser
 
+def add_single_uid_parser(parser,datatype):
+  '''Add single uid parser'''
+  parser.add_argument(
+    '-u',
+    '--uid',
+    default=None,
+    help=f'The unique id for {datatype}'
+  )
+  return parser
+
 def add_pid_parser(parser):
   '''Add pipeline id parser'''
   parser.add_argument(

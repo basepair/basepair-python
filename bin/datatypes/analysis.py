@@ -2,7 +2,7 @@
 from basepair.helpers import eprint
 
 from bin.utils import check_yaml, update_info
-from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
+from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
 
 class Analysis:
     
@@ -148,7 +148,7 @@ class Analysis:
           help='Update information associated with an analysis.'
         )
         update_analysis_parser = add_common_args(update_analysis_parser)
-        update_analysis_parser = add_uid_parser(update_analysis_parser, 'analysis')
+        update_analysis_parser = add_single_uid_parser(update_analysis_parser, 'analysis')
         update_analysis_parser.add_argument('--key', action='append')
         update_analysis_parser.add_argument('--val', action='append')
 

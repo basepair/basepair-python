@@ -4,7 +4,7 @@ import sys
 from basepair.helpers import eprint
 
 from bin.utils import check_yaml, update_info
-from bin.common_parser import add_json_parser, add_common_args, add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
+from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
 
 
 class Sample:
@@ -145,7 +145,7 @@ class Sample:
           help='Update information associated with a sample.'
         )
         update_sample_parser = add_common_args(update_sample_parser)
-        update_sample_parser = add_uid_parser(update_sample_parser, 'sample')
+        update_sample_parser = add_single_uid_parser(update_sample_parser, 'sample')
         update_sample_parser.add_argument('--name')
         update_sample_parser.add_argument('--genome')
         update_sample_parser.add_argument(

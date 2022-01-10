@@ -29,8 +29,6 @@ import time
 import datetime
 import yaml
 
-from basepair.infra.webapp import user
-
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
