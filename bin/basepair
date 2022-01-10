@@ -51,13 +51,13 @@ def main():
 
   method_name = f'{args.action_type}_{args.datatype}'
   datatype_handler = {
-    'analysis':Analysis,
-    'file':File,
-    'genome':Genome,
-    'module':Module,
-    'pipeline':Pipeline,
-    'project':Project,
-    'sample':Sample
+    'analysis': Analysis,
+    'file': File,
+    'genome': Genome,
+    'module': Module,
+    'pipeline': Pipeline,
+    'project': Project,
+    'sample': Sample
   }
   method = getattr(datatype_handler[args.datatype], method_name)
   if callable(method):

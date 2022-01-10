@@ -1,14 +1,11 @@
 '''Sample datatype class'''
 import sys
- 
 # App imports
-from basepair.helpers import eprint
 from bin.utils import update_info
 from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
 
 
 class Sample:
-
   '''Sample action methods'''
 
   @staticmethod
@@ -17,8 +14,7 @@ class Sample:
     uids = args.uid
     is_json = args.json
     if not uids:
-      eprint('At least one uid required.')
-      return
+      sys.exit('At least one uid required.')
     for uid in uids:
       bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
 
@@ -27,10 +23,10 @@ class Sample:
     '''Create sample'''
     # if payload username or api key specified, make sure both are present
     if args.payload_username is not None and args.payload_api_key is None:
-      eprint('specify parameter --payload-api-key!')
+      sys.exit('specify parameter --payload-api-key!')
       sys.exit(1)
     elif args.payload_api_key is not None and args.payload_username is None:
-      eprint('specify parameter --payload-username!')
+      sys.exit('specify parameter --payload-username!')
       sys.exit(1)
     elif args.payload_username is not None and args.payload_username is not None:
       bp_api.payload = {
@@ -58,8 +54,7 @@ class Sample:
   def update_sample(bp_api, args):
     '''Update sample'''
     if not args.sample:
-      eprint('ERROR: Sample required.')
-      return
+      sys.exit('ERROR: Sample required.')
 
     data = {}
     if args.name:
@@ -71,16 +66,19 @@ class Sample:
     if args.datatype:
       data['datatype'] = args.datatype
 
-    update_info(bp_api, kind='sample', uid=args.sample,
-                keys=args.key, vals=args.val, data=data)
+    update_info(bp_api, 
+                data=data, 
+                kind='sample', 
+                keys=args.key, 
+                uid=args.sample,
+                vals=args.val)
 
   @staticmethod
   def delete_sample(bp_api, args):
     '''Delete sample'''
     uids = args.uid
     if not uids:
-      eprint('Please add one or more uid')
-      return
+      sys.exit('Please add one or more uid')
 
     for uid in uids:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
@@ -96,14 +94,13 @@ class Sample:
   def download_sample(bp_api, args):
     '''Download sample'''
     if not args.uid:
-      eprint('ERROR: Minimum one sample uid required.')
-      return
+      sys.exit('ERROR: Minimum one sample uid required.')
 
     for uid in args.uid:
       # check sample id is valid
       sample = bp_api.get_sample(uid, add_analysis=True)
       if sample is None:
-        eprint('{} is not a valid sample id!'.format(uid))
+        sys.exit('{} is not a valid sample id!'.format(uid))
         continue
 
       # if tags provided, download file by tags

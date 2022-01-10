@@ -1394,9 +1394,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'analyses': 'get_analyses',
       'genomes': 'get_genomes',
       'pipeline_modules': 'get_pipeline_modules',
-      'samples': 'get_samples',
       'pipelines': 'get_pipelines',
-      'projects': 'get_projects'
+      'projects': 'get_projects',
+      'samples': 'get_samples',
     }
 
     # get the appropriate data

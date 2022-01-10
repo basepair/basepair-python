@@ -1,13 +1,10 @@
 '''Project dataype class'''
 import json
-
+import sys
 # App imports
-from basepair.helpers import eprint
 from bin.common_parser import add_common_args, add_payload_args, add_json_parser
 
-
 class Project:
-
   '''Project action methods'''
 
   @staticmethod
@@ -20,8 +17,7 @@ class Project:
   def update_project(bp_api, args):
     '''Update project'''
     if not args.project:
-      eprint('ERROR: Minimum one project required.')
-      return
+      sys.exit('ERROR: Minimum one project required.')
 
     data = {}
     if args.name:
@@ -39,14 +35,13 @@ class Project:
       }
 
     if not data and not params:
-      eprint('WARNING: No data to update.')
-      return
+      sys.exit('WARNING: No data to update.')
 
     for project_id in args.project:
       res = bp_api.update_project(project_id, data=data, params=params)
 
       if res.get('error'):
-        eprint('error: {}'.format(res.get('msg')))
+        sys.exit('error: {}'.format(res.get('msg')))
 
   @staticmethod
   def list_project(bp_api, args):

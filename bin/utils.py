@@ -1,3 +1,4 @@
+import sys
 # App imports
 from basepair.helpers import eprint
 
@@ -27,9 +28,10 @@ def update_info(bp, kind=None, uid=None, keys=None, vals=None, data={}):
       else:
         data[key] = val
 
-  if kind == 'sample':
-    res = bp.update_sample(uid, data)
-  elif kind == 'analysis':
-    res = bp.update_analysis(uid, data)
+  method_name = f'update_{kind}'
+  method = getattr(bp, method_name, None)
+  if callable(method):
+    res = method(uid, data)
+  res = {'error': True, 'msg': f'Update {kind} not supported.'}
   if res.get('error'):
-    eprint('error: {}'.format(res.get('msg')))
+    sys.exit(f"ERROR: {res.get('msg')}")

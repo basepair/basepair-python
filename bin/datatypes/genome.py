@@ -1,11 +1,10 @@
 '''Genome datatype class'''
+import sys
 # App imports
-from basepair.helpers import eprint
 from bin.common_parser import add_common_args, add_uid_parser, add_json_parser
 
 
 class Genome:
-
   '''Genome action methods'''
 
   @staticmethod
@@ -14,8 +13,7 @@ class Genome:
     uids = args.uid
     is_json = args.json
     if not uids:
-      eprint('At least one uid required.')
-      return
+      sys.exit('At least one uid required.')
     for uid in uids:
       bp_api.print_data(data_type='genome', uid=uid, is_json=is_json)
 

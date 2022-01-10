@@ -1,20 +1,18 @@
 '''File datatype class'''
+import sys
 
 # App imports
-from basepair.helpers import eprint
 from bin.common_parser import add_uid_parser, add_common_args, add_outdir_parser
 
 
 class File:
-
   '''File action methods'''
 
   @staticmethod
   def download_file(bp_api, args):
     '''Download file by uid'''
     if not args.uid:
-      eprint('ERROR: Minimum one file uid required.')
-      return
+      sys.exit('ERROR: Minimum one file uid required.')
 
     for uid in args.uid:
       file_i = bp_api.get_file(uid)

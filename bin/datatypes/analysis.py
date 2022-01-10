@@ -1,20 +1,19 @@
 '''Analysis datatype class'''
-from basepair.helpers import eprint
+import sys
+# App Import
 from bin.utils import update_info
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
 
 class Analysis:
-
   '''Analysis action methods'''
 
   @staticmethod
   def get_analysis(bp_api, args):
     '''Get analysis'''
-    uids=args.uid
-    is_json=args.json
+    uids = args.uid
+    is_json = args.json
     if not uids:
-      eprint('At least one uid required.')
-      return
+      sys.exit('At least one uid required.')
     for uid in uids:
       bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
 
@@ -24,12 +23,10 @@ class Analysis:
     params = {'node': {}}
 
     if not args.workflow:
-      eprint('ERROR: Workflow required.')
-      return
+      sys.exit('ERROR: Workflow required.')
 
     if not args.sample:
-      eprint('ERROR: Minimum one sample required.')
-      return
+      sys.exit('ERROR: Minimum one sample required.')
 
     if args.params:
       for param in args.params:
@@ -38,7 +35,7 @@ class Analysis:
           params['node'][node_id] = {}
         params['node'][node_id][arg] = val
     else:
-      eprint('You specified no parameters, submitting with default ones.')
+      sys.exit('You specified no parameters, submitting with default ones.')
 
     bp_api.create_analysis(
       control_ids=args.control or [],
@@ -52,18 +49,16 @@ class Analysis:
   @staticmethod
   def update_analysis(bp_api, analysis_id, keys, vals):
     '''Update analysis'''
-    if not analysis_id:
-      eprint('Error: Analysis required.')
-      return
-    update_info(bp_api, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
+    if analysis_id:
+      update_info(bp_api, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
+    sys.exit('Error: Analysis required.')
 
   @staticmethod
   def delete_analysis(bp_api, args):
     '''Delete analysis'''
     uids = args.uid
     if not uids:
-      eprint('Please add one or more uid')
-      return
+      sys.exit('Please add one or more uid')
 
     for uid in uids:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
@@ -79,8 +74,7 @@ class Analysis:
   def reanalyze(bp_api, uid):
     '''Restart analysis'''
     if not uid:
-      eprint('Please add one or more uid')
-      return
+      sys.exit('Please add one or more uid')
 
     for each_uid in uid:
       bp_api.restart_analysis(each_uid)
@@ -89,26 +83,19 @@ class Analysis:
   def download_log(bp_api, args):
     '''Download analysis log'''
     if not args.uid:
-      eprint('ERROR: Minimum one analysis uid required.')
-      return
+      sys.exit('ERROR: Minimum one analysis uid required.')
 
     for uid in args.uid:
       info = bp_api.get_analysis(uid)  # check analysis id is valid
-      if info is None:
-        eprint('{} is not a valid analysis id!'.format(uid))
-        continue
-
-      if args.outdir:
-        bp_api.get_log(uid, args.outdir)
-      else:
-        bp_api.get_log(uid)
+      if not info:
+        sys.exit('{} is not a valid analysis id!'.format(uid))
+      bp_api.get_log(uid, args.outdir)
 
   @staticmethod
   def download_analysis(bp_api, args):
     '''Download analysis'''
     if not args.uid:
-      eprint('ERROR: Minimum one analysis uid required.')
-      return
+      sys.exit('ERROR: Minimum one analysis uid required.')
 
     # download a file from an analysis by tags
     for uid in args.uid:

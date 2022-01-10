@@ -4,9 +4,8 @@ def add_common_args(parser):
   parser.add_argument('--quiet', action='store_true')
   parser.add_argument('--keep-cloud-service-conf', action='store_true')
   parser.add_argument('--use-cache', action='store_true')
-  parser.add_argument('--scratch', help='Scratch dir for files')
+  parser.add_argument('--scratch', default='.', help='Scratch dir for files')
   parser.add_argument('--verbose', action='store_true')
-  parser.set_defaults(scratch='.')
   return parser
 
 def add_payload_args(parser):
@@ -27,9 +26,9 @@ def add_uid_parser(parser,datatype):
   parser.add_argument(
     '-u',
     '--uid',
-    nargs='+',
     default=None,
-    help=f'The unique id(s) for {datatype}'
+    help=f'The unique id(s) for {datatype}',
+    nargs='+'
   )
   return parser
 

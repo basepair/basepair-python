@@ -1,12 +1,10 @@
 '''Module datatype class'''
+import sys
 # App imports
-from basepair.helpers import eprint
 from bin.utils import check_yaml
 from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_pid_parser, add_force_parser
 
-
 class Module:
-
   '''Module action methods'''
 
   @staticmethod
@@ -15,8 +13,7 @@ class Module:
     uids = args.uid
     is_json = args.json
     if not uids:
-      eprint('At least one uid required.')
-      return
+      sys.exit('At least one uid required.')
     for uid in uids:
       bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
 
@@ -41,8 +38,7 @@ class Module:
     '''Delete Module'''
     uids = args.uid
     if not uids:
-      eprint('Please add one or more uid')
-      return
+      sys.exit('Please add one or more uid')
 
     for uid in uids:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
@@ -55,12 +51,10 @@ class Module:
     uids = args.pipeline
     is_json = args.json
     if not uids:
-      eprint('Please provide only one pipeline uid.')
-      return
+      sys.exit('Please provide only one pipeline uid.')
 
     if len(uids) > 1:
-      eprint('Please provide only one pipeline uid.')
-      return
+      sys.exit('Please provide only one pipeline uid.')
 
     for uid in uids:
       bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)

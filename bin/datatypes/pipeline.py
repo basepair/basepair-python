@@ -1,57 +1,54 @@
 '''Pipeline datatype class'''
+import sys
 # App imports
-from basepair.helpers import eprint
 from bin.utils import check_yaml
 from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser
 
 class Pipeline:
-
   '''Pipeline action methods'''
 
   @staticmethod
-  def get_pipeline(bp, args):
+  def get_pipeline(bp_api, args):
     '''Get pipeline'''
     uids = args.uid
     is_json = args.json
     if not uids:
-      eprint('At least one uid required.')
-      return
+      sys.exit('At least one uid required.')
     for uid in uids:
-      bp.print_data(data_type='pipeline', uid=uid, is_json=is_json)
+      bp_api.print_data(data_type='pipeline', uid=uid, is_json=is_json)
 
   @staticmethod
-  def create_pipeline(bp, args):
+  def create_pipeline(bp_api, args):
     '''Create pipeline'''
     valid = check_yaml(args)
     if valid:
-      bp.create_pipeline({'yamlpath': args.file[0], 'force': args.force})
+      bp_api.create_pipeline({'yamlpath': args.file[0], 'force': args.force})
     return
 
   @staticmethod
-  def update_pipeline(bp, args):
+  def update_pipeline(bp_api, args):
     '''Update pipeline'''
     valid = check_yaml(args)
     if valid:
-      bp.update_pipeline({'yamlpath': args.file[0]})
+      bp_api.update_pipeline({'yamlpath': args.file[0]})
     return
 
   @staticmethod
-  def delete_pipeline(bp, args):
+  def delete_pipeline(bp_api, args):
     '''Delete pipeline'''
     uids = args.uid
     if not uids:
-      eprint('Please add one or more uid')
-      return
+      sys.exit('Please add one or more uid')
 
     for uid in uids:
-      answer = bp.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
       if answer:
-        bp.delete_pipeline(uid)
+        bp_api.delete_pipeline(uid)
 
   @staticmethod
-  def list_pipeline(bp, args):
+  def list_pipeline(bp_api, args):
     '''List pipelines'''
-    bp.print_data(data_type='pipelines', is_json=args.json)
+    bp_api.print_data(data_type='pipelines', is_json=args.json)
 
   @staticmethod
   def pipeline_action_parser(action_parser):
