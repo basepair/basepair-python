@@ -125,7 +125,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   def create_analysis(
     self,
-    workflow_id,
+    workflow_id=None,
     control_id=None,
     control_ids=[],
     ignore_validation_warnings=False,
@@ -133,6 +133,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     project_id=None,
     sample_id=None,
     sample_ids=[],
+    yaml_paths={}
   ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
@@ -155,9 +156,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if sample_id:
       sample_ids.append(sample_id)
 
-    # check if valid workflow id
-    if not self._check_workflow(workflow_id):
-      return None
+    if not yaml_paths.get('pipeline'):
+      # check if valid workflow id
+      if not self._check_workflow(workflow_id):
+        return None
 
     # check if all sample ids are valid
     if not all((self._check_sample(item_id) for item_id in sample_ids)):
@@ -179,6 +181,34 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if params:
       data['params'] = params
+
+    if yaml_paths.get('pipeline'):
+      path = os.path.abspath(os.path.expanduser(os.path.expandvars(yaml_paths['pipeline'])))
+      with open(path, 'r') as file:
+        yaml_string = file.read()
+      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+      if not yaml_data.get('id'):
+        eprint('Please provide pipeline id in YAML')
+        return
+      data['yaml'] = {'pipeline':True, 'pipeline_data':yaml_string}
+      data['workflow'] = '{}pipelines/{}'.format(prefix, yaml_data.get('id'))
+      # check if valid workflow id
+      if not self._check_workflow(yaml_data.get('id')):
+        return None
+
+    if yaml_paths.get('module'):
+      path_list = yaml_paths['module']
+      module_yaml_data = []
+      for each_path in path_list:
+        os.path.abspath(os.path.expanduser(os.path.expandvars(each_path)))
+        with open(each_path, 'r') as file:
+          yaml_string = file.read()
+        yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+        if not yaml_data.get('id'):
+          eprint('Please provide module id in YAML')
+          return
+        module_yaml_data.append(yaml_string)
+      data['yaml'] = {'module':True, 'module_data':module_yaml_data}
 
     analysis_api = Analysis(self.conf.get('api'))
     info = analysis_api.save(payload=data)
@@ -514,7 +544,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       yaml_string = file.read()
     yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
     if not yaml_data.get('name'):
-      eprint('Please provide workflow name in YAML')
+      eprint('Please provide pipeline name in YAML')
       return
     payload = {'data': yaml_string}
     info = (Pipeline(self.conf.get('api'))).save(payload=payload)

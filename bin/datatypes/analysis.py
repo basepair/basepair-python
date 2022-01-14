@@ -1,8 +1,36 @@
 '''Analysis datatype class'''
+from os import stat
 import sys
 # App Import
 from bin.utils import update_info
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
+# App imports
+from basepair.helpers import eprint
+
+
+def verify_yaml(args):
+  '''Verify yaml file'''
+  if not args.test_pipeline and not args.test_modules:
+    eprint('ERROR: at least one yaml file required.')
+    return False
+  if args.test_pipeline and len(args.test_pipeline) != 1:
+    eprint('Please provide only one pipeline yaml')
+    return False
+  if args.test_modules:
+    yaml_path = args.test_modules
+    valid_extensions = ('.yaml', '.yml')
+    for each_path in yaml_path:
+      if each_path.endswith(valid_extensions):
+        return True
+    eprint('Please provide yaml file only')
+    return False
+  yaml_path = args.test_pipeline[0]
+  valid_extensions = ('.yaml', '.yml')
+  if yaml_path.endswith(valid_extensions):
+    return True
+  eprint('Please provide yaml file only')
+  return False
+
 
 class Analysis:
   '''Analysis action methods'''
@@ -22,8 +50,13 @@ class Analysis:
     '''Create and submit an analysis'''
     params = {'node': {}}
 
-    if not args.workflow:
-      sys.exit('ERROR: Workflow required.')
+    if args.test_modules or args.test_pipeline:
+      result = verify_yaml(args)
+      if not result:
+        return
+
+    if not args.test_pipeline and not args.workflow:
+      sys.exit('ERROR: Pipeline required.')
 
     if not args.sample:
       sys.exit('ERROR: Minimum one sample required.')
@@ -37,14 +70,26 @@ class Analysis:
     else:
       sys.exit('You specified no parameters, submitting with default ones.')
 
-    bp_api.create_analysis(
-      control_ids=args.control or [],
-      ignore_validation_warnings=args.ignore_warning,
-      params=params,
-      project_id=args.project,
-      sample_ids=args.sample,
-      workflow_id=args.workflow,
-    )
+    if args.test_modules or args.test_pipeline:
+      if args.test_pipeline:
+        bp_api.create_analysis(
+          control_ids=args.control or [],
+          ignore_validation_warnings=args.ignore_warning,
+          params=params,
+          project_id=args.project,
+          sample_ids=args.sample,
+          yaml_paths={'pipeline': args.test_pipeline[0]}
+        )
+      else:
+        bp_api.create_analysis(
+          control_ids=args.control or [],
+          ignore_validation_warnings=args.ignore_warning,
+          params=params,
+          project_id=args.project,
+          sample_ids=args.sample,
+          workflow_id=args.workflow,
+          yaml_paths={'module': args.test_modules}
+        )
 
   @staticmethod
   def update_analysis(bp_api, analysis_id, keys, vals):
@@ -101,6 +146,32 @@ class Analysis:
     for uid in args.uid:
       bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
 
+  
+  def verify_yaml(args):
+    '''Verify yaml file'''
+    if not args.test_pipeline or not args.test_modules:
+      eprint('ERROR:at least one Yaml file required.')
+      return False
+    if args.test_pipeline and len(args.test_pipeline) != 1:
+      eprint('Please provide only one pipeline yaml')
+      return False
+    if args.test_modules:
+      yaml_path = args.test_modules
+      valid_extensions = ('.yaml', '.yml')
+      for each_path in yaml_path:
+        if each_path.endswith(valid_extensions):
+          return True
+      eprint('Please provide yaml file only')
+      return False
+    yaml_path = args.test_pipeline[0]
+    valid_extensions = ('.yaml', '.yml')
+    if yaml_path.endswith(valid_extensions):
+      return True
+    eprint('Please provide yaml file only')
+    return False
+    
+    
+
   @staticmethod
   def analysis_action_parser(action_parser):
     '''Analysis parser'''
@@ -135,6 +206,20 @@ class Analysis:
       action='store_true',
       default=False,
       help='Ignore validation warnings',
+    )
+    create_analysis_p.add_argument(
+      '--test_modules',
+      default=None,
+      required=False,
+      help='The filepath of module(s) YAML',
+      nargs='+'
+    )
+    create_analysis_p.add_argument(
+      '--test_pipeline',
+      default=None,
+      required=False,
+      help='The filepath of Pipeline YAML',
+      nargs='+'
     )
 
     # update an analysis parser
