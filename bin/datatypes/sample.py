@@ -1,9 +1,8 @@
 '''Sample datatype class'''
 import sys
 # App imports
-from bin.utils import update_info
+from basepair.helpers import eprint
 from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
-
 
 class Sample:
   '''Sample action methods'''
@@ -24,24 +23,22 @@ class Sample:
     # if payload username or api key specified, make sure both are present
     if args.payload_username is not None and args.payload_api_key is None:
       sys.exit('specify parameter --payload-api-key!')
-      sys.exit(1)
     elif args.payload_api_key is not None and args.payload_username is None:
       sys.exit('specify parameter --payload-username!')
-      sys.exit(1)
     elif args.payload_username is not None and args.payload_username is not None:
       bp_api.payload = {
-          'username': args.payload_username,
-          'api_key': args.payload_api_key,
+        'username': args.payload_username,
+        'api_key': args.payload_api_key,
       }
     data = {
-        'datatype': args.datatype,
-        'default_workflow': int(args.workflow) if args.workflow else None,
-        'filepaths1': args.file1,
-        'filepaths2': args.file2,
-        'genome': args.genome,
-        'name': args.name,
-        'platform': args.platform,
-        'projects': int(args.project) if args.project else None,
+      'datatype': args.datatype,
+      'default_workflow': int(args.workflow) if args.workflow else None,
+      'filepaths1': args.file1,
+      'filepaths2': args.file2,
+      'genome': args.genome,
+      'name': args.name,
+      'platform': args.platform,
+      'projects': int(args.project) if args.project else None,
     }
 
     if args.key and args.val:
@@ -66,12 +63,16 @@ class Sample:
     if args.datatype:
       data['datatype'] = args.datatype
 
-    update_info(bp_api, 
-                data=data, 
-                kind='sample', 
-                keys=args.key, 
-                uid=args.sample,
-                vals=args.val)
+    if args.key and args.val:
+      for key, val in zip(args.key, args.val):
+        if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
+          data['info'] = data.get('info', {})
+          data['info'][key] = val  # set sample info field
+
+    res = bp_api.update_sample(args.sample, data)
+    res = {'error': True, 'msg': f'Update sample not supported.'}
+    if res.get('error'):
+      sys.exit(f"ERROR: {res.get('msg')}")
 
   @staticmethod
   def delete_sample(bp_api, args):
@@ -100,13 +101,11 @@ class Sample:
       # check sample id is valid
       sample = bp_api.get_sample(uid, add_analysis=True)
       if sample is None:
-        sys.exit('{} is not a valid sample id!'.format(uid))
-        continue
+        eprint('{} is not a valid sample id!'.format(uid))
 
       # if tags provided, download file by tags
       if args.tags:
-        bp_api.get_file_by_tags(sample, tags=args.tags,
-                            kind=args.tagkind, dirname=args.outdir)
+        bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
       else:
         bp_api.download_raw_files(sample, args.outdir)
 
@@ -115,8 +114,8 @@ class Sample:
     '''Sample parser'''
     # get sample parser
     get_sample_p = action_parser.add_parser(
-        'get',
-        help='List detail info about one or more samples.'
+      'get',
+      help='List detail info about one or more samples.'
     )
     get_sample_p = add_common_args(get_sample_p)
     get_sample_p = add_uid_parser(get_sample_p, 'sample')

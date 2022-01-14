@@ -1,3 +1,22 @@
+# App imports
+from basepair.helpers import eprint
+
+
+def is_valid_yaml_arg(args):
+  '''Checks yaml file'''
+  if not args.file:
+    eprint('ERROR: Yaml file required.')
+    return False
+  if len(args.file) != 1:
+    eprint('Please provide only one yaml')
+    return False
+  yaml_path = args.file[0]
+  valid_extensions = ('.yaml', '.yml')
+  if yaml_path.endswith(valid_extensions):
+    return True
+  eprint('Please provide yaml file only')
+  return False
+
 def add_common_args(parser):
   '''Add common args'''
   parser.add_argument('-c', '--config', help='API config info')

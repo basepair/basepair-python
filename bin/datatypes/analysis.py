@@ -1,6 +1,7 @@
 '''Analysis datatype class'''
 import sys
 # App Import
+from basepair.helpers import eprint
 from bin.utils import update_info
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
 
@@ -50,7 +51,16 @@ class Analysis:
   def update_analysis(bp_api, analysis_id, keys, vals):
     '''Update analysis'''
     if analysis_id:
-      update_info(bp_api, kind='analysis', uid=analysis_id, keys=keys, vals=vals)
+      data = {}
+      if keys and vals:
+        for key, val in zip(keys, vals):
+          data[key] = val
+
+      res = bp_api.update_analysis(analysis_id, data)
+      res = {'error': True, 'msg': f'Update analysis not supported.'}
+      if res.get('error'):
+        sys.exit(f"ERROR: {res.get('msg')}")
+
     sys.exit('Error: Analysis required.')
 
   @staticmethod
@@ -73,11 +83,11 @@ class Analysis:
   @staticmethod
   def reanalyze(bp_api, uid):
     '''Restart analysis'''
-    if not uid:
+    if uid:
+      for each_uid in uid:
+        bp_api.restart_analysis(each_uid)
+    else:
       sys.exit('Please add one or more uid')
-
-    for each_uid in uid:
-      bp_api.restart_analysis(each_uid)
 
   @staticmethod
   def download_log(bp_api, args):
@@ -88,7 +98,7 @@ class Analysis:
     for uid in args.uid:
       info = bp_api.get_analysis(uid)  # check analysis id is valid
       if not info:
-        sys.exit('{} is not a valid analysis id!'.format(uid))
+        eprint('{} is not a valid analysis id!'.format(uid))
       bp_api.get_log(uid, args.outdir)
 
   @staticmethod

@@ -11,12 +11,12 @@ class File:
   @staticmethod
   def download_file(bp_api, args):
     '''Download file by uid'''
-    if not args.uid:
+    if args.uid:
+      for uid in args.uid:
+        file_i = bp_api.get_file(uid)
+        bp_api.download_file(file_i['path'], dirname=args.outdir)
+    else:
       sys.exit('ERROR: Minimum one file uid required.')
-
-    for uid in args.uid:
-      file_i = bp_api.get_file(uid)
-      bp_api.download_file(file_i['path'], dirname=args.outdir)
 
   @staticmethod
   def file_action_parser(action_parser):
