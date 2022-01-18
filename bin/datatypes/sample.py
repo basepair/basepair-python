@@ -12,10 +12,10 @@ class Sample:
     '''Get sample'''
     uids = args.uid
     is_json = args.json
-    if not uids:
-      sys.exit('At least one uid required.')
-    for uid in uids:
-      bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
+    if uids:
+      for uid in uids:
+        bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
+    sys.exit('At least one uid required.')
 
   @staticmethod
   def create_sample(bp_api, args):
@@ -50,41 +50,39 @@ class Sample:
   @staticmethod
   def update_sample(bp_api, args):
     '''Update sample'''
-    if not args.sample:
-      sys.exit('ERROR: Sample required.')
+    if args.sample:
+      data = {}
+      if args.name:
+        data['name'] = args.name
 
-    data = {}
-    if args.name:
-      data['name'] = args.name
+      if args.genome:
+        data['genome'] = args.genome
 
-    if args.genome:
-      data['genome'] = args.genome
+      if args.datatype:
+        data['datatype'] = args.datatype
 
-    if args.datatype:
-      data['datatype'] = args.datatype
+      if args.key and args.val:
+        for key, val in zip(args.key, args.val):
+          if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
+            data['info'] = data.get('info', {})
+            data['info'][key] = val  # set sample info field
 
-    if args.key and args.val:
-      for key, val in zip(args.key, args.val):
-        if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
-          data['info'] = data.get('info', {})
-          data['info'][key] = val  # set sample info field
-
-    res = bp_api.update_sample(args.sample, data)
-    res = {'error': True, 'msg': f'Update sample not supported.'}
-    if res.get('error'):
-      sys.exit(f"ERROR: {res.get('msg')}")
+      res = bp_api.update_sample(args.sample, data)
+      res = {'error': True, 'msg': f'Update sample not supported.'}
+      if res.get('error'):
+        sys.exit(f"ERROR: {res.get('msg')}")
+    sys.exit('ERROR: Sample required.')
 
   @staticmethod
   def delete_sample(bp_api, args):
     '''Delete sample'''
     uids = args.uid
-    if not uids:
-      sys.exit('Please add one or more uid')
-
-    for uid in uids:
-      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
-      if answer:
-        bp_api.delete_sample(uid)
+    if uids:
+      for uid in uids:
+        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+        if answer:
+          bp_api.delete_sample(uid)
+    sys.exit('Please add one or more uid')
 
   @staticmethod
   def list_sample(bp_api, args):
@@ -94,20 +92,18 @@ class Sample:
   @staticmethod
   def download_sample(bp_api, args):
     '''Download sample'''
-    if not args.uid:
-      sys.exit('ERROR: Minimum one sample uid required.')
-
-    for uid in args.uid:
-      # check sample id is valid
-      sample = bp_api.get_sample(uid, add_analysis=True)
-      if sample is None:
-        eprint('{} is not a valid sample id!'.format(uid))
-
-      # if tags provided, download file by tags
-      if args.tags:
-        bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
-      else:
-        bp_api.download_raw_files(sample, args.outdir)
+    if args.uid:
+      for uid in args.uid:
+        # check sample id is valid
+        sample = bp_api.get_sample(uid, add_analysis=True)
+        if sample is None:
+          eprint('{} is not a valid sample id!'.format(uid))
+        # if tags provided, download file by tags
+        if args.tags:
+          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
+        else:
+          bp_api.download_raw_files(sample, args.outdir)
+    sys.exit('Please add one or more uid')
 
   @staticmethod
   def sample_action_parser(action_parser):
@@ -123,20 +119,20 @@ class Sample:
 
     # create sample parser
     create_sample_p = action_parser.add_parser(
-        'create',
-        help='Create a sample.'
+      'create',
+      help='Create a sample.'
     )
     create_sample_p = add_common_args(create_sample_p)
     create_sample_p.add_argument('--name')
     create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--platform')
     create_sample_p.add_argument(
-        '--datatype',
-        choices=[
-            'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-            'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
-        ],
-        default='rna-seq'
+      '--datatype',
+      choices=[
+          'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+          'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+      ],
+      default='rna-seq'
     )
     create_sample_p.add_argument('--file1', nargs='+')
     create_sample_p.add_argument('--file2', nargs='+')
@@ -148,8 +144,8 @@ class Sample:
 
     # update sample parser
     update_sample_parser = action_parser.add_parser(
-        'update',
-        help='Update information associated with a sample.'
+      'update',
+      help='Update information associated with a sample.'
     )
     update_sample_parser = add_common_args(update_sample_parser)
     update_sample_parser = add_single_uid_parser(
@@ -157,39 +153,39 @@ class Sample:
     update_sample_parser.add_argument('--name')
     update_sample_parser.add_argument('--genome')
     update_sample_parser.add_argument(
-        '--datatype',
-        choices=[
-            'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-            'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
-        ],
+      '--datatype',
+      choices=[
+          'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+          'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+      ],
     )
     update_sample_parser.add_argument('--key', action='append')
     update_sample_parser.add_argument('--val', action='append')
 
     # delete sample parser
     delete_sample_p = action_parser.add_parser(
-        'delete',
-        help='delete a sample.'
+      'delete',
+      help='delete a sample.'
     )
     delete_sample_p = add_common_args(delete_sample_p)
     delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
 
     # list sample parser
     list_samples_p = action_parser.add_parser(
-        'list',
-        help='List basic info about all your samples.'
+      'list',
+      help='List basic info about all your samples.'
     )
     list_samples_p.add_argument(
-        '--project',
-        help='List samples of the project.'
+      '--project',
+      help='List samples of the project.'
     )
     list_samples_p = add_common_args(list_samples_p)
     list_samples_p = add_json_parser(list_samples_p)
 
     # download sample parser
     download_sample_p = action_parser.add_parser(
-        'download',
-        help='Download one or more samples.'
+      'download',
+      help='Download one or more samples.'
     )
     download_sample_p = add_uid_parser(download_sample_p, 'sample')
     download_sample_p = add_tags_parser(download_sample_p)

@@ -13,10 +13,10 @@ class Analysis:
     '''Get analysis'''
     uids = args.uid
     is_json = args.json
-    if not uids:
-      sys.exit('At least one uid required.')
-    for uid in uids:
-      bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
+    if uids:
+      for uid in uids:
+        bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
+    sys.exit('At least one uid required.')
 
   @staticmethod
   def create_analysis(bp_api, args):
@@ -55,25 +55,22 @@ class Analysis:
       if keys and vals:
         for key, val in zip(keys, vals):
           data[key] = val
-
       res = bp_api.update_analysis(analysis_id, data)
       res = {'error': True, 'msg': f'Update analysis not supported.'}
       if res.get('error'):
         sys.exit(f"ERROR: {res.get('msg')}")
-
     sys.exit('Error: Analysis required.')
 
   @staticmethod
   def delete_analysis(bp_api, args):
     '''Delete analysis'''
     uids = args.uid
-    if not uids:
-      sys.exit('Please add one or more uid')
-
-    for uid in uids:
-      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
-      if answer:
-        bp_api.delete_analysis(uid)
+    if uids:
+      for uid in uids:
+        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+        if answer:
+          bp_api.delete_analysis(uid)
+    sys.exit('Please add one or more uid')
 
   @staticmethod
   def list_analysis(bp_api, args):
@@ -86,30 +83,27 @@ class Analysis:
     if uid:
       for each_uid in uid:
         bp_api.restart_analysis(each_uid)
-    else:
-      sys.exit('Please add one or more uid')
+    sys.exit('Please add one or more uid')
 
   @staticmethod
   def download_log(bp_api, args):
     '''Download analysis log'''
-    if not args.uid:
-      sys.exit('ERROR: Minimum one analysis uid required.')
-
-    for uid in args.uid:
-      info = bp_api.get_analysis(uid)  # check analysis id is valid
-      if not info:
+    if args.uid:
+      for uid in args.uid:
+        info = bp_api.get_analysis(uid)  # check analysis id is valid
+        if info:
+          bp_api.get_log(uid, args.outdir)
         eprint('{} is not a valid analysis id!'.format(uid))
-      bp_api.get_log(uid, args.outdir)
+    sys.exit('ERROR: Minimum one analysis uid required.')
 
   @staticmethod
   def download_analysis(bp_api, args):
     '''Download analysis'''
-    if not args.uid:
-      sys.exit('ERROR: Minimum one analysis uid required.')
-
-    # download a file from an analysis by tags
-    for uid in args.uid:
-      bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
+    if args.uid:
+      # download a file from an analysis by tags
+      for uid in args.uid:
+        bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
+    sys.exit('ERROR: Minimum one analysis uid required.')
 
   @staticmethod
   def analysis_action_parser(action_parser):

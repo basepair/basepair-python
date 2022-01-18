@@ -12,10 +12,10 @@ class Genome:
     '''Get genome'''
     uids = args.uid
     is_json = args.json
-    if not uids:
-      sys.exit('At least one uid required.')
-    for uid in uids:
-      bp_api.print_data(data_type='genome', uid=uid, is_json=is_json)
+    if uids:
+      for uid in uids:
+        bp_api.print_data(data_type='genome', uid=uid, is_json=is_json)
+    sys.exit('At least one uid required.')
 
   @staticmethod
   def list_genome(bp_api, args):
@@ -27,8 +27,8 @@ class Genome:
     '''Genome parser'''
     # get genome parser
     get_genome_p = action_parser.add_parser(
-        'get',
-        help='List detail info about one or more genomes.'
+      'get',
+      help='List detail info about one or more genomes.'
     )
     get_genome_p = add_common_args(get_genome_p)
     get_genome_p = add_uid_parser(get_genome_p, 'genome')
@@ -36,8 +36,8 @@ class Genome:
 
     # list genome parser
     list_genomes_p = action_parser.add_parser(
-        'list',
-        help='List available genomes.'
+      'list',
+      help='List available genomes.'
     )
     list_genomes_p = add_common_args(list_genomes_p)
     list_genomes_p = add_json_parser(list_genomes_p)

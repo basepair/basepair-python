@@ -15,15 +15,14 @@ class File:
       for uid in args.uid:
         file_i = bp_api.get_file(uid)
         bp_api.download_file(file_i['path'], dirname=args.outdir)
-    else:
-      sys.exit('ERROR: Minimum one file uid required.')
+    sys.exit('ERROR: Minimum one file uid required.')
 
   @staticmethod
   def file_action_parser(action_parser):
     '''File datatype action parser'''
     download_file_p = action_parser.add_parser(
-        'download',
-        help='Download one or more files by uid.'
+      'download',
+      help='Download one or more files by uid.'
     )
     download_file_p = add_uid_parser(download_file_p, 'file')
     download_file_p = add_outdir_parser(download_file_p)

@@ -493,6 +493,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
+  def get_pipeline_modules(self, uid):
+    '''Get resources for a workflow'''
+    return (Module(self.conf.get('api'))).get_pipeline_modules(
+        uid,
+        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
   def delete_module(self, uid):
     '''Delete method'''
     info = (Module(self.conf.get('api'))).delete(uid)
@@ -569,13 +576,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
-  def get_pipeline_modules(self, uid):
-    '''Get resources for a workflow'''
-    return (Module(self.conf.get('api'))).get_pipeline_modules(
-        uid,
-        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
-
   def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
@@ -594,6 +594,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### PROJECT ####################################################################################
   ################################################################################################
+
+  def get_project(self, name):
+    '''Get resources for a workflow'''
+    return (Project(self.conf.get('api'))).get_project_by_name(
+      name,
+      cache='{}/json/module.{}.json'.format(self.scratch, name) if self.use_cache else False,
+    )
 
   def get_projects(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get project list'''

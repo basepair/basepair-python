@@ -11,10 +11,10 @@ class Module:
     '''Get module'''
     uids = args.uid
     is_json = args.json
-    if not uids:
-      sys.exit('At least one uid required.')
-    for uid in uids:
-      bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
+    if uids:
+      for uid in uids:
+        bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
+    sys.exit('At least one uid required.')
 
   @staticmethod
   def create_module(bp_api, args):
@@ -22,7 +22,6 @@ class Module:
     valid = is_valid_yaml_arg(args)
     if valid:
       bp_api.create_module({'yamlpath': args.file[0], 'force': args.force})
-    return
 
   @staticmethod
   def update_module(bp_api, args):
@@ -30,7 +29,6 @@ class Module:
     valid = is_valid_yaml_arg(args)
     if valid:
       bp_api.update_module({'yamlpath': args.file[0]})
-    return
 
   @staticmethod
   def delete_module(bp_api, args):
@@ -49,22 +47,22 @@ class Module:
     '''List Modules'''
     uids = args.pipeline
     is_json = args.json
-    if not uids:
-      sys.exit('Please provide only one pipeline uid.')
-
+    if uids:
+      if len(uids) == 1:
+        for uid in uids:
+          bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
+      else:
+        sys.exit('Please provide only one pipeline uid.')
     if len(uids) > 1:
       sys.exit('Please provide only one pipeline uid.')
-
-    for uid in uids:
-      bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
 
   @staticmethod
   def module_action_parser(action_parser):
     '''Module parser'''
     #get module parser'''
     get_module_p = action_parser.add_parser(
-        'get',
-        help='Get details of a module'
+      'get',
+      help='Get details of a module'
     )
     get_module_p = add_common_args(get_module_p)
     get_module_p = add_uid_parser(get_module_p, 'module')
@@ -72,8 +70,8 @@ class Module:
 
     # create module parser
     create_module_p = action_parser.add_parser(
-        'create',
-        help='Create module from yaml.'
+      'create',
+      help='Create module from yaml.'
     )
     create_module_p = add_common_args(create_module_p)
     create_module_p = add_yaml_parser(create_module_p)
@@ -81,24 +79,24 @@ class Module:
 
     # update module parser
     update_module_parser = action_parser.add_parser(
-        'update',
-        help='Update information associated with a module.'
+      'update',
+      help='Update information associated with a module.'
     )
     update_module_parser = add_common_args(update_module_parser)
     update_module_parser = add_yaml_parser(update_module_parser)
 
     # delete module parser
     delete_module_p = action_parser.add_parser(
-        'delete',
-        help='delete a module.'
+      'delete',
+      help='delete a module.'
     )
     delete_module_p = add_common_args(delete_module_p)
     delete_module_p = add_uid_parser(delete_module_p, 'module')
 
     # list module parser
     list_modules_p = action_parser.add_parser(
-        'list',
-        help='List available modules of a pipeline.'
+      'list',
+      help='List available modules of a pipeline.'
     )
     list_modules_p = add_common_args(list_modules_p)
     list_modules_p = add_pid_parser(list_modules_p)
