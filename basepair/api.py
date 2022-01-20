@@ -73,7 +73,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if conf:
       self.conf = conf
     elif 'BP_CONFIG_FILE' in os.environ:
-      self.conf = json.load(open(os.environ['BP_CONFIG_FILE']))
+      with open(os.environ['BP_CONFIG_FILE'], 'r', encoding='utf-8') as config_file:
+        self.conf = json.load(config_file)
     else:
       if 'BP_USERNAME' not in os.environ:
         eprint('ERROR: BP_USERNAME not set in env')
@@ -114,7 +115,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     configuration = self.conf
     if user_cache_for_host_conf:
       eprint('INFO: Use cached host cloud service configuration.')
-      cache = '{}/json/config.json'.format(self.scratch)
+      cache = f'{self.scratch}/json/config.json'
 
     if self.conf.get('api', {}).get('cli'):
       configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
@@ -168,11 +169,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'samples': self._parsed_sample_list(sample_ids, prefix),
       'ignore_validation_warning': ignore_validation_warnings,
       'meta': {'source': 'cli'},
-      'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
+      'workflow': f'{prefix}pipelines/{workflow_id}'
     }
 
     if project_id:
-      data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
+      data['projects'] = [f'{prefix}projects/{project_id}']
 
     if self.verbose:
       eprint(json.dumps(data, indent=2))
@@ -184,10 +185,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = analysis_api.save(payload=data)
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
-      eprint('created: analysis {} with sample id(s) {}'.format(
-          analysis_id,
-          ','.join(sample_ids),
-      ))
+      eprint(f"created: analysis {analysis_id} with sample id(s) {','.join(sample_ids)}")
     return analysis_id
 
   def restart_analysis(self, uid):
@@ -202,7 +200,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Analysis(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      eprint(f"error: deleting {uid}, msg: {info.get('msg')}")
       return None
 
     if self.verbose:
@@ -268,7 +266,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     data = {
       'controls': self._parsed_sample_list(control_ids, prefix),
       'samples': self._parsed_sample_list(sample_ids, prefix),
-      'workflow': '{}pipelines/{}'.format(prefix, workflow_id),
+      'workflow': f'{prefix}pipelines/{workflow_id}',
     }
 
     if params:
@@ -281,14 +279,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
-      eprint('created: analysis {} w/ sample {}'.format(analysis_id, ','.join(sample_ids)))
+      eprint(f"created: analysis {analysis_id} w/ sample {','.join(sample_ids)}")
     return analysis_id
 
   def get_analysis(self, uid):
     '''Get resource'''
     return (Analysis(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/analysis.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/analysis.{uid}.json' if self.use_cache else False,
     )
 
   def get_analysis_owner(self, analysis_id):
@@ -303,11 +301,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def update_analysis(self, uid, data):
     '''Update resource'''
     info = (Analysis(self.conf.get('api'))).save(
-        obj_id=uid,
-        payload=data,
+      obj_id=uid,
+      payload=data,
     )
     if info.get('error'):
-      eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
+      eprint(f"couldn\'t update analysis {uid}, msg: {info.get('msg')}")
       return None
 
     if self.verbose:
@@ -324,8 +322,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_file(self, uid):
     '''Get resource'''
     return (File(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/file.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/file.{uid}.json' if self.use_cache else False,
     )
 
   def update_file(self, uid, data):
@@ -346,14 +344,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_gene(self, uid):
     '''Get resource'''
     return (Gene(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/gene.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/gene.{uid}.json' if self.use_cache else False,
     )
 
   def get_genes(self):
     '''Get resource list'''
     info = (Gene(self.conf.get('api'))).list(
-        params={'limit': 0}
+      params={'limit': 0}
     )
     return info.get('objects', [])
 
@@ -390,8 +388,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_genome(self, uid):
     '''Get resource'''
     return (Genome(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/genome.{uid}.json' if self.use_cache else False,
     )
 
   def get_genomes(self, filters={}): # pylint: disable=dangerous-default-value
@@ -423,8 +421,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_host_by_domain(self, domain):
     '''Get host by domain'''
     info = (Host(self.conf.get('api'))).list({
-        'domain__exact': domain,
-        'limit': 1,
+      'domain__exact': domain,
+      'limit': 1,
     })
     return info.get('objects')[0] if info.get('objects') else None
 
@@ -434,7 +432,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def create_module(self, data):
     '''create module from yaml'''
     path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
       yaml_string = file.read()
     yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
     if not yaml_data.get('name'):
@@ -464,7 +462,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def update_module(self, data):
     '''update module from yaml'''
     path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
       yaml_string = file.read()
     yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
     module_id = yaml_data.get('id')
@@ -489,22 +487,22 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_module(self, uid):
     '''Get module resource'''
     return (Module(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/module.{uid}.json' if self.use_cache else False,
     )
 
   def get_pipeline_modules(self, uid):
     '''Get resources for a workflow'''
     return (Module(self.conf.get('api'))).get_pipeline_modules(
-        uid,
-        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/module.{uid}.json' if self.use_cache else False,
     )
 
   def delete_module(self, uid):
     '''Delete method'''
     info = (Module(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      eprint(f"error: deleting {uid}, msg: {info.get('msg')}")
       return None
 
     if self.verbose:
@@ -517,7 +515,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def create_pipeline(self,data):
     '''create pipeline from yaml'''
     path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
       yaml_string = file.read()
     yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
     if not yaml_data.get('name'):
@@ -547,7 +545,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def update_pipeline(self,data):
     '''update pipeline from yaml'''
     path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
       yaml_string = file.read()
     yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
     workflow_id = yaml_data.get('id')
@@ -572,8 +570,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_pipeline(self, uid):
     '''Get resource'''
     return (Pipeline(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/workflow.{uid}.json' if self.use_cache else False,
     )
 
   def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
@@ -584,7 +582,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Pipeline(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      eprint(f"error: deleting {uid}, msg: {info.get('msg')}")
       return None
 
     if self.verbose:
@@ -598,8 +596,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_project(self, name):
     '''Get resources for a workflow'''
     return (Project(self.conf.get('api'))).get_project_by_name(
-      name,
-      cache='{}/json/module.{}.json'.format(self.scratch, name) if self.use_cache else False,
+      name
     )
 
   def get_projects(self, filters={}): # pylint: disable=dangerous-default-value
@@ -624,9 +621,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def update_project(self, uid, data, params=None):
     '''Update resource'''
     info = (Project(self.conf.get('api'))).save(
-        obj_id=uid,
-        payload=data,
-        params=params
+      obj_id=uid,
+      payload=data,
+      params=params
     )
     if self.verbose and not info.get('error'):
       eprint('project', uid, 'updated')
@@ -691,12 +688,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return None
 
     if data.get('default_workflow'):
-      data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
+      data['default_workflow'] = f"{prefix}pipelines/{data['default_workflow']}"
 
     if data.get('projects'):
       project = (Project(self.conf.get('api'))).get(data.get('projects'))
       if project.get('error'):
-        eprint('ERROR: Looking for project. {}'.format(project.get('msg')))
+        eprint(f"ERROR: Looking for project. {project.get('msg')}")
         return None
       data['projects'] = [project.get('resource_uri')]
 
@@ -718,29 +715,29 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     files_to_upload = []
     for path in data.get('filepaths1', []):
       path = os.path.abspath(os.path.expanduser(
-          os.path.expandvars(path)
+        os.path.expandvars(path)
       ))
     for path in data.get('filepaths2', []):
       path = os.path.abspath(os.path.expanduser(
-          os.path.expandvars(path)
+        os.path.expandvars(path)
       ))
 
     # if a sample id exists, then upload the files
     if self.verbose:
-      eprint('Sample id: {}'.format(sample_id))
+      eprint(f'Sample id: {sample_id}')
 
     order = 0
     all_files = data.get('filepaths1', []) + data.get('filepaths2', [])
     for filepath in all_files:
       if self.verbose:
-        eprint('Creating upload {}'.format(filepath))
+        eprint(f'Creating upload {filepath}')
 
       upload_id, filepath, key = self.create_upload(
-          sample_id,
-          filepath,
-          order,
-          is_paired_end=filepath in data.get('filepaths2', []),
-          source=source
+        sample_id,
+        filepath,
+        order,
+        is_paired_end=filepath in data.get('filepaths2', []),
+        source=source
       )
       files_to_upload.append([upload_id, filepath, key])
       order += 1
@@ -748,11 +745,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if upload:
       for upload_id, filepath, key in files_to_upload:
         if self.verbose:
-          eprint('Uploading. upload_id: {}, filepath: {}, key: {}'.format(
-              upload_id,
-              filepath,
-              key
-          ))
+          eprint(f'Uploading. upload_id: {upload_id}, filepath: {filepath}, key: {key}')
         self.upload_file(upload_id, filepath, key)
     return sample_id
 
@@ -760,7 +753,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      eprint(f"error: deleting {uid}, msg: {info.get('msg')}")
       return None
 
     if self.verbose:
@@ -770,8 +763,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_sample(self, uid, add_analysis=True):
     '''Get resource'''
     info = (Sample(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/sample.{uid}.json' if self.use_cache else False,
     )
     if info and add_analysis:
       info = self._add_full_analysis(info)
@@ -813,24 +806,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if filepath.startswith('ftp://') or uri:
       status = 'completed'
     else:
-      key = 'uploads/{}/{}/{}'.format(
-        self.conf['user']['id'],
-        sample_id,
-        os.path.basename(filepath)
-      )
+      key = f"uploads/{self.conf['user']['id']}/{sample_id}/{os.path.basename(filepath)}"
       filesize = os.stat(filepath).st_size if os.path.exists(filepath) else 0
 
     # update record with location of uploaded file
     info = (Upload(self.conf.get('api'))).save(payload={
-        'filesize': filesize,
-        'is_paired_end': is_paired_end,
-        'key': key,
-        'order': order,
-        'sample': '{}samples/{}'.format(prefix, sample_id),
-        'source': source,
-        'status': status,
-        'uri': uri,
-        # 'timetaken': seconds_to_upload,
+      'filesize': filesize,
+      'is_paired_end': is_paired_end,
+      'key': key,
+      'order': order,
+      'sample': f'{prefix}samples/{sample_id}',
+      'source': source,
+      'status': status,
+      'uri': uri,
+      # 'timetaken': seconds_to_upload,
     })
     upload_id = info.get('id')
     if upload_id:
@@ -847,13 +836,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get resource'''
     return (Upload(self.conf.get('api'))).get(
       uid,
-      cache='{}/json/upload.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      cache=f'{self.scratch}/json/upload.{uid}.json' if self.use_cache else False,
     )
 
   def get_uploads(self, params={'limit': 0}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     info = (Upload(self.conf.get('api'))).list(
-        params=params
+      params=params
     )
     return info.get('objects', [])
 
@@ -867,10 +856,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     response = self.copy_file(filepath, key, action='to')
     seconds_to_upload = int(time.time() - starttime)
     (Upload(self.conf.get('api'))).save(obj_id=upload_id, payload={
-        'filesize': os.stat(filepath).st_size,
-        'seq_length': 0,
-        'status': 'completed' if response else 'failed',
-        'timetaken': seconds_to_upload,
+      'filesize': os.stat(filepath).st_size,
+      'seq_length': 0,
+      'status': 'completed' if response else 'failed',
+      'timetaken': seconds_to_upload,
     })
 
   def upload_uri_to_id(self, uri):
@@ -890,8 +879,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_user(self, uid):
     '''Get resource'''
     return (User(self.conf.get('api'))).get(
-        uid,
-        cache='{}/json/user.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+      uid,
+      cache=f'{self.scratch}/json/user.{uid}.json' if self.use_cache else False,
     )
 
   ################################################################################################
@@ -912,19 +901,19 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     storage_cfg = self.configuration.get_user_storage()
     if not src.startswith('s3://'):
-      src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+      src = f"s3://{storage_cfg.get('bucket')}/{src}"
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
-      eprint('copying from {} to {}'.format(src, dest))
+      eprint(f'copying from {src} to {dest}')
     return self._execute_command(cmd=cmd, retry=3)
 
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
     storage_cfg = self.configuration.get_user_storage()
-    dest = 's3://{}/{}'.format(storage_cfg.get('bucket'), dest)
+    dest = f"s3://{storage_cfg.get('bucket')}/{dest}"
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
-      eprint('copying from {} to {}'.format(src, dest))
+      eprint(f'copying from {src} to {dest}')
     return self._execute_command(cmd=cmd)
 
   def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
@@ -966,7 +955,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('exists', filepath)
 
     if load:
-      data = open(filepath, 'r').read().strip()
+      with open(filepath, 'r', encoding='utf-8') as file_object:
+        data = file_object.read().strip()
       return json.loads(data) if is_json else data
     return filepath
 
@@ -985,13 +975,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       outdir = outdir if outdir else self.scratch
       fileout = os.path.join(outdir, os.path.split(file_i)[1])
       if os.path.exists(fileout):
-        eprint('Not downloading. File exists: {}'.format(fileout))
+        eprint(f'Not downloading. File exists: {fileout}')
         output = True
       else:
         output = self.copy_file_from_s3(file_i, outdir)
 
       if output:
-        eprint('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
+        eprint(f'Downloaded {os.path.split(file_i)[1]} to {outdir}.')
         files_downloaded.append(fileout)
     return files_downloaded
 
@@ -1114,11 +1104,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       _params = '--sse'
     if params:
       for arg, val in params.items():
-        _params += ' {} "{}"'.format(arg, val)
+        _params += f' {arg} "{val}"'
 
     storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
-    return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
+    return f'{credential}aws s3 cp "{src}" "{dest}" {_params}'
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
     '''Get expression count text file - for RNA-Seq'''
@@ -1246,16 +1236,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
       if analysis['params'] and 'info' in analysis['params']:
         if not analysis['params']['info'].get('genome_id'):
-          eprint('Could not find genome for analysis {}'.format(analysis['id']))
+          eprint(f"Could not find genome for analysis {analysis['id']}")
           continue
         sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
         if not sample_genome_id:
-          eprint('Could not find genome for analysis {}'.format(analysis['id']))
+          eprint(f"Could not find genome for analysis {analysis['id']}")
           continue
         if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
           eprint(
-            'analysis genome {}'.format(analysis['params']['info']['genome_id']),
-            'different from sample genome {}.'.format(sample_genome_id),
+            f"analysis genome {analysis['params']['info']['genome_id']}",
+            f'different from sample genome {sample_genome_id}.',
           )
           continue
 
@@ -1320,7 +1310,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       filepath = filename
     else:
       if dirname:
-        filename = '{}/{}'.format(dirname.rstrip('/'), filename)
+        filename = f"{dirname.rstrip('/')}/{filename}"
       # adding dirname made it full
       filepath = filename if filename.startswith('/') else self.scratch + '/' + filename
     return filepath
@@ -1334,11 +1324,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     outdir:      {str} Directory to save data. Use instead of scratch.
     '''
     user_id = self._get_analysis_owner_id(analysis_id)
-    filekey = 'log/analyses/{}/{}/history.json'.format(user_id, analysis_id)
-    filename = '{}/history/history.{}.json'.format(
-      outdir if outdir else self.scratch,
-      analysis_id
-    )
+    filekey = f'log/analyses/{user_id}/{analysis_id}/history.json'
+    filename = f'{outdir if outdir else self.scratch}/history/history.{analysis_id}.json'
     return self.download_file(filekey, filename, load=True, is_json=True)
 
   def get_id_from_url(self, url):
@@ -1354,20 +1341,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     outdir: {str}      Directory to save data. Use instead of scratch.
     '''
     user_id = self._get_analysis_owner_id(analysis_id)
-    filekey = 'log/analyses/{}/{}/worker.log'.format(user_id, analysis_id)
-    filename = '{}/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
+    filekey = f'log/analyses/{user_id}/{analysis_id}/worker.log'
+    filename = f'{outdir if outdir else self.scratch}/worker.{analysis_id}.log'
     return self.download_file(filekey, filename, load=False, is_json=False)
 
   def get_window_score_filename(self, sample, kind=None, flanking=None):
     '''Get window score filename'''
-    suffix = 'score-{}-{}Kb'.format(kind, flanking / 1e3)
+    suffix = f'score-{kind}-{flanking / 1e3}Kb'
     suffix = suffix.replace('.0Kb', 'Kb')
-    return '{}/score/{}.{}.dedup.{}.txt'.format(
-      self.scratch,
-      sample['slug'],
-      sample['genome'],
-      suffix,
-    )
+    return f"{self.scratch,}/score/{sample['slug'],}.{sample['genome'],}.dedup.{suffix,}.txt"
 
   @classmethod
   def parse_url(cls, url):
@@ -1412,7 +1394,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # if it is a detail
     if data_type in detail_methods:
       if uid is None:
-        eprint('Your uid is invalid: {}'.format(uid))
+        eprint(f'Your uid is invalid: {uid}')
         return
 
       for item_id in uid:
@@ -1420,7 +1402,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if data_tmp.get('id'):
           data.append(data_tmp)
         else:
-          eprint('{} with uid {} invalid.'.format(data_type.capitalize(), item_id))
+          eprint(f'{data_type.capitalize()} with uid {item_id} invalid.')
 
     filters = {}
     if project:
@@ -1455,8 +1437,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### Private methods ###
   def _add_full_analysis(self, sample):
     '''Add full analysis info to the sample'''
-    analysis_ids = [self.parse_url(uri)['id']
-        for uri in sample.get('analyses', [])]
+    analysis_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
     analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
@@ -1473,7 +1454,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_sample(uid, add_analysis=False)
     if info.get('id'):
       return True
-    eprint('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
+    eprint(f'The provided sample id: {uid}, does not exist in Basepair.')
     return False
 
   def _check_workflow(self, uid):
@@ -1481,7 +1462,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_pipeline(uid)
     if info.get('id'):
       return True
-    eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
+    eprint(f'The provided workflow id: {uid}, does not exist in Basepair.')
     return False
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
@@ -1489,14 +1470,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sleep_time = 3
     try:
       if self.verbose:
-        eprint('Executing command:  {}\n'.format(cmd))
+        eprint(f'Executing command:  {cmd}\n')
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
-      eprint('Error: {}'.format(error.output))
-      eprint('Return code: {}'.format(error.returncode))
+      eprint(f'Error: {error.output}')
+      eprint(f'Return code: {error.returncode}')
       if current_try >= retry:
         return None
-      eprint('retrying in {} seconds.'.format(sleep_time))
+      eprint(f'retrying in {sleep_time} seconds.')
       time.sleep(sleep_time)
       return self._execute_command(cmd=cmd, current_try=current_try + 1)
 
@@ -1524,7 +1505,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       available_genomes = [item for item in self.genomes if item.get('name') == genome_name]
       if not available_genomes:
         eprint(
-          'The provided genome, {}, does not exist in Basepair. Proceeding anyway...'.format(genome_name)
+          f'The provided genome, {genome_name}, does not exist in Basepair. Proceeding anyway...'
         )
         return None
       return available_genomes[0].get('resource_uri')
@@ -1545,7 +1526,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   @classmethod
   def _parsed_sample_list(cls, items, prefix):
     '''Parse sample id list into sample resource uri list'''
-    return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
+    return [f'{prefix}samples/{item_id}' for item_id in items]
 
   @staticmethod
   def yes_or_no(question):

@@ -2,7 +2,6 @@
 import sys
 # App Import
 from basepair.helpers import eprint
-from bin.utils import update_info
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
 
 class Analysis:
@@ -56,7 +55,7 @@ class Analysis:
         for key, val in zip(keys, vals):
           data[key] = val
       res = bp_api.update_analysis(analysis_id, data)
-      res = {'error': True, 'msg': f'Update analysis not supported.'}
+      res = {'error': True, 'msg': 'Update analysis not supported.'}
       if res.get('error'):
         sys.exit(f"ERROR: {res.get('msg')}")
     sys.exit('Error: Analysis required.')
@@ -67,7 +66,7 @@ class Analysis:
     uids = args.uid
     if uids:
       for uid in uids:
-        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
         if answer:
           bp_api.delete_analysis(uid)
     sys.exit('Please add one or more uid')
@@ -93,7 +92,7 @@ class Analysis:
         info = bp_api.get_analysis(uid)  # check analysis id is valid
         if info:
           bp_api.get_log(uid, args.outdir)
-        eprint('{} is not a valid analysis id!'.format(uid))
+        eprint(f'{uid} is not a valid analysis id!')
     sys.exit('ERROR: Minimum one analysis uid required.')
 
   @staticmethod

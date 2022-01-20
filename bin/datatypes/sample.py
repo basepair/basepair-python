@@ -2,7 +2,8 @@
 import sys
 # App imports
 from basepair.helpers import eprint
-from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
+from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, \
+add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
 
 class Sample:
   '''Sample action methods'''
@@ -68,7 +69,7 @@ class Sample:
             data['info'][key] = val  # set sample info field
 
       res = bp_api.update_sample(args.sample, data)
-      res = {'error': True, 'msg': f'Update sample not supported.'}
+      res = {'error': True, 'msg': 'Update sample not supported.'}
       if res.get('error'):
         sys.exit(f"ERROR: {res.get('msg')}")
     sys.exit('ERROR: Sample required.')
@@ -79,7 +80,7 @@ class Sample:
     uids = args.uid
     if uids:
       for uid in uids:
-        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
         if answer:
           bp_api.delete_sample(uid)
     sys.exit('Please add one or more uid')
@@ -97,7 +98,7 @@ class Sample:
         # check sample id is valid
         sample = bp_api.get_sample(uid, add_analysis=True)
         if sample is None:
-          eprint('{} is not a valid sample id!'.format(uid))
+          eprint(f'{uid} is not a valid sample id!')
         # if tags provided, download file by tags
         if args.tags:
           bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)

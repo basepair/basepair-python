@@ -38,7 +38,7 @@ class Module:
       sys.exit('Please add one or more uid')
 
     for uid in uids:
-      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+      answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
       if answer:
         bp_api.delete_module(uid)
 

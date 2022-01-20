@@ -1,3 +1,4 @@
+'''Common parser used in datatypes parsing'''
 # App imports
 from basepair.helpers import eprint
 

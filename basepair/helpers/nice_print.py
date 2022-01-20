@@ -140,12 +140,12 @@ class NicePrint:
   def sample(data):
     '''Print sample'''
     for sample in data:
-      print('Sample id: {}'.format(sample['id']))
-      print('Sample name: {}'.format(sample['name']))
-      print('Sample datatype: {}'.format(sample['datatype']))
+      print(f"Sample id: {sample['id']}")
+      print(f"Sample name: {sample['name']}")
+      print(f"Sample datatype: {sample['datatype']}")
       print('Sample genome: {}'.format(sample['genome_name'] or sample['genome']))
-      print('Sample data created: {}'.format(sample['date_created']))
-      print('Sample num reads: {}'.format(sample['meta']['num_reads']))
+      print(f"Sample data created: {sample['date_created']}")
+      print(f"Sample num reads: {sample['meta']['num_reads']}")
       print('Analyses:')
       to_print = [
         [

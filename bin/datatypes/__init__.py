@@ -1,3 +1,4 @@
+'''Importing datatypes from module'''
 from .analysis import Analysis
 from .file import File
 from .genome import Genome

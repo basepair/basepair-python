@@ -44,7 +44,7 @@ class Project:
         res = bp_api.update_project(project_id, data=data, params=params)
 
         if res.get('error'):
-          sys.exit('error: {}'.format(res.get('msg')))
+          sys.exit(f"error: {res.get('msg')}")
     sys.exit('ERROR: Minimum one project required.')
 
   @staticmethod

@@ -26,18 +26,17 @@ import os
 # App imports
 import basepair
 from basepair.helpers import eprint
-from datatypes import Analysis, File, Genome, Module, Project, Pipeline, Sample
+from bin.datatypes import Analysis, File, Genome, Module, Project, Pipeline, Sample
 
 sys.path.insert(0, '/home/ec2-user/basepair')
-
-
 
 def main():
   '''Main method'''
   args = read_args()
 
   if args.config:
-    conf = json.load(open(args.config))
+    with open(args.config, 'r', encoding='utf-8') as config_file:
+      conf = json.load(config_file)
   else:
     conf = None
 
@@ -63,11 +62,10 @@ def main():
   if callable(method):
     method(bp_api, args)
 
-
 def read_args():
   '''Read args'''
   parser = argparse.ArgumentParser(
-    description='Basepair CLI, API version {}'.format(basepair.__version__),
+    description=f'Basepair CLI, API version {basepair.__version__}',
     formatter_class=argparse.RawDescriptionHelpFormatter
   )
 
@@ -169,7 +167,7 @@ def read_args():
       eprint('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
       sys.exit(1)
     else:
-      eprint('Using config file {}'.format(os.environ['BP_CONFIG_FILE']))
+      eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
   else:
     eprint('Using config file', args.config)
 
