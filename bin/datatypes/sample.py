@@ -9,16 +9,6 @@ class Sample:
   '''Sample action methods'''
 
   @staticmethod
-  def get_sample(bp_api, args):
-    '''Get sample'''
-    uids = args.uid
-    is_json = args.json
-    if uids:
-      for uid in uids:
-        bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
-    sys.exit('At least one uid required.')
-
-  @staticmethod
   def create_sample(bp_api, args):
     '''Create sample'''
     # if payload username or api key specified, make sure both are present
@@ -49,6 +39,46 @@ class Sample:
     bp_api.create_sample(data, upload=True, source='cli')
 
   @staticmethod
+  def delete_sample(bp_api, args):
+    '''Delete sample'''
+    uids = args.uid
+    if uids:
+      for uid in uids:
+        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
+        if answer:
+          bp_api.delete_sample(uid)
+      return
+    sys.exit('Please add one or more uid')
+
+  @staticmethod
+  def download_sample(bp_api, args):
+    '''Download sample'''
+    if args.uid:
+      for uid in args.uid:
+        # check sample id is valid
+        sample = bp_api.get_sample(uid, add_analysis=True)
+        if sample is None:
+          eprint(f'{uid} is not a valid sample id!')
+        # if tags provided, download file by tags
+        if args.tags:
+          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
+        else:
+          bp_api.download_raw_files(sample, args.outdir)
+      return
+    sys.exit('Please add one or more uid')
+
+  @staticmethod
+  def get_sample(bp_api, args):
+    '''Get sample'''
+    uids = args.uid
+    is_json = args.json
+    if uids:
+      for uid in uids:
+        bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
+      return
+    sys.exit('At least one uid required.')
+
+  @staticmethod
   def update_sample(bp_api, args):
     '''Update sample'''
     if args.sample:
@@ -72,18 +102,8 @@ class Sample:
       res = {'error': True, 'msg': 'Update sample not supported.'}
       if res.get('error'):
         sys.exit(f"ERROR: {res.get('msg')}")
+      return
     sys.exit('ERROR: Sample required.')
-
-  @staticmethod
-  def delete_sample(bp_api, args):
-    '''Delete sample'''
-    uids = args.uid
-    if uids:
-      for uid in uids:
-        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
-        if answer:
-          bp_api.delete_sample(uid)
-    sys.exit('Please add one or more uid')
 
   @staticmethod
   def list_sample(bp_api, args):
@@ -91,32 +111,8 @@ class Sample:
     bp_api.print_data(data_type='samples', is_json=args.json, project=args.project)
 
   @staticmethod
-  def download_sample(bp_api, args):
-    '''Download sample'''
-    if args.uid:
-      for uid in args.uid:
-        # check sample id is valid
-        sample = bp_api.get_sample(uid, add_analysis=True)
-        if sample is None:
-          eprint(f'{uid} is not a valid sample id!')
-        # if tags provided, download file by tags
-        if args.tags:
-          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
-        else:
-          bp_api.download_raw_files(sample, args.outdir)
-    sys.exit('Please add one or more uid')
-
-  @staticmethod
   def sample_action_parser(action_parser):
     '''Sample parser'''
-    # get sample parser
-    get_sample_p = action_parser.add_parser(
-      'get',
-      help='List detail info about one or more samples.'
-    )
-    get_sample_p = add_common_args(get_sample_p)
-    get_sample_p = add_uid_parser(get_sample_p, 'sample')
-    get_sample_p = add_json_parser(get_sample_p)
 
     # create sample parser
     create_sample_p = action_parser.add_parser(
@@ -143,6 +139,33 @@ class Sample:
     create_sample_p.add_argument('--val', action='append')
     create_sample_p = add_payload_args(create_sample_p)
 
+    # delete sample parser
+    delete_sample_p = action_parser.add_parser(
+      'delete',
+      help='delete a sample.'
+    )
+    delete_sample_p = add_common_args(delete_sample_p)
+    delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
+
+    # download sample parser
+    download_sample_p = action_parser.add_parser(
+      'download',
+      help='Download one or more samples.'
+    )
+    download_sample_p = add_uid_parser(download_sample_p, 'sample')
+    download_sample_p = add_tags_parser(download_sample_p)
+    download_sample_p = add_outdir_parser(download_sample_p)
+    download_sample_p = add_common_args(download_sample_p)
+
+    # get sample parser
+    get_sample_p = action_parser.add_parser(
+      'get',
+      help='List detail info about one or more samples.'
+    )
+    get_sample_p = add_common_args(get_sample_p)
+    get_sample_p = add_uid_parser(get_sample_p, 'sample')
+    get_sample_p = add_json_parser(get_sample_p)
+
     # update sample parser
     update_sample_parser = action_parser.add_parser(
       'update',
@@ -163,14 +186,6 @@ class Sample:
     update_sample_parser.add_argument('--key', action='append')
     update_sample_parser.add_argument('--val', action='append')
 
-    # delete sample parser
-    delete_sample_p = action_parser.add_parser(
-      'delete',
-      help='delete a sample.'
-    )
-    delete_sample_p = add_common_args(delete_sample_p)
-    delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
-
     # list sample parser
     list_samples_p = action_parser.add_parser(
       'list',
@@ -182,15 +197,5 @@ class Sample:
     )
     list_samples_p = add_common_args(list_samples_p)
     list_samples_p = add_json_parser(list_samples_p)
-
-    # download sample parser
-    download_sample_p = action_parser.add_parser(
-      'download',
-      help='Download one or more samples.'
-    )
-    download_sample_p = add_uid_parser(download_sample_p, 'sample')
-    download_sample_p = add_tags_parser(download_sample_p)
-    download_sample_p = add_outdir_parser(download_sample_p)
-    download_sample_p = add_common_args(download_sample_p)
 
     return action_parser

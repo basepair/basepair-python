@@ -33,12 +33,10 @@ sys.path.insert(0, '/home/ec2-user/basepair')
 def main():
   '''Main method'''
   args = read_args()
-
+  conf = None
   if args.config:
     with open(args.config, 'r', encoding='utf-8') as config_file:
       conf = json.load(config_file)
-  else:
-    conf = None
 
   bp_api = basepair.connect(
     conf=conf,
@@ -70,7 +68,7 @@ def read_args():
   )
 
   datatype_p = parser.add_subparsers(
-    help='Basepair datatype - module, pipeline, sample, analysis etc.',
+    help='Basepair datatype - analysis, module, pipeline, sample, etc.',
     dest='datatype'
   )
   datatype_p.required = True

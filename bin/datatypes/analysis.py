@@ -8,16 +8,6 @@ class Analysis:
   '''Analysis action methods'''
 
   @staticmethod
-  def get_analysis(bp_api, args):
-    '''Get analysis'''
-    uids = args.uid
-    is_json = args.json
-    if uids:
-      for uid in uids:
-        bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
-    sys.exit('At least one uid required.')
-
-  @staticmethod
   def create_analysis(bp_api, args):
     '''Create and submit an analysis'''
     params = {'node': {}}
@@ -47,20 +37,6 @@ class Analysis:
     )
 
   @staticmethod
-  def update_analysis(bp_api, analysis_id, keys, vals):
-    '''Update analysis'''
-    if analysis_id:
-      data = {}
-      if keys and vals:
-        for key, val in zip(keys, vals):
-          data[key] = val
-      res = bp_api.update_analysis(analysis_id, data)
-      res = {'error': True, 'msg': 'Update analysis not supported.'}
-      if res.get('error'):
-        sys.exit(f"ERROR: {res.get('msg')}")
-    sys.exit('Error: Analysis required.')
-
-  @staticmethod
   def delete_analysis(bp_api, args):
     '''Delete analysis'''
     uids = args.uid
@@ -69,7 +45,41 @@ class Analysis:
         answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
         if answer:
           bp_api.delete_analysis(uid)
+      return
     sys.exit('Please add one or more uid')
+
+  @staticmethod
+  def download_analysis(bp_api, args):
+    '''Download analysis'''
+    if args.uid:
+      # download a file from an analysis by tags
+      for uid in args.uid:
+        bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
+      return
+    sys.exit('ERROR: Minimum one analysis uid required.')
+
+  @staticmethod
+  def download_log(bp_api, args):
+    '''Download analysis log'''
+    if args.uid:
+      for uid in args.uid:
+        info = bp_api.get_analysis(uid)  # check analysis id is valid
+        if info:
+          bp_api.get_log(uid, args.outdir)
+        eprint(f'{uid} is not a valid analysis id!')
+      return
+    sys.exit('ERROR: Minimum one analysis uid required.')
+
+  @staticmethod
+  def get_analysis(bp_api, args):
+    '''Get analysis'''
+    uids = args.uid
+    is_json = args.json
+    if uids:
+      for uid in uids:
+        bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
+      return
+    sys.exit('At least one uid required.')
 
   @staticmethod
   def list_analysis(bp_api, args):
@@ -82,39 +92,26 @@ class Analysis:
     if uid:
       for each_uid in uid:
         bp_api.restart_analysis(each_uid)
+      return
     sys.exit('Please add one or more uid')
 
   @staticmethod
-  def download_log(bp_api, args):
-    '''Download analysis log'''
-    if args.uid:
-      for uid in args.uid:
-        info = bp_api.get_analysis(uid)  # check analysis id is valid
-        if info:
-          bp_api.get_log(uid, args.outdir)
-        eprint(f'{uid} is not a valid analysis id!')
-    sys.exit('ERROR: Minimum one analysis uid required.')
-
-  @staticmethod
-  def download_analysis(bp_api, args):
-    '''Download analysis'''
-    if args.uid:
-      # download a file from an analysis by tags
-      for uid in args.uid:
-        bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
-    sys.exit('ERROR: Minimum one analysis uid required.')
+  def update_analysis(bp_api, analysis_id, keys, vals):
+    '''Update analysis'''
+    if analysis_id:
+      data = {}
+      if keys and vals:
+        for key, val in zip(keys, vals):
+          data[key] = val
+      res = bp_api.update_analysis(analysis_id, data)
+      if res.get('error'):
+        sys.exit(f"ERROR: {res.get('msg')}")
+      return
+    sys.exit('Error: Analysis required.')
 
   @staticmethod
   def analysis_action_parser(action_parser):
     '''Analysis parser'''
-    # get analysis parser
-    get_analysis_p = action_parser.add_parser(
-      'get',
-      help='Get details of an analysis.'
-    )
-    get_analysis_p = add_common_args(get_analysis_p)
-    get_analysis_p = add_uid_parser(get_analysis_p, 'analysis')
-    get_analysis_p = add_json_parser(get_analysis_p)
 
     # create analysis parser
     create_analysis_p = action_parser.add_parser(
@@ -140,16 +137,6 @@ class Analysis:
       help='Ignore validation warnings',
     )
 
-    # update an analysis parser
-    update_analysis_parser = action_parser.add_parser(
-      'update',
-      help='Update information associated with an analysis.'
-    )
-    update_analysis_parser = add_common_args(update_analysis_parser)
-    update_analysis_parser = add_single_uid_parser(update_analysis_parser, 'analysis')
-    update_analysis_parser.add_argument('--key', action='append')
-    update_analysis_parser.add_argument('--val', action='append')
-
     # delete analysis parser
     delete_analysis_p = action_parser.add_parser(
       'delete',
@@ -157,18 +144,6 @@ class Analysis:
     )
     delete_analysis_p = add_common_args(delete_analysis_p)
     delete_analysis_p = add_uid_parser(delete_analysis_p, 'analysis')
-
-    # list analysis parser
-    list_analyses_p = action_parser.add_parser(
-      'list',
-      help='List basic info about your analyses.'
-    )
-    list_analyses_p.add_argument(
-      '--project',
-      help='List analyses of the project.'
-    )
-    list_analyses_p = add_common_args(list_analyses_p)
-    list_analyses_p = add_json_parser(list_analyses_p)
 
     # download analysis parser
     download_analysis_p = action_parser.add_parser(
@@ -184,14 +159,6 @@ class Analysis:
     download_analysis_p = add_outdir_parser(download_analysis_p)
     download_analysis_p = add_common_args(download_analysis_p)
 
-    # reanalyze parser
-    reanalyze_p = action_parser.add_parser(
-      'reanalyze',
-      help='Reanalyze analyses.'
-    )
-    reanalyze_p = add_common_args(reanalyze_p)
-    reanalyze_p = add_uid_parser(reanalyze_p, 'analysis')
-
     # download analysis log parser
     download_log_p = download_analysis_log_sp.add_parser(
       'log',
@@ -200,5 +167,44 @@ class Analysis:
     download_log_p = add_uid_parser(download_log_p, 'analysis')
     download_log_p = add_outdir_parser(download_log_p)
     download_log_p = add_common_args(download_log_p)
+
+    # get analysis parser
+    get_analysis_p = action_parser.add_parser(
+      'get',
+      help='Get details of an analysis.'
+    )
+    get_analysis_p = add_common_args(get_analysis_p)
+    get_analysis_p = add_uid_parser(get_analysis_p, 'analysis')
+    get_analysis_p = add_json_parser(get_analysis_p)
+
+    # list analysis parser
+    list_analyses_p = action_parser.add_parser(
+      'list',
+      help='List basic info about your analyses.'
+    )
+    list_analyses_p.add_argument(
+      '--project',
+      help='List analyses of the project.'
+    )
+    list_analyses_p = add_common_args(list_analyses_p)
+    list_analyses_p = add_json_parser(list_analyses_p)
+
+    # reanalyze parser
+    reanalyze_p = action_parser.add_parser(
+      'reanalyze',
+      help='Reanalyze analyses.'
+    )
+    reanalyze_p = add_common_args(reanalyze_p)
+    reanalyze_p = add_uid_parser(reanalyze_p, 'analysis')
+
+    # update an analysis parser
+    update_analysis_parser = action_parser.add_parser(
+      'update',
+      help='Update information associated with an analysis.'
+    )
+    update_analysis_parser = add_common_args(update_analysis_parser)
+    update_analysis_parser = add_single_uid_parser(update_analysis_parser, 'analysis')
+    update_analysis_parser.add_argument('--key', action='append')
+    update_analysis_parser.add_argument('--val', action='append')
 
     return action_parser
