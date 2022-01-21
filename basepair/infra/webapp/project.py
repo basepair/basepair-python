@@ -1,8 +1,6 @@
 '''Project webapp api wrapper'''
-import requests
 
 # App imports
-from basepair.helpers import eprint
 from .abstract import Abstract
 
 class Project(Abstract):

@@ -68,10 +68,46 @@ def read_args():
   )
 
   datatype_p = parser.add_subparsers(
-    help='Basepair datatype - analysis, module, pipeline, sample, etc.',
+    help='Basepair datatype - analysis, file, genome, module, project, pipeline, sample',
     dest='datatype'
   )
   datatype_p.required = True
+
+  # analysis parser
+  analysis_p = datatype_p.add_parser(
+    'analysis',
+    help='analysis create, analysis update, etc.'
+  )
+  analysis_action_sp = analysis_p.add_subparsers(
+    help='Type of action to perform on datatype.',
+    dest='action_type'
+  )
+
+  Analysis.analysis_action_parser(analysis_action_sp)
+
+  # file parser
+  file_p = datatype_p.add_parser(
+    'file',
+    help='file download, etc.'
+  )
+  file_action_sp = file_p.add_subparsers(
+    help='Type of action to perform on datatype.',
+    dest='action_type'
+  )
+
+  File.file_action_parser(file_action_sp)
+
+  # genome parser
+  genome_p = datatype_p.add_parser(
+    'genome',
+    help='genome get, genome list etc.'
+  )
+  genome_action_sp = genome_p.add_subparsers(
+    help='Type of action to perform on datatype.',
+    dest='action_type'
+  )
+
+  Genome.genome_action_parser(genome_action_sp)
 
   # module parser
   module_p = datatype_p.add_parser(
@@ -97,17 +133,17 @@ def read_args():
 
   Pipeline.pipeline_action_parser(pipeline_action_sp)
 
-  # analysis parser
-  analysis_p = datatype_p.add_parser(
-    'analysis',
-    help='analysis create, analysis update, etc.'
+  # project parser
+  project_p = datatype_p.add_parser(
+    'project',
+    help='project create, project update, etc.'
   )
-  analysis_action_sp = analysis_p.add_subparsers(
+  project_action_sp = project_p.add_subparsers(
     help='Type of action to perform on datatype.',
     dest='action_type'
   )
 
-  Analysis.analysis_action_parser(analysis_action_sp)
+  Project.project_action_parser(project_action_sp)
 
   # sample parser
   sample_p = datatype_p.add_parser(
@@ -121,53 +157,14 @@ def read_args():
 
   Sample.sample_action_parser(sample_action_sp)
 
-  # genome parser
-  genome_p = datatype_p.add_parser(
-    'genome',
-    help='genome get, genome list etc.'
-  )
-  genome_action_sp = genome_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
-  )
-
-  Genome.genome_action_parser(genome_action_sp)
-
-  # project parser
-  project_p = datatype_p.add_parser(
-    'project',
-    help='project create, project update, etc.'
-  )
-  project_action_sp = project_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
-  )
-
-  Project.project_action_parser(project_action_sp)
-
-  # file parser
-  file_p = datatype_p.add_parser(
-    'file',
-    help='file download, etc.'
-  )
-  file_action_sp = file_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
-  )
-
-  File.file_action_parser(file_action_sp)
-
   parser.set_defaults(params=[],)
   args = parser.parse_args()
 
-  if not args.config:
-    if 'BP_CONFIG_FILE' not in os.environ:
-      eprint('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
-      sys.exit(1)
-    else:
-      eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
-  else:
-    eprint('Using config file', args.config)
+  if args.config:
+    return eprint('Using config file', args.config)
+  if 'BP_CONFIG_FILE' in os.environ:
+    return eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
+  return sys.exit('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
 
   # if neither set, be verbose
   if not args.verbose and not args.quiet:
