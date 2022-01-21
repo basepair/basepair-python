@@ -40,7 +40,6 @@ def add_payload_args(parser):
   )
   return parser
 
-
 def add_uid_parser(parser,datatype):
   '''Add uid parser'''
   parser.add_argument(
@@ -72,7 +71,6 @@ def add_pid_parser(parser):
   )
   return parser
 
-
 def add_json_parser(parser):
   '''Add json parser'''
   parser.add_argument(
@@ -81,7 +79,6 @@ def add_json_parser(parser):
     help='(Optional) Print the data in JSON format (this shows all data associated with each item).'
   )
   return parser
-
 
 def add_outdir_parser(parser):
   '''Add outdir parser'''
