@@ -22,6 +22,7 @@ class Pipeline:
         answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
         if answer:
           bp_api.delete_pipeline(uid)
+      return
     sys.exit('Please add one or more uid')
 
   @staticmethod
@@ -32,6 +33,7 @@ class Pipeline:
     if uids:
       for uid in uids:
         bp_api.print_data(data_type='pipeline', uid=uid, is_json=is_json)
+      return
     sys.exit('At least one uid required.')
 
   @staticmethod

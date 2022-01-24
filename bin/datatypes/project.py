@@ -36,10 +36,10 @@ class Project:
       if args.emails and args.perm:
         params = {
           'params': json.dumps({
-              'permission_data': {
-                  'emails': args.emails,
-                  'perm': args.perm,
-              }
+            'permission_data': {
+              'emails': args.emails,
+              'perm': args.perm,
+            }
           })
         }
 

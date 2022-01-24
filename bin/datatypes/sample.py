@@ -174,8 +174,8 @@ class Sample:
     update_sample_parser.add_argument(
       '--datatype',
       choices=[
-          'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-          'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+        'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+        'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
     )
     update_sample_parser.add_argument('--genome')
