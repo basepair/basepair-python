@@ -35,12 +35,12 @@ class Project:
       params = {}
       if args.emails and args.perm:
         params = {
-            'params': json.dumps({
-                'permission_data': {
-                    'emails': args.emails,
-                    'perm': args.perm,
-                }
-            })
+          'params': json.dumps({
+              'permission_data': {
+                  'emails': args.emails,
+                  'perm': args.perm,
+              }
+          })
         }
 
       if not data and not params:
@@ -63,8 +63,8 @@ class Project:
       'create',
       help='Add a project to your account on Basepair.'
     )
-    create_project_p = add_common_args(create_project_p)
     create_project_p.add_argument('--name')
+    create_project_p = add_common_args(create_project_p)
     create_project_p = add_payload_args(create_project_p)
 
     # list project parser
@@ -81,12 +81,12 @@ class Project:
       help='Update information associated with a project.'
     )
     update_project_parser = add_common_args(update_project_parser)
+    update_project_parser.add_argument('--emails', default=[], nargs='+')
+    update_project_parser.add_argument('--name')
+    update_project_parser.add_argument(
+      '--perm', choices=['admin', 'edit', 'view'], default='view')
     update_project_parser.add_argument(
       '--project', nargs='+', help='project id', required=True
     )
-    update_project_parser.add_argument('--emails', default=[], nargs='+')
-    update_project_parser.add_argument(
-      '--perm', choices=['admin', 'edit', 'view'], default='view')
-    update_project_parser.add_argument('--name')
 
     return action_parser

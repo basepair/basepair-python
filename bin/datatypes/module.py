@@ -17,13 +17,13 @@ class Module:
   def delete_module(bp_api, args):
     '''Delete Module'''
     uids = args.uid
-    if not uids:
-      sys.exit('Please add one or more uid')
-
-    for uid in uids:
-      answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
-      if answer:
-        bp_api.delete_module(uid)
+    if uids:
+      for uid in uids:
+        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
+        if answer:
+          bp_api.delete_module(uid)
+      return
+    sys.exit('Please add one or more uid')
 
   @staticmethod
   def get_module(bp_api, args):

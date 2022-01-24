@@ -118,22 +118,22 @@ class Analysis:
       help='Create and run an analysis.'
     )
     create_analysis_p = add_common_args(create_analysis_p)
-    create_analysis_p.add_argument('--project', help='Project id')
-    create_analysis_p.add_argument(
-      '--workflow', help='Workflow id'
-    )
-    create_analysis_p.add_argument(
-      '--sample', nargs='+', help='Sample id'
-    )
     create_analysis_p.add_argument(
       '--control', nargs='+', help='Control id'
     )
-    create_analysis_p.add_argument('--params', nargs='+')
     create_analysis_p.add_argument(
       '--ignore-warning',
       action='store_true',
       default=False,
       help='Ignore validation warnings',
+    )
+    create_analysis_p.add_argument('--params', nargs='+')
+    create_analysis_p.add_argument('--project', help='Project id')
+    create_analysis_p.add_argument(
+      '--sample', nargs='+', help='Sample id'
+    )
+    create_analysis_p.add_argument(
+      '--workflow', help='Workflow id'
     )
 
     # delete analysis parser
@@ -201,9 +201,9 @@ class Analysis:
       'update',
       help='Update information associated with an analysis.'
     )
-    update_analysis_parser = add_common_args(update_analysis_parser)
-    update_analysis_parser = add_single_uid_parser(update_analysis_parser, 'analysis')
     update_analysis_parser.add_argument('--key', action='append')
     update_analysis_parser.add_argument('--val', action='append')
+    update_analysis_parser = add_common_args(update_analysis_parser)
+    update_analysis_parser = add_single_uid_parser(update_analysis_parser, 'analysis')
 
     return action_parser

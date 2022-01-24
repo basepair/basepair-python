@@ -12,11 +12,11 @@ class Sample:
   def create_sample(bp_api, args):
     '''Create sample'''
     # if payload username or api key specified, make sure both are present
-    if args.payload_username is not None and args.payload_api_key is None:
+    if args.payload_api_key is not None:
       sys.exit('specify parameter --payload-api-key!')
     elif args.payload_api_key is not None and args.payload_username is None:
       sys.exit('specify parameter --payload-username!')
-    elif args.payload_username is not None and args.payload_username is not None:
+    elif args.payload_username is not None:
       bp_api.payload = {
         'username': args.payload_username,
         'api_key': args.payload_api_key,
@@ -119,24 +119,24 @@ class Sample:
       'create',
       help='Create a sample.'
     )
-    create_sample_p = add_common_args(create_sample_p)
-    create_sample_p.add_argument('--name')
-    create_sample_p.add_argument('--genome')
-    create_sample_p.add_argument('--platform')
     create_sample_p.add_argument(
       '--datatype',
       choices=[
-          'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-          'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+        'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
+        'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
       default='rna-seq'
     )
     create_sample_p.add_argument('--file1', nargs='+')
     create_sample_p.add_argument('--file2', nargs='+')
-    create_sample_p.add_argument('--workflow', help='Workflow id')
-    create_sample_p.add_argument('--project', help='Project id')
+    create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--key', action='append')
+    create_sample_p.add_argument('--name')
+    create_sample_p.add_argument('--platform')
+    create_sample_p.add_argument('--project', help='Project id')
     create_sample_p.add_argument('--val', action='append')
+    create_sample_p.add_argument('--workflow', help='Workflow id')
+    create_sample_p = add_common_args(create_sample_p)
     create_sample_p = add_payload_args(create_sample_p)
 
     # delete sample parser
@@ -171,11 +171,6 @@ class Sample:
       'update',
       help='Update information associated with a sample.'
     )
-    update_sample_parser = add_common_args(update_sample_parser)
-    update_sample_parser = add_single_uid_parser(
-        update_sample_parser, 'sample')
-    update_sample_parser.add_argument('--name')
-    update_sample_parser.add_argument('--genome')
     update_sample_parser.add_argument(
       '--datatype',
       choices=[
@@ -183,8 +178,12 @@ class Sample:
           'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
     )
+    update_sample_parser.add_argument('--genome')
     update_sample_parser.add_argument('--key', action='append')
+    update_sample_parser.add_argument('--name')
     update_sample_parser.add_argument('--val', action='append')
+    update_sample_parser = add_common_args(update_sample_parser)
+    update_sample_parser = add_single_uid_parser(update_sample_parser, 'sample')
 
     # list sample parser
     list_samples_p = action_parser.add_parser(
