@@ -68,8 +68,8 @@ def read_args():
   )
 
   datatype_p = parser.add_subparsers(
-    help='Basepair datatype - analysis, file, genome, module, project, pipeline, sample',
-    dest='datatype'
+    dest='datatype',
+    help='Basepair datatype - analysis, file, genome, module, project, pipeline, sample'
   )
   datatype_p.required = True
 
@@ -79,8 +79,8 @@ def read_args():
     help='analysis create, analysis update, etc.'
   )
   analysis_action_sp = analysis_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   Analysis.analysis_action_parser(analysis_action_sp)
@@ -91,8 +91,8 @@ def read_args():
     help='file download, etc.'
   )
   file_action_sp = file_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   File.file_action_parser(file_action_sp)
@@ -103,8 +103,8 @@ def read_args():
     help='genome get, genome list etc.'
   )
   genome_action_sp = genome_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   Genome.genome_action_parser(genome_action_sp)
@@ -115,8 +115,8 @@ def read_args():
     help='module create, module update, etc.'
   )
   module_action_sp = module_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   Module.module_action_parser(module_action_sp)
@@ -127,8 +127,8 @@ def read_args():
     help='pipeline create, pipeline update, etc.'
   )
   pipeline_action_sp = pipeline_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   Pipeline.pipeline_action_parser(pipeline_action_sp)
@@ -139,8 +139,8 @@ def read_args():
     help='project create, project update, etc.'
   )
   project_action_sp = project_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   Project.project_action_parser(project_action_sp)
@@ -151,8 +151,8 @@ def read_args():
     help='sample create, sample update, etc.'
   )
   sample_action_sp = sample_p.add_subparsers(
-    help='Type of action to perform on datatype.',
-    dest='action_type'
+    dest='action_type',
+    help='Type of action to perform on datatype.'
   )
 
   Sample.sample_action_parser(sample_action_sp)

@@ -150,8 +150,8 @@ class Analysis:
       help='Download files for one or more analyses. Can filter by file tags.'
     )
     download_analysis_log_sp = download_analysis_p.add_subparsers(
-      help='download log of an analysis.',
-      dest='download_type'
+      dest='download_type',
+      help='download log of an analysis.'
     )
     download_analysis_p = add_uid_parser(download_analysis_p, 'analysis')
     download_analysis_p = add_tags_parser(download_analysis_p)
