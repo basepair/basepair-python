@@ -76,11 +76,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       self.conf = json.load(open(os.environ['BP_CONFIG_FILE']))
     else:
       if 'BP_USERNAME' not in os.environ:
-        eprint('ERROR: BP_USERNAME not set in env')
-        sys.exit(1)
+        sys.exit('ERROR: BP_USERNAME not set in env')
       if 'BP_API_KEY' not in os.environ:
-        eprint('ERROR: BP_API_KEY not set in env')
-        sys.exit(1)
+        sys.exit('ERROR: BP_API_KEY not set in env')
       username = os.environ['BP_USERNAME']
       api_key = os.environ['BP_API_KEY']
       self.conf = {
@@ -94,10 +92,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       }
 
     if self.conf.get('api', {}).get('ssl') is None:
-      eprint('ERROR: The config file need to be updated. Please visit:')
-      eprint('https://test.basepairtech.com/api/v2/users/api_key')
-      eprint('To get your new config file.')
-      sys.exit(1)
+      sys.exit('ERROR: The config file need to be updated. Please visit:\n \
+                https://test.basepairtech.com/api/v2/users/api_key\n \
+                To get your new config file.')
 
     self.scratch = self.conf.get('scratch', scratch).rstrip('/')
     self.use_cache = use_cache
