@@ -201,8 +201,8 @@ def read_args():
     parser.add_argument('-a', '--analysis', type=int)
 
     parser.set_defaults(
-            config='api/utk.config.json',
-            )
+        config='api/utk.config.json',
+    )
     args = parser.parse_args()
 
     return args

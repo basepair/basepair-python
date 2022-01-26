@@ -449,7 +449,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           self.update_module(data)
         else:
           answer = BpApi.yes_or_no(
-            f'A module with ID {yaml_data.get("id")} already exists, do you want to overwrite it?')
+            'A module with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
           if answer:
             self.update_module(data)
         return
@@ -458,7 +458,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     module_id = info.get('id')
     module_name = info.get('name')
     if self.verbose:
-      eprint(f'created: module {module_name} with id {module_id}')
+      eprint('created: module {} with id {}'.format(module_name, module_id))
     return
 
   def update_module(self, data):
@@ -483,7 +483,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     module_id = info.get('id')
     if self.verbose:
       module_name = info.get('name')
-      eprint(f'updated: module {module_name} with id {module_id}')
+      eprint('updated: module {} with id {}'.format(module_name, module_id))
     return
 
   def get_module(self, uid):
@@ -532,7 +532,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           self.update_pipeline(data)
         else:
           answer = BpApi.yes_or_no(
-            f'A pipeline with ID {yaml_data.get("id")} already exists, do you want to overwrite it?')
+            'A pipeline with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
           if answer:
             self.update_pipeline(data)
         return
@@ -541,7 +541,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     workflow_id = info.get('id')
     workflow_name = info.get('name')
     if self.verbose:
-      eprint(f'created: workflow {workflow_name} with id {workflow_id}')
+      eprint('created: workflow {} with id {}'.format(workflow_name, workflow_id))
     return
 
   def update_pipeline(self,data):
@@ -566,7 +566,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     workflow_id = info.get('id')
     if self.verbose:
       workflow_name = info.get('name')
-      eprint(f'updated: workflow {workflow_name} with id {workflow_id}')
+      eprint('updated: workflow {} with id {}'.format(workflow_name, workflow_id))
     return
 
   def get_pipeline(self, uid):
@@ -1565,7 +1565,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     while True:
       # get input from user
-      sys.stdout.write(f'{question}{prompt}')
+      sys.stdout.write('{}{}'.format(question, prompt))
       choice = input().lower()
 
       # check answer

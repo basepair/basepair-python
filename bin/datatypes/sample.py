@@ -44,7 +44,7 @@ class Sample:
     uids = args.uid
     if uids:
       for uid in uids:
-        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
+        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
         if answer:
           bp_api.delete_sample(uid)
       return
@@ -58,7 +58,7 @@ class Sample:
         # check sample id is valid
         sample = bp_api.get_sample(uid, add_analysis=True)
         if sample is None:
-          eprint(f'{uid} is not a valid sample id!')
+          eprint('{} is not a valid sample id!'.format(uid))
         # if tags provided, download file by tags
         if args.tags:
           bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
@@ -101,7 +101,7 @@ class Sample:
       res = bp_api.update_sample(args.sample, data)
       res = {'error': True, 'msg': 'Update sample not supported.'}
       if res.get('error'):
-        sys.exit(f"ERROR: {res.get('msg')}")
+        sys.exit('ERROR: {}'.format(res.get('msg')))
       return
     sys.exit('ERROR: Sample required.')
 

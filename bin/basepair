@@ -27,6 +27,7 @@ import os
 import basepair
 from basepair.helpers import eprint
 from bin.datatypes import Analysis, File, Genome, Module, Project, Pipeline, Sample
+from bin.common_parser import validate_conf
 
 sys.path.insert(0, '/home/ec2-user/basepair')
 
@@ -46,7 +47,7 @@ def main():
     verbose=args.verbose
   )
 
-  method_name = f'{args.action_type}_{args.datatype}'
+  method_name = '{}_{}'.format(args.action_type, args.datatype)
   datatype_handler = {
     'analysis': Analysis,
     'file': File,
@@ -63,7 +64,7 @@ def main():
 def read_args():
   '''Read args'''
   parser = argparse.ArgumentParser(
-    description=f'Basepair CLI, API version {basepair.__version__}',
+    description='Basepair CLI, API version {}'.format(basepair.__version__),
     formatter_class=argparse.RawDescriptionHelpFormatter
   )
 
@@ -160,11 +161,7 @@ def read_args():
   parser.set_defaults(params=[],)
   args = parser.parse_args()
 
-  if args.config:
-    return eprint('Using config file', args.config)
-  if 'BP_CONFIG_FILE' in os.environ:
-    return eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
-  return sys.exit('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
+  validate_conf(args)
 
   # if neither set, be verbose
   if not args.verbose and not args.quiet:
@@ -180,8 +177,7 @@ def read_args():
       msg = 'number of key and val are not equal'
 
     if msg:  # stop execution if key/val error
-      eprint(msg)
-      sys.exit(1)
+      sys.exit(msg)
 
   return args
 

@@ -46,7 +46,7 @@ def add_uid_parser(parser,datatype):
     '-u',
     '--uid',
     default=None,
-    help=f'The unique id(s) for {datatype}',
+    help='The unique id(s) for {}'.format(datatype),
     nargs='+'
   )
   return parser
@@ -57,7 +57,7 @@ def add_single_uid_parser(parser,datatype):
     '-u',
     '--uid',
     default=None,
-    help=f'The unique id for {datatype}'
+    help='The unique id for {}'.format(datatype)
   )
   return parser
 
@@ -128,6 +128,6 @@ def add_force_parser(parser, datatype):
   parser.add_argument(
     '--force',
     action='store_true',
-    help=f'(Optional) Override existing {datatype}.'
+    help='(Optional) Override existing {}.'.format(datatype)
   )
   return parser

@@ -41,7 +41,7 @@ class Analysis:
     uids = args.uid
     if uids:
       for uid in uids:
-        answer = bp_api.yes_or_no(f'Are you sure you want to delete {uid}?')
+        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
         if answer:
           bp_api.delete_analysis(uid)
       return
@@ -65,7 +65,7 @@ class Analysis:
         info = bp_api.get_analysis(uid)  # check analysis id is valid
         if info:
           bp_api.get_log(uid, args.outdir)
-        eprint(f'{uid} is not a valid analysis id!')
+        eprint('{} is not a valid analysis id!'.format(uid))
       return
     sys.exit('ERROR: Minimum one analysis uid required.')
 
@@ -104,7 +104,7 @@ class Analysis:
           data[key] = val
       res = bp_api.update_analysis(analysis_id, data)
       if res.get('error'):
-        sys.exit(f"ERROR: {res.get('msg')}")
+        sys.exit('ERROR: {}'.format(res.get('msg')))
       return
     sys.exit('Error: Analysis required.')
 
