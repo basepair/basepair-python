@@ -25,7 +25,6 @@ import os
 
 # App imports
 import basepair
-from basepair.helpers import eprint
 from bin.datatypes import Analysis, File, Genome, Module, Project, Pipeline, Sample
 from bin.common_parser import validate_conf
 

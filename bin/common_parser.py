@@ -4,7 +4,7 @@ import sys, os
 from basepair.helpers import eprint
 
 def validate_conf(args):
-  '''Helper to validate the proper configuration argument is being set''''
+  '''Helper to validate the proper configuration argument is being set'''
   if args.config:
     return eprint('Using config file', args.config)
   if 'BP_CONFIG_FILE' in os.environ:
