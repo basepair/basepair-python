@@ -24,8 +24,9 @@ class Analysis:
         if node_id not in params['node']:
           params['node'][node_id] = {}
         params['node'][node_id][arg] = val
-
-      return bp_api.create_analysis(
+    else:
+      sys.exit('You specified no parameters, submitting with default ones.')
+    return bp_api.create_analysis(
         control_ids=args.control or [],
         ignore_validation_warnings=args.ignore_warning,
         params=params,
@@ -33,7 +34,6 @@ class Analysis:
         sample_ids=args.sample,
         workflow_id=args.workflow,
       )
-    return sys.exit('You specified no parameters, submitting with default ones.')
 
   @staticmethod
   def delete_analysis(bp_api, args):
