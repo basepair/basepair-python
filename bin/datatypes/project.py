@@ -70,7 +70,7 @@ class Project:
     # list project parser
     list_project_p = action_parser.add_parser(
       'list',
-      help='Add a project to your account on Basepair.'
+      help='List all projects on Basepair.'
     )
     list_project_p = add_common_args(list_project_p)
     list_project_p = add_json_parser(list_project_p)
