@@ -88,7 +88,7 @@ class Pipeline:
 
     # update pipeline parser
     update_pipeline_parser = action_parser.add_parser(
-      'udpate',
+      'update',
       help='Update information associated with a pipeline.'
     )
     update_pipeline_parser = add_common_args(update_pipeline_parser)
