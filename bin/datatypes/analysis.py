@@ -20,7 +20,10 @@ class Analysis:
 
     if args.params:
       for param in args.params:
-        node_id, arg, val = param.split(' ')
+        try:
+          node_id, arg, val = param.split(' ')
+        except:
+          sys.exit('You specified parameters in wrong format.Please provide params=nodeid args val.')
         if node_id not in params['node']:
           params['node'][node_id] = {}
         params['node'][node_id][arg] = val
