@@ -152,6 +152,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if sample_id:
       sample_ids.append(sample_id)
 
+    if not self._check_project(project_id):
+      return None
+
     # check if valid workflow id
     if not self._check_workflow(workflow_id):
       return None
@@ -591,6 +594,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### PROJECT ####################################################################################
   ################################################################################################
+  def get_project(self, uid):
+    '''Get resource'''
+    return (Project(self.conf.get('api'))).get(
+      uid
+    )
 
   def get_projects(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get project list'''
@@ -1455,6 +1463,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     sample['analyses_full'] = analyses
     return sample
+
+  def _check_project(self, uid):
+    '''Check if the project is in the Basepair database'''
+    info = self.get_project(uid)
+    if info.get('id'):
+      return True
+    eprint('The provided project id: {id}, does not exist in Basepair.'.format(id=uid))
+    return False
 
   def _check_sample(self, uid):
     '''Check if the sample is in the Basepair database'''
