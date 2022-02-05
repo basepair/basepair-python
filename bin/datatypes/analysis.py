@@ -20,7 +20,7 @@ class Analysis:
 
     if args.params:
       for param in args.params:
-        node_id, arg, val = param.split(':')
+        node_id, arg, val = param.split(' ')
         if node_id not in params['node']:
           params['node'][node_id] = {}
         params['node'][node_id][arg] = val
