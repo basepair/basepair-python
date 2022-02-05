@@ -152,9 +152,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if sample_id:
       sample_ids.append(sample_id)
 
-    if not self._check_project(project_id):
-      return None
-
     # check if valid workflow id
     if not self._check_workflow(workflow_id):
       return None
@@ -173,6 +170,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
+      if not self._check_project(project_id):
+        return None
 
     if self.verbose:
       eprint(json.dumps(data, indent=2))
