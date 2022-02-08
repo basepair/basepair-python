@@ -154,11 +154,19 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # check if valid workflow id
     if not self._check_workflow(workflow_id):
-      return None
+      sys.exit('The provided workflow id: {id}, does not exist in Basepair.'.format(id=workflow_id))
 
     # check if all sample ids are valid
-    if not all((self._check_sample(item_id) for item_id in sample_ids)):
-      return None
+    for item_id in sample_ids:
+      if not self._check_sample(item_id):
+        sys.exit('The provided sample id: {id}, does not exist in Basepair.'.format(id=item_id))
+
+    # check if all control ids are valid
+    if control_ids:
+      for item_id in control_ids:
+        if not self._check_sample(item_id):
+          sys.exit('The provided control id: {id}, does not exist in Basepair.'.format(id=item_id))
+
 
     data = {
       'controls': self._parsed_sample_list(control_ids, prefix),
@@ -171,7 +179,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
       if not self._check_project(project_id):
-        return None
+        sys.exit('The provided project id: {id}, does not exist in Basepair.'.format(id=project_id))
 
     if self.verbose:
       eprint(json.dumps(data, indent=2))
@@ -1468,7 +1476,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_project(uid)
     if info.get('id'):
       return True
-    eprint('The provided project id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
   def _check_sample(self, uid):
@@ -1476,7 +1483,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_sample(uid, add_analysis=False)
     if info.get('id'):
       return True
-    eprint('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
   def _check_workflow(self, uid):
@@ -1484,7 +1490,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = self.get_pipeline(uid)
     if info.get('id'):
       return True
-    eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
     return False
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
