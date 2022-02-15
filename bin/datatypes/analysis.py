@@ -44,6 +44,9 @@ class Analysis:
     uids = args.uid
     if uids:
       for uid in uids:
+        # check if valid analysis id
+        if not bp_api._check_analysis(uid):
+          sys.exit('The provided analysis id: {id}, does not exist in Basepair.'.format(id=uid))
         answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
         if answer:
           bp_api.delete_analysis(uid)

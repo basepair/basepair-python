@@ -167,7 +167,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if not self._check_sample(item_id):
           sys.exit('The provided control id: {id}, does not exist in Basepair.'.format(id=item_id))
 
-
     data = {
       'controls': self._parsed_sample_list(control_ids, prefix),
       'samples': self._parsed_sample_list(sample_ids, prefix),
@@ -1488,6 +1487,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def _check_workflow(self, uid):
     '''Check if the workflow is in the Basepair database'''
     info = self.get_pipeline(uid)
+    if info.get('id'):
+      return True
+    return False
+
+  def _check_analysis(self, uid):
+    '''Check if the analysis is in the Basepair database'''
+    info = self.get_analysis(uid)
     if info.get('id'):
       return True
     return False
