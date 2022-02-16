@@ -208,8 +208,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Analysis(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return None
+      sys.exit('ERROR: deleting {}, msg: {}'.format(uid, info.get('msg')))
 
     if self.verbose:
       eprint('deleted analysis', uid)

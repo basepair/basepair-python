@@ -9,7 +9,7 @@ def validate_conf(args):
     return eprint('Using config file', args.config)
   if 'BP_CONFIG_FILE' in os.environ:
     return eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
-  return sys.exit('Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
+  return sys.exit('ERROR: Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
 
 def is_valid_yaml_arg(args):
   '''Checks yaml file'''

@@ -20,7 +20,6 @@ class NicePrint:
         analysis['started_on'],
         analysis['completed_on'],
         analysis['status'],
-        analysis['meta']['num_files'],
         analysis['tags']
       ] for analysis in data
     ]
