@@ -35,8 +35,11 @@ def main():
   args = read_args()
   conf = None
   if args.config:
-    with open(args.config, 'r', encoding='utf-8') as config_file:
-      conf = json.load(config_file)
+    try:
+      with open(args.config, 'r', encoding='utf-8') as config_file:
+        conf = json.load(config_file)
+    except FileNotFoundError:
+      sys.exit(f'ERROR: Missing config file at {args.config}.')
 
   bp_api = basepair.connect(
     conf=conf,
