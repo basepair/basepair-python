@@ -36,6 +36,7 @@ class Analysis:
         project_id=args.project,
         sample_ids=args.sample,
         workflow_id=args.workflow,
+        instance=args.instance
       )
 
   @staticmethod
@@ -140,6 +141,9 @@ class Analysis:
     )
     create_analysis_p.add_argument(
       '--workflow', help='Workflow id'
+    )
+    create_analysis_p.add_argument(
+      '--instance', help='instance'
     )
 
     # delete analysis parser

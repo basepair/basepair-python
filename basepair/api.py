@@ -130,6 +130,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     project_id=None,
     sample_id=None,
     sample_ids=[],
+    instance=None
   ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
@@ -172,7 +173,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'samples': self._parsed_sample_list(sample_ids, prefix),
       'ignore_validation_warning': ignore_validation_warnings,
       'meta': {'source': 'cli'},
-      'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
+      'workflow': '{}pipelines/{}'.format(prefix, workflow_id),
+      'instance': instance
     }
 
     if project_id:
@@ -1121,7 +1123,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
-    return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
+    return 'aws s3 cp "{}" "{}" {}'.format(src, dest, _params)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
     '''Get expression count text file - for RNA-Seq'''
