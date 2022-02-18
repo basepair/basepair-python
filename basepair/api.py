@@ -174,7 +174,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'ignore_validation_warning': ignore_validation_warnings,
       'meta': {'source': 'cli'},
       'workflow': '{}pipelines/{}'.format(prefix, workflow_id),
-      'instance': instance
+      'instance_type': instance
     }
 
     if project_id:
