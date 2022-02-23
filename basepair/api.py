@@ -1506,8 +1506,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Execute s3 commands'''
     sleep_time = 3
     try:
-      if self.verbose:
-        eprint('Executing command: COPY FILES FROM DATABASE')
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
       eprint('Error: {}'.format(error.output))
