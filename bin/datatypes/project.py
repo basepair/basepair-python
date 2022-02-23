@@ -52,7 +52,7 @@ class Project:
         if res.get('error'):
           sys.exit('error: {}'.format(res.get('msg')))
       return
-    sys.exit('ERROR: Minimum one project required.')
+    sys.exit('ERROR: Minimum one project uid required.')
 
   @staticmethod
   def project_action_parser(action_parser):

@@ -23,7 +23,7 @@ class Module:
         if answer:
           bp_api.delete_module(uid)
       return
-    sys.exit('Please add one or more uid')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def get_module(bp_api, args):
@@ -34,7 +34,7 @@ class Module:
       for uid in uids:
         bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
       return
-    sys.exit('At least one uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def list_module(bp_api, args):
@@ -46,9 +46,8 @@ class Module:
         for uid in uids:
           bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
       else:
-        sys.exit('Please provide only one pipeline uid.')
-    if len(uids) > 1:
-      sys.exit('Please provide only one pipeline uid.')
+        sys.exit('ERROR: Please provide only one pipeline uid.')
+    sys.exit('ERROR: Pipeline uid required.')
 
   @staticmethod
   def update_module(bp_api, args):

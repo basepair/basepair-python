@@ -16,7 +16,7 @@ class File:
         file_i = bp_api.get_file(uid)
         bp_api.download_file(file_i['path'], dirname=args.outdir)
       return
-    sys.exit('ERROR: Minimum one file uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def file_action_parser(action_parser):

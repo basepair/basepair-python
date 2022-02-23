@@ -243,7 +243,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           tags=tags,
         )
     except:
-      sys.exit('Something went wrong while downloading analysis')
+      sys.exit('ERROR: Something went wrong while downloading analysis files')
     sys.exit('All analysis files have been downloaded succesfully.')
 
   def fusionsalysis(

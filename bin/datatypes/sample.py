@@ -48,7 +48,7 @@ class Sample:
         if answer:
           bp_api.delete_sample(uid)
       return
-    sys.exit('Please add one or more uid')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def download_sample(bp_api, args):
@@ -65,7 +65,7 @@ class Sample:
         else:
           bp_api.download_raw_files(sample, args.outdir)
       return
-    sys.exit('Please add one or more uid')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def get_sample(bp_api, args):
@@ -76,7 +76,7 @@ class Sample:
       for uid in uids:
         bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
       return
-    sys.exit('At least one uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def update_sample(bp_api, args):
@@ -103,7 +103,7 @@ class Sample:
       if res.get('error'):
         sys.exit('ERROR: {}'.format(res.get('msg')))
       return
-    sys.exit('ERROR: Sample required.')
+    sys.exit('ERROR: At least one sample uid required.')
 
   @staticmethod
   def list_sample(bp_api, args):

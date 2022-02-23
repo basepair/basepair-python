@@ -13,10 +13,10 @@ class Analysis:
     params = {'node': {}}
 
     if not args.workflow:
-      sys.exit('ERROR: Workflow required.')
+      sys.exit('ERROR: Pipeline uid required.')
 
     if not args.sample:
-      sys.exit('ERROR: Minimum one sample required.')
+      sys.exit('ERROR: Sample uid required.')
 
     if args.params:
       for param in args.params:
@@ -52,7 +52,7 @@ class Analysis:
         if answer:
           bp_api.delete_analysis(uid)
       return
-    sys.exit('Please add one or more uid')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def download_analysis(bp_api, args):
@@ -62,7 +62,7 @@ class Analysis:
       for uid in args.uid:
         bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
       return
-    sys.exit('ERROR: Minimum one analysis uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def download_log(bp_api, args):
@@ -74,7 +74,7 @@ class Analysis:
           bp_api.get_log(uid, args.outdir)
         eprint('{} is not a valid analysis id!'.format(uid))
       return
-    sys.exit('ERROR: Minimum one analysis uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def get_analysis(bp_api, args):
@@ -85,7 +85,7 @@ class Analysis:
       for uid in uids:
         bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
       return
-    sys.exit('At least one uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def list_analysis(bp_api, args):
@@ -99,7 +99,7 @@ class Analysis:
       for each_uid in uid:
         bp_api.restart_analysis(each_uid)
       return
-    sys.exit('Please add one or more uid')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def update_analysis(bp_api, analysis_id, keys, vals):
@@ -113,7 +113,7 @@ class Analysis:
       if res.get('error'):
         sys.exit('ERROR: {}'.format(res.get('msg')))
       return
-    sys.exit('Error: Analysis required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def analysis_action_parser(action_parser):

@@ -14,17 +14,14 @@ def validate_conf(args):
 def is_valid_yaml_arg(args):
   '''Checks yaml file'''
   if not args.file:
-    eprint('ERROR: Yaml file required.')
-    return False
+    sys.exit('ERROR: Yaml file required.')
   if len(args.file) != 1:
-    eprint('Please provide only one yaml')
-    return False
+    sys.exit('ERROR: Please provide only one yaml')
   yaml_path = args.file[0]
   valid_extensions = ('.yaml', '.yml')
   if yaml_path.endswith(valid_extensions):
     return True
-  eprint('Please provide yaml file only')
-  return False
+  sys.exit('Please provide yaml file only')
 
 def add_common_args(parser):
   '''Add common args'''

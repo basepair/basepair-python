@@ -23,7 +23,7 @@ class Pipeline:
         if answer:
           bp_api.delete_pipeline(uid)
       return
-    sys.exit('Please add one or more uid')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def get_pipeline(bp_api, args):
@@ -34,7 +34,7 @@ class Pipeline:
       for uid in uids:
         bp_api.print_data(data_type='pipeline', uid=uid, is_json=is_json)
       return
-    sys.exit('At least one uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def list_pipeline(bp_api, args):

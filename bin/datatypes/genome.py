@@ -16,7 +16,7 @@ class Genome:
       for uid in uids:
         bp_api.print_data(data_type='genome', uid=uid, is_json=is_json)
       return
-    sys.exit('At least one uid required.')
+    sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
   def list_genome(bp_api, args):
