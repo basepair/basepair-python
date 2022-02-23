@@ -233,15 +233,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return None
     if not isinstance(uid, list):
       uid = [uid]
-    for item_id in uid:
-      analysis = self.get_analysis(item_id)
-      self.get_analysis_files(
-        analysis=analysis,
-        dirname=outdir,
-        kind=tagkind,
-        tags=tags,
-      )
-    return None
+    try:
+      for item_id in uid:
+        analysis = self.get_analysis(item_id)
+        self.get_analysis_files(
+          analysis=analysis,
+          dirname=outdir,
+          kind=tagkind,
+          tags=tags,
+        )
+    except:
+      sys.exit('Something went wrong while downloading analysis')
+    sys.exit('All analysis files have been downloaded succesfully.')
 
   def fusionsalysis(
     self,
@@ -920,7 +923,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
-      eprint('copying from {} to {}'.format(src, dest))
+      eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
     return self._execute_command(cmd=cmd, retry=3)
 
   def copy_file_to_s3(self, src, dest, params=None):
@@ -963,12 +966,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # if file not already there, download it
     if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
       if self.verbose:
-        eprint('downloading', filepath)
+        eprint('downloading'+' ./'+filepath.split('/')[-1])
       if not os.path.exists(os.path.dirname(filepath)):
         os.makedirs(os.path.dirname(filepath))
       self.copy_file(filekey, filepath, action='from')
     elif self.verbose:
-      eprint('exists', filepath)
+      eprint('exists'+' ./'+filepath.split('/')[-1])
 
     if load:
       data = open(filepath, 'r').read().strip()
@@ -1123,7 +1126,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
-    return 'aws s3 cp "{}" "{}" {}'.format(src, dest, _params)
+    return 'aws s3 cp "{}" "{}"'.format(src, dest)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
     '''Get expression count text file - for RNA-Seq'''
@@ -1504,7 +1507,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sleep_time = 3
     try:
       if self.verbose:
-        eprint('Executing command:  {}\n'.format(cmd))
+        eprint('Executing command: COPY FILES FROM DATABASE')
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
       eprint('Error: {}'.format(error.output))
