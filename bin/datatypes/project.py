@@ -15,11 +15,6 @@ class Project:
     bp_api.create_project(data=data)
 
   @staticmethod
-  def get_project(bp_api, args):
-    '''Create project'''
-    bp_api.get_project(name=args.name)
-
-  @staticmethod
   def list_project(bp_api, args):
     '''List pipelines'''
     bp_api.print_data(data_type='projects', is_json=args.json)
