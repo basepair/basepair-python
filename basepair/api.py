@@ -631,6 +631,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def update_project(self, uid, data, params=None):
     '''Update resource'''
+    if not self._check_project(uid):
+      sys.exit('The provided project id: {id}, does not exist in Basepair.'.format(id=uid))
     info = (Project(self.conf.get('api'))).save(
       obj_id=uid,
       payload=data,

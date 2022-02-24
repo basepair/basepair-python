@@ -212,7 +212,7 @@ class NicePrint:
 
   @staticmethod
   def pipeline(data):
-    '''Print pipeline'''
+    '''Print pipelines'''
     to_print = [
       [
         pipeline['id'],
@@ -235,12 +235,12 @@ class NicePrint:
     '''Print projects'''
     to_print = [
       [
-        pipeline['id'],
-        pipeline['name'],
-        pipeline['owner_fullname'],
-        pipeline['last_updated'],
-        pipeline['visibility']
-      ] for pipeline in data
+        project['id'],
+        project['name'],
+        project['owner_fullname'],
+        project['last_updated'],
+        project['visibility']
+      ] for project in data
     ]
     print(tabulate(to_print, headers=[
       'id',
