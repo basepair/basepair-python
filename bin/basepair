@@ -59,7 +59,10 @@ def main():
     'project': Project,
     'sample': Sample
   }
-  method = getattr(datatype_handler[args.datatype], method_name)
+  try:
+    method = getattr(datatype_handler[args.datatype], method_name)
+  except:
+    sys.exit('ERROR: Something went wrong! Please try again')
   if callable(method):
     method(bp_api, args)
 
@@ -184,7 +187,4 @@ def read_args():
   return args
 
 if __name__ == '__main__':
-  try:
-    main()
-  except:
-    sys.exit('ERROR: Something went wrong! Please try again')
+  main()

@@ -194,7 +194,8 @@ class Sample:
     )
     list_samples_p.add_argument(
       '--project',
-      help='List samples of the project.'
+      help='List samples of the project.',
+      required=True
     )
     list_samples_p = add_common_args(list_samples_p)
     list_samples_p = add_json_parser(list_samples_p)
