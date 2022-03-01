@@ -35,8 +35,10 @@ class Sample:
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
         data[key] = val
-
-    bp_api.create_sample(data, upload=True, source='cli')
+    try:
+      bp_api.create_sample(data, upload=True, source='cli')
+    except:
+      sys.exit('ERROR: sample creation failed. Please try again!')
 
   @staticmethod
   def delete_sample(bp_api, args):
@@ -120,14 +122,14 @@ class Sample:
       help='Create a sample.'
     )
     create_sample_p.add_argument(
-      '--datatype',
+      '--type',
       choices=[
         'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
         'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
       default='rna-seq'
     )
-    create_sample_p.add_argument('--file1', nargs='+')
+    create_sample_p.add_argument('--file1', nargs='+', required=True)
     create_sample_p.add_argument('--file2', nargs='+')
     create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--key', action='append')
@@ -135,7 +137,7 @@ class Sample:
     create_sample_p.add_argument('--platform')
     create_sample_p.add_argument('--project', help='Project id')
     create_sample_p.add_argument('--val', action='append')
-    create_sample_p.add_argument('--workflow', help='Workflow id')
+    create_sample_p.add_argument('--pipeline', help='Pipeline id')
     create_sample_p = add_common_args(create_sample_p)
     create_sample_p = add_payload_args(create_sample_p)
 
