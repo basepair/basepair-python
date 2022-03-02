@@ -23,7 +23,7 @@ class Sample:
       }
     data = {
       'datatype': args.datatype,
-      'default_workflow': int(args.workflow) if args.workflow else None,
+      'default_workflow': int(args.pipeline) if args.pipeline else None,
       'filepaths1': args.file1,
       'filepaths2': args.file2,
       'genome': args.genome,
