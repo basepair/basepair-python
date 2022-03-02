@@ -3,6 +3,7 @@
 import json
 import sys
 # App imports
+from basepair.helpers import eprint
 from bin.common_parser import add_common_args, add_payload_args, add_json_parser
 
 class Project:
@@ -39,7 +40,7 @@ class Project:
         }
 
       if not data and not params:
-        sys.exit('WARNING: No data to update.')
+        eprint('WARNING: No data to update.')
 
       for project_id in args.project:
         res = bp_api.update_project(project_id, data=data, params=params)
