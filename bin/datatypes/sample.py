@@ -56,17 +56,21 @@ class Sample:
   def download_sample(bp_api, args):
     '''Download sample'''
     if args.uid:
-      for uid in args.uid:
-        # check sample id is valid
-        sample = bp_api.get_sample(uid, add_analysis=True)
-        if sample is None:
-          eprint('{} is not a valid sample id!'.format(uid))
-        # if tags provided, download file by tags
-        if args.tags:
-          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
-        else:
-          bp_api.download_raw_files(sample, args.outdir)
-      return
+      try:
+        for uid in args.uid:
+          # check sample id is valid
+          if not bp_api._check_sample(uid):
+            eprint('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
+            continue
+          sample = bp_api.get_sample(uid, add_analysis=True)
+          # if tags provided, download file by tags
+          if args.tags:
+            bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
+          else:
+            bp_api.download_raw_files(sample, args.outdir)
+        return
+      except:
+        sys.exit('ERROR: Something went wrong while downloading sample')
     sys.exit('ERROR: At least one uid required.')
 
   @staticmethod

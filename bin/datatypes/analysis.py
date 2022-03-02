@@ -60,6 +60,9 @@ class Analysis:
     if args.uid:
       # download a file from an analysis by tags
       for uid in args.uid:
+        if not bp_api._check_analysis(uid):
+          eprint('The provided analysis id: {id}, does not exist in Basepair.'.format(id=uid))
+          continue
         bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
       return
     sys.exit('ERROR: At least one uid required.')

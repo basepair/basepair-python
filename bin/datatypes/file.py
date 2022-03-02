@@ -2,6 +2,7 @@
 import sys
 
 # App imports
+from basepair.helpers import eprint
 from bin.common_parser import add_uid_parser, add_common_args, add_outdir_parser
 
 
@@ -12,10 +13,16 @@ class File:
   def download_file(bp_api, args):
     '''Download file by uid'''
     if args.uid:
-      for uid in args.uid:
-        file_i = bp_api.get_file(uid)
-        bp_api.download_file(file_i['path'], dirname=args.outdir)
-      return
+      try:
+        for uid in args.uid:
+          if not bp_api._check_file(uid):
+            eprint('The provided file id: {id}, does not exist in Basepair.'.format(id=uid))
+            continue
+          file_i = bp_api.get_file(uid)
+          bp_api.download_file(file_i['path'], dirname=args.outdir)
+        return
+      except:
+        sys.exit('ERROR: Something went wrong while downloading file')
     sys.exit('ERROR: At least one uid required.')
 
   @staticmethod

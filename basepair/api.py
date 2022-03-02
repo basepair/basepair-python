@@ -1476,6 +1476,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample['analyses_full'] = analyses
     return sample
 
+  def _check_file(self, uid):
+    '''Check if the project is in the Basepair database'''
+    info = self.get_file(uid)
+    if info.get('id'):
+      return True
+    return False
+
   def _check_project(self, uid):
     '''Check if the project is in the Basepair database'''
     info = self.get_project(uid)
