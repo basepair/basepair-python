@@ -40,9 +40,11 @@ class Project:
         }
 
       if not data and not params:
-        eprint('WARNING: No data to update.')
+        sys.exit('ERROR: You have not provided any data to update.')
 
       for project_id in args.project:
+        if not bp_api._check_project(project_id):
+          eprint('The provided project id: {id}, does not exist in Basepair.'.format(id=project_id))
         res = bp_api.update_project(project_id, data=data, params=params)
 
         if res.get('error'):

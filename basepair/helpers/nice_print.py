@@ -7,6 +7,9 @@ import os
 # Lib imports
 from tabulate import tabulate
 
+# App imports
+from basepair.helpers import eprint
+
 class NicePrint:
   '''Helper class to print nice objects'''
 
@@ -23,7 +26,7 @@ class NicePrint:
         analysis['tags']
       ] for analysis in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'started on',
@@ -51,10 +54,10 @@ class NicePrint:
         for control in analysis['controls']:
           to_print.append(['control', control['id']])
 
-      print('\nAnalysis info:')
-      print(tabulate(to_print, headers=['Variable', 'Value']))
+      eprint('\nAnalysis info:')
+      eprint(tabulate(to_print, headers=['Variable', 'Value']))
 
-      print('\nAnalysis files:')
+      eprint('\nAnalysis files:')
 
       # convert only filesizes that are not None
       for filedata in analysis['files']:
@@ -71,7 +74,7 @@ class NicePrint:
           file['tags'],
         ] for file in analysis['files']
       ]
-      print(tabulate(
+      eprint(tabulate(
         to_print,
         floatfmt='.4f',
         headers=[
@@ -84,13 +87,13 @@ class NicePrint:
         ],
         numalign='right',
       ))
-      print('\n\n')
+      eprint('\n\n')
 
   @staticmethod
   def genome(data):
     '''Print genome'''
     to_print = [[genome['id'], genome['name'], genome['created_on']] for genome in data]
-    print(tabulate(to_print, headers=['id', 'name', 'created_on']))
+    eprint(tabulate(to_print, headers=['id', 'name', 'created_on']))
 
   @staticmethod
   def genomes(data):
@@ -109,7 +112,7 @@ class NicePrint:
         module['status']
       ] for module in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'date_created',
@@ -128,7 +131,7 @@ class NicePrint:
         module['created']
       ] for module in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'owner',
@@ -139,13 +142,13 @@ class NicePrint:
   def sample(data):
     '''Print sample'''
     for sample in data:
-      print('Sample id: {}'.format(sample['id']))
-      print('Sample name: {}'.format(sample['name']))
-      print('Sample datatype: {}'.format(sample['datatype']))
-      print('Sample genome: {}'.format(sample['genome_name'] or sample['genome']))
-      print('Sample data created: {}'.format(sample['date_created']))
-      print('Sample num reads: {}'.format(sample['meta']['num_reads']))
-      print('Analyses:')
+      eprint('Sample id: {}'.format(sample['id']))
+      eprint('Sample name: {}'.format(sample['name']))
+      eprint('Sample datatype: {}'.format(sample['datatype']))
+      eprint('Sample genome: {}'.format(sample['genome_name'] or sample['genome']))
+      eprint('Sample data created: {}'.format(sample['date_created']))
+      eprint('Sample num reads: {}'.format(sample['meta']['num_reads']))
+      eprint('Analyses:')
       to_print = [
         [
           analysis['id'],
@@ -157,7 +160,7 @@ class NicePrint:
           analysis['tags']
         ] for analysis in sample['analyses_full']
       ]
-      print(tabulate(to_print, headers=[
+      eprint(tabulate(to_print, headers=[
         'id',
         'name',
         'started on',
@@ -166,7 +169,7 @@ class NicePrint:
         'num files',
         'tags',
       ]))
-      print('\n\n')
+      eprint('\n\n')
 
   @staticmethod
   def samples(data):
@@ -181,7 +184,7 @@ class NicePrint:
         sample['meta']['num_reads']
       ] for sample in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'datatype',
@@ -202,7 +205,7 @@ class NicePrint:
         pipeline['tags']
       ] for pipeline in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'datatype',
@@ -222,7 +225,7 @@ class NicePrint:
         pipeline['tags']
       ] for pipeline in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'datatype',
@@ -242,7 +245,7 @@ class NicePrint:
         project['visibility']
       ] for project in data
     ]
-    print(tabulate(to_print, headers=[
+    eprint(tabulate(to_print, headers=[
       'id',
       'name',
       'owner_fullname',
