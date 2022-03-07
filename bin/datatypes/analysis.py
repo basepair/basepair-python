@@ -89,10 +89,10 @@ class Analysis:
     bp_api.print_data(data_type='analyses', is_json=args.json, project=args.project)
 
   @staticmethod
-  def reanalyze(bp_api, uid):
+  def reanalyze_analysis(bp_api, args):
     '''Restart analysis'''
-    if uid:
-      for each_uid in uid:
+    if args.uid:
+      for each_uid in args.uid:
         bp_api.restart_analysis(each_uid)
       return
     sys.exit('ERROR: At least one uid required.')
@@ -193,7 +193,8 @@ class Analysis:
     )
     list_analyses_p.add_argument(
       '--project',
-      help='List analyses of the project.'
+      help='List analyses of the project.',
+      required=True
     )
     list_analyses_p = add_common_args(list_analyses_p)
     list_analyses_p = add_json_parser(list_analyses_p)

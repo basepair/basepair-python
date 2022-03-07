@@ -39,7 +39,7 @@ def main():
       with open(args.config, 'r', encoding='utf-8') as config_file:
         conf = json.load(config_file)
     except FileNotFoundError:
-      sys.exit(f'ERROR: Missing config file at {args.config}.')
+      sys.exit('ERROR: Missing config file at {}.'.format(args.config))
 
   bp_api = basepair.connect(
     conf=conf,
