@@ -1,4 +1,5 @@
 '''Common parser used in datatypes parsing'''
+import argparse
 import sys, os
 # App imports
 from basepair.helpers import eprint
@@ -52,7 +53,8 @@ def add_uid_parser(parser,datatype):
     '--uid',
     default=None,
     help='The unique id(s) for {}'.format(datatype),
-    nargs='+'
+    nargs='+',
+    type=valid_uid
   )
   return parser
 
@@ -62,7 +64,8 @@ def add_single_uid_parser(parser,datatype):
     '-u',
     '--uid',
     default=None,
-    help='The unique id for {}'.format(datatype)
+    help='The unique id for {}'.format(datatype),
+    type=valid_uid
   )
   return parser
 
@@ -72,7 +75,8 @@ def add_pid_parser(parser):
     '--pipeline',
     nargs='+',
     default=None,
-    help='The unique pipeline id'
+    help='The unique pipeline id',
+    type=valid_uid
   )
   return parser
 
@@ -136,3 +140,8 @@ def add_force_parser(parser, datatype):
     help='(Optional) Override existing {}.'.format(datatype)
   )
   return parser
+
+def valid_uid(value):
+  if value.isdigit() and int(value) > 0:
+    return value
+  raise argparse.ArgumentTypeError('ERROR: uid must be an positive integer'.format(value))
