@@ -62,8 +62,9 @@ class Analysis:
     sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
-  def download_log(bp_api, args):
+  def download_log_analysis(bp_api, args):
     '''Download analysis log'''
+    print('logger')
     if args.uid:
       for uid in args.uid:
         info = bp_api.get_analysis(uid)  # check analysis id is valid
@@ -159,19 +160,15 @@ class Analysis:
       'download',
       help='Download files for one or more analyses. Can filter by file tags.'
     )
-    download_analysis_log_sp = download_analysis_p.add_subparsers(
-      dest='download_type',
-      help='download log of an analysis.'
-    )
     download_analysis_p = add_uid_parser(download_analysis_p, 'analysis')
     download_analysis_p = add_tags_parser(download_analysis_p)
     download_analysis_p = add_outdir_parser(download_analysis_p)
     download_analysis_p = add_common_args(download_analysis_p)
 
     # download analysis log parser
-    download_log_p = download_analysis_log_sp.add_parser(
-      'log',
-      help='Download analysis logs from one or more analyses.'
+    download_log_p = action_parser.add_parser(
+      'download_log',
+      help='Download analysis logs for one or more analyses.'
     )
     download_log_p = add_uid_parser(download_log_p, 'analysis')
     download_log_p = add_outdir_parser(download_log_p)
