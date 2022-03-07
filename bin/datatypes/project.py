@@ -29,6 +29,7 @@ class Project:
         data = {'name': args.name}
 
       params = {}
+
       if args.emails and args.perm:
         params = {
           'params': json.dumps({
@@ -38,6 +39,9 @@ class Project:
             }
           })
         }
+      
+      if args.emails and not params:
+        sys.exit('ERROR: You have not provided any permission to update.')
 
       if not data and not params:
         sys.exit('ERROR: You have not provided any data to update.')
