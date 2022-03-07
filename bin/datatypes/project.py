@@ -60,7 +60,6 @@ class Project:
       '--name', required=True
     )
     create_project_p = add_common_args(create_project_p)
-    create_project_p = add_payload_args(create_project_p)
 
     # list project parser
     list_project_p = action_parser.add_parser(
