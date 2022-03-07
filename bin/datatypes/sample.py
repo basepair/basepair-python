@@ -11,31 +11,31 @@ class Sample:
   @staticmethod
   def create_sample(bp_api, args):
     '''Create sample'''
-    # if payload username or api key specified, make sure both are present
-    if args.payload_api_key is not None:
-      sys.exit('specify parameter --payload-api-key!')
-    elif args.payload_api_key is not None and args.payload_username is None:
-      sys.exit('specify parameter --payload-username!')
-    elif args.payload_username is not None:
-      bp_api.payload = {
-        'username': args.payload_username,
-        'api_key': args.payload_api_key,
-      }
-    data = {
-      'datatype': args.datatype,
-      'default_workflow': int(args.pipeline) if args.pipeline else None,
-      'filepaths1': args.file1,
-      'filepaths2': args.file2,
-      'genome': args.genome,
-      'name': args.name,
-      'platform': args.platform,
-      'projects': int(args.project) if args.project else None,
-    }
-
-    if args.key and args.val:
-      for key, val in zip(args.key, args.val):
-        data[key] = val
     try:
+      # if payload username or api key specified, make sure both are present
+      if args.payload_api_key is not None:
+        sys.exit('specify parameter --payload-api-key!')
+      elif args.payload_api_key is not None and args.payload_username is None:
+        sys.exit('specify parameter --payload-username!')
+      elif args.payload_username is not None:
+        bp_api.payload = {
+          'username': args.payload_username,
+          'api_key': args.payload_api_key,
+        }
+      data = {
+        'datatype': args.datatype,
+        'default_workflow': int(args.pipeline) if args.pipeline else None,
+        'filepaths1': args.file1,
+        'filepaths2': args.file2,
+        'genome': args.genome,
+        'name': args.name,
+        'platform': args.platform,
+        'projects': int(args.project) if args.project else None,
+      }
+
+      if args.key and args.val:
+        for key, val in zip(args.key, args.val):
+          data[key] = val
       bp_api.create_sample(data, upload=True, source='cli')
     except:
       sys.exit('ERROR: sample creation failed. Please try again!')
@@ -56,21 +56,15 @@ class Sample:
   def download_sample(bp_api, args):
     '''Download sample'''
     if args.uid:
-      try:
-        for uid in args.uid:
-          # check sample id is valid
-          if not bp_api._check_sample(uid):
-            eprint('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
-            continue
-          sample = bp_api.get_sample(uid, add_analysis=True)
-          # if tags provided, download file by tags
-          if args.tags:
-            bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
-          else:
-            bp_api.download_raw_files(sample, args.outdir)
-        return
-      except:
-        sys.exit('ERROR: Something went wrong while downloading sample')
+      for uid in args.uid:
+        # check sample id is valid
+        sample = bp_api.get_sample(uid, add_analysis=True)
+        # if tags provided, download file by tags
+        if args.tags:
+          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
+        else:
+          bp_api.download_raw_files(sample, args.outdir)
+      return
     sys.exit('ERROR: At least one uid required.')
 
   @staticmethod
@@ -87,29 +81,32 @@ class Sample:
   @staticmethod
   def update_sample(bp_api, args):
     '''Update sample'''
-    if args.sample:
-      data = {}
-      if args.name:
-        data['name'] = args.name
+    try:
+      if args.sample:
+        data = {}
+        if args.name:
+          data['name'] = args.name
 
-      if args.genome:
-        data['genome'] = args.genome
+        if args.genome:
+          data['genome'] = args.genome
 
-      if args.datatype:
-        data['datatype'] = args.datatype
+        if args.datatype:
+          data['datatype'] = args.datatype
 
-      if args.key and args.val:
-        for key, val in zip(args.key, args.val):
-          if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
-            data['info'] = data.get('info', {})
-            data['info'][key] = val  # set sample info field
+        if args.key and args.val:
+          for key, val in zip(args.key, args.val):
+            if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
+              data['info'] = data.get('info', {})
+              data['info'][key] = val  # set sample info field
 
-      res = bp_api.update_sample(args.sample, data)
-      res = {'error': True, 'msg': 'Update sample not supported.'}
-      if res.get('error'):
-        sys.exit('ERROR: {}'.format(res.get('msg')))
-      return
-    sys.exit('ERROR: At least one sample uid required.')
+        res = bp_api.update_sample(args.sample, data)
+        res = {'error': True, 'msg': 'Update sample not supported.'}
+        if res.get('error'):
+          sys.exit('ERROR: {}'.format(res.get('msg')))
+        return
+      sys.exit('ERROR: At least one sample uid required.')
+    except:
+      sys.exit('ERROR: Something went wrong while updating sample.')
 
   @staticmethod
   def list_sample(bp_api, args):

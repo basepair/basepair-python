@@ -29,7 +29,7 @@ class Abstract(object):
         params=self.payload,
         verify=verify
       )
-      return self._parse_response(response)
+      return self._parse_obj_response(response, obj_id)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
@@ -47,7 +47,7 @@ class Abstract(object):
         params=params,
         verify=verify,
       )
-      parsed = self._parse_response(response)
+      parsed = self._parse_obj_response(response, obj_id)
 
       # save in cache if required
       Abstract._save_cache(cache, parsed)
@@ -111,7 +111,7 @@ class Abstract(object):
         params=params,
         verify=verify,
       )
-      return self._parse_response(response)
+      return self._parse_obj_response(response, obj_id)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
@@ -124,6 +124,43 @@ class Abstract(object):
       if os.path.exists(filename) and os.path.getsize(filename):
         return json.loads(open(filename, 'r').read().strip())
     return None
+
+  @classmethod
+  def _parse_obj_response(cls, response, obj_id):
+    '''General response parser with obj id'''
+    error_msgs = {
+      401: 'You don\'t have access to resource with id {}.'.format(obj_id),
+      404: 'Resource with id {} not found.'.format(obj_id),
+      500: 'Error retrieving data from API!'
+    }
+    if response.status_code in error_msgs:
+      eprint('ERROR: {}'.format(error_msgs[response.status_code]))
+      return {'error': True, 'msg': error_msgs[response.status_code]}
+
+    if response.status_code == 204:  # for delete response
+      return {'error': False}
+
+    try:
+      response = response.json()
+
+      error = isinstance(response, dict) and response.get('error')
+      if error:
+        if isinstance(error, dict):
+          response = error
+
+          if response.get('error_msgs'):
+            eprint('ERROR: {}'.format(response['error_msgs']))
+
+          if response.get('warning_msgs'):
+            eprint('WARNING: {}'.format(response['warning_msgs']))
+        else:
+          eprint('ERROR: {}'.format(error))
+
+      return response
+    except json.decoder.JSONDecodeError as error:
+      msg = 'ERROR: Not able to parse response: {}.'.format(error)
+      eprint(msg)
+      return {'error': True, 'msg': msg}
 
   @classmethod
   def _parse_response(cls, response):

@@ -93,5 +93,6 @@ class Pipeline:
     )
     update_pipeline_parser = add_common_args(update_pipeline_parser)
     update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
+    update_pipeline_parser = add_force_parser(update_pipeline_parser, 'pipeline')
 
     return action_parser

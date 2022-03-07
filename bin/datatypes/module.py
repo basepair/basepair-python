@@ -46,8 +46,8 @@ class Module:
         for uid in uids:
           bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
       else:
-        sys.exit('ERROR: Please provide only one pipeline uid.')
-    sys.exit('ERROR: Pipeline uid required.')
+        sys.exit('ERROR: Please provide only one pipeline id.')
+    sys.exit('ERROR: Pipeline id required.')
 
   @staticmethod
   def update_module(bp_api, args):
@@ -102,5 +102,6 @@ class Module:
     )
     update_module_parser = add_common_args(update_module_parser)
     update_module_parser = add_yaml_parser(update_module_parser)
+    update_module_parser = add_force_parser(update_module_parser, 'module')
 
     return action_parser

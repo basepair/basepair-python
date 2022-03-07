@@ -153,21 +153,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if sample_id:
       sample_ids.append(sample_id)
 
-    # check if valid workflow id
-    if not self._check_workflow(workflow_id):
-      sys.exit('The provided workflow id: {id}, does not exist in Basepair.'.format(id=workflow_id))
-
-    # check if all sample ids are valid
-    for item_id in sample_ids:
-      if not self._check_sample(item_id):
-        sys.exit('The provided sample id: {id}, does not exist in Basepair.'.format(id=item_id))
-
-    # check if all control ids are valid
-    if control_ids:
-      for item_id in control_ids:
-        if not self._check_sample(item_id):
-          sys.exit('The provided control id: {id}, does not exist in Basepair.'.format(id=item_id))
-
     data = {
       'controls': self._parsed_sample_list(control_ids, prefix),
       'samples': self._parsed_sample_list(sample_ids, prefix),
@@ -179,8 +164,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
-      if not self._check_project(project_id):
-        sys.exit('The provided project id: {id}, does not exist in Basepair.'.format(id=project_id))
 
     if self.verbose:
       eprint(json.dumps(data, indent=2))
@@ -443,58 +426,58 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   def create_module(self, data):
     '''create module from yaml'''
-    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
-      yaml_string = file.read()
-    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-    if not yaml_data.get('name'):
-      eprint('Please provide module name in YAML')
-      return
-    payload = {'data': yaml_string}
-    info = (Module(self.conf.get('api'))).save(payload=payload)
-    if info.get('error'):
-      if 'already exists' in info['error']:
-        if data['force']:
-          eprint('Using force override the existing resource')
-          self.update_module(data)
-        else:
-          answer = BpApi.yes_or_no(
-            'A module with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
-          if answer:
+    try:
+      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+      with open(path, 'r') as file:
+        yaml_string = file.read()
+      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+      if not yaml_data.get('name'):
+        sys.exit('ERROR: Please provide module name in YAML')
+      payload = {'data': yaml_string}
+      info = (Module(self.conf.get('api'))).save(payload=payload)
+      if info.get('error'):
+        if 'already exists' in info['error']:
+          if data['force']:
+            eprint('Using force override the existing resource')
             self.update_module(data)
-        return
-      eprint('failed module creation')
+          else:
+            answer = BpApi.yes_or_no(
+              'A module with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
+            if answer:
+              self.update_module(data)
+          return
+        sys.exit('ERROR: failure in module creation')
+      module_id = info.get('id')
+      module_name = info.get('name')
+      if self.verbose:
+        eprint('created: module {} with id {}'.format(module_name, module_id))
       return
-    module_id = info.get('id')
-    module_name = info.get('name')
-    if self.verbose:
-      eprint('created: module {} with id {}'.format(module_name, module_id))
-    return
+    except:
+      sys.exit('ERROR: Something went wrong while creating module.')
 
   def update_module(self, data):
     '''update module from yaml'''
-    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
-      yaml_string = file.read()
-    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-    module_id = yaml_data.get('id')
-    if not yaml_data.get('name'):
-      eprint('Please provide module name in YAML')
+    try:
+      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+      with open(path, 'r') as file:
+        yaml_string = file.read()
+      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+      module_id = yaml_data.get('id')
+      if not yaml_data.get('name'):
+        sys.exit('ERROR: Please provide module name in YAML')
+      if not module_id:
+        sys.exit('ERROR: Please provide module id in YAML')
+      payload = {'data': yaml_string}
+      info = (Module(self.conf.get('api'))).save(obj_id=module_id, payload=payload)
+      if info.get('error'):
+        sys.exit('ERROR: failed while updating module')
+      module_id = info.get('id')
+      if self.verbose:
+        module_name = info.get('name')
+        eprint('updated: module {} with id {}'.format(module_name, module_id))
       return
-    if not module_id:
-      eprint('Please provide module id in YAML')
-      return
-    payload = {'data': yaml_string}
-    info = (Module(self.conf.get('api'))).save(obj_id=module_id, payload=payload)
-    if info.get('error'):
-      eprint('failed module update')
-      return
-
-    module_id = info.get('id')
-    if self.verbose:
-      module_name = info.get('name')
-      eprint('updated: module {} with id {}'.format(module_name, module_id))
-    return
+    except:
+      sys.exit('ERROR: Something went wrong while updating module.')
 
   def get_module(self, uid):
     '''Get module resource'''
@@ -513,10 +496,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def delete_module(self, uid):
     '''Delete method'''
     info = (Module(self.conf.get('api'))).delete(uid)
-    if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return None
-
     if self.verbose:
       eprint('deleted module', uid)
     return info
@@ -526,58 +505,58 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   def create_pipeline(self,data):
     '''create pipeline from yaml'''
-    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
-      yaml_string = file.read()
-    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-    if not yaml_data.get('name'):
-      eprint('Please provide workflow name in YAML')
-      return
-    payload = {'data': yaml_string}
-    info = (Pipeline(self.conf.get('api'))).save(payload=payload)
-    if info.get('error'):
-      if 'already exists' in info['error']:
-        if data['force']:
-          eprint('Using force override the existing resource')
-          self.update_pipeline(data)
-        else:
-          answer = BpApi.yes_or_no(
-            'A pipeline with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
-          if answer:
+    try:
+      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+      with open(path, 'r') as file:
+        yaml_string = file.read()
+      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+      if not yaml_data.get('name'):
+        sys.exit('Please provide pipeline name in YAML')
+      payload = {'data': yaml_string}
+      info = (Pipeline(self.conf.get('api'))).save(payload=payload)
+      if info.get('error'):
+        if 'already exists' in info['error']:
+          if data['force']:
+            eprint('Using force override the existing resource')
             self.update_pipeline(data)
-        return
-      eprint('failed pipeline creation')
+          else:
+            answer = BpApi.yes_or_no(
+              'A pipeline with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
+            if answer:
+              self.update_pipeline(data)
+          return
+        sys.exit('ERROR: pipeline creation failed')
+      workflow_id = info.get('id')
+      workflow_name = info.get('name')
+      if self.verbose:
+        eprint('created: workflow {} with id {}'.format(workflow_name, workflow_id))
       return
-    workflow_id = info.get('id')
-    workflow_name = info.get('name')
-    if self.verbose:
-      eprint('created: workflow {} with id {}'.format(workflow_name, workflow_id))
-    return
+    except:
+      sys.exit('ERROR: Something went wrong while creating pipeline.')
 
   def update_pipeline(self,data):
     '''update pipeline from yaml'''
-    path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-    with open(path, 'r') as file:
-      yaml_string = file.read()
-    yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-    workflow_id = yaml_data.get('id')
-    if not yaml_data.get('name'):
-      eprint('Please provide workflow name in YAML')
+    try:
+      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+      with open(path, 'r') as file:
+        yaml_string = file.read()
+      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+      workflow_id = yaml_data.get('id')
+      if not yaml_data.get('name'):
+        sys.exit('Please provide pipeline name in YAML')
+      if not yaml_data.get('id'):
+        sys.exit('Please provide pipeline id in YAML')
+      payload = {'data': yaml_string}
+      info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
+      if info.get('error'):
+        sys.exit('ERROR: failed while updating pipeline')
+      workflow_id = info.get('id')
+      if self.verbose:
+        workflow_name = info.get('name')
+        eprint('updated: pipeline {} with id {}'.format(workflow_name, workflow_id))
       return
-    if not yaml_data.get('id'):
-      eprint('Please provide workflow id in YAML')
-      return
-    payload = {'data': yaml_string}
-    info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
-    if info.get('error'):
-      eprint('failed pipeline update')
-      return
-
-    workflow_id = info.get('id')
-    if self.verbose:
-      workflow_name = info.get('name')
-      eprint('updated: workflow {} with id {}'.format(workflow_name, workflow_id))
-    return
+    except:
+      sys.exit('ERROR: Something went wrong while updating pipeline.')
 
   def get_pipeline(self, uid):
     '''Get resource'''
@@ -1426,8 +1405,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         data_tmp = getattr(self, detail_methods.get(data_type))(item_id)
         if data_tmp.get('id'):
           data.append(data_tmp)
-        else:
-          eprint('{} with uid {} invalid.'.format(data_type.capitalize(), item_id))
 
     filters = {}
     if project:

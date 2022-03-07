@@ -4,7 +4,7 @@ import json
 import sys
 # App imports
 from basepair.helpers import eprint
-from bin.common_parser import add_common_args, add_payload_args, add_json_parser
+from bin.common_parser import add_common_args, add_payload_args, add_json_parser, add_uid_parser
 
 class Project:
   '''Project action methods'''
@@ -23,7 +23,7 @@ class Project:
   @staticmethod
   def update_project(bp_api, args):
     '''Update project'''
-    if args.project:
+    if args.uid:
       data = {}
       if args.name:
         data = {'name': args.name}
@@ -42,13 +42,8 @@ class Project:
       if not data and not params:
         sys.exit('ERROR: You have not provided any data to update.')
 
-      for project_id in args.project:
-        if not bp_api._check_project(project_id):
-          eprint('The provided project id: {id}, does not exist in Basepair.'.format(id=project_id))
-        res = bp_api.update_project(project_id, data=data, params=params)
-
-        if res.get('error'):
-          sys.exit('error: {}'.format(res.get('msg')))
+      for project_id in args.uid:
+        bp_api.update_project(project_id, data=data, params=params)
       return
     sys.exit('ERROR: Minimum one project uid required.')
 
@@ -61,7 +56,9 @@ class Project:
       'create',
       help='Add a project to your account on Basepair.'
     )
-    create_project_p.add_argument('--name')
+    create_project_p.add_argument(
+      '--name', required=True
+    )
     create_project_p = add_common_args(create_project_p)
     create_project_p = add_payload_args(create_project_p)
 
@@ -83,8 +80,6 @@ class Project:
     update_project_parser.add_argument('--name')
     update_project_parser.add_argument(
       '--perm', choices=['admin', 'edit', 'view'], default='view')
-    update_project_parser.add_argument(
-      '--project', nargs='+', help='project id', required=True
-    )
+    update_project_parser = add_uid_parser(update_project_parser, 'project')
 
     return action_parser

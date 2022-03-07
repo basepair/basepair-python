@@ -12,7 +12,7 @@ class Analysis:
     '''Create and submit an analysis'''
     params = {'node': {}}
 
-    if not args.workflow:
+    if not args.pipeline:
       sys.exit('ERROR: Pipeline uid required.')
 
     if not args.sample:
@@ -35,7 +35,7 @@ class Analysis:
         params=params,
         project_id=args.project,
         sample_ids=args.sample,
-        workflow_id=args.workflow,
+        workflow_id=args.pipeline,
         instance=args.instance
       )
 
@@ -45,9 +45,6 @@ class Analysis:
     uids = args.uid
     if uids:
       for uid in uids:
-        # check if valid analysis id
-        if not bp_api._check_analysis(uid):
-          sys.exit('The provided analysis id: {id}, does not exist in Basepair.'.format(id=uid))
         answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
         if answer:
           bp_api.delete_analysis(uid)
@@ -60,9 +57,6 @@ class Analysis:
     if args.uid:
       # download a file from an analysis by tags
       for uid in args.uid:
-        if not bp_api._check_analysis(uid):
-          eprint('The provided analysis id: {id}, does not exist in Basepair.'.format(id=uid))
-          continue
         bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
       return
     sys.exit('ERROR: At least one uid required.')
@@ -73,9 +67,8 @@ class Analysis:
     if args.uid:
       for uid in args.uid:
         info = bp_api.get_analysis(uid)  # check analysis id is valid
-        if info:
+        if info.get('id'):
           bp_api.get_log(uid, args.outdir)
-        eprint('{} is not a valid analysis id!'.format(uid))
       return
     sys.exit('ERROR: At least one uid required.')
 
@@ -107,16 +100,20 @@ class Analysis:
   @staticmethod
   def update_analysis(bp_api, analysis_id, keys, vals):
     '''Update analysis'''
-    if analysis_id:
-      data = {}
-      if keys and vals:
-        for key, val in zip(keys, vals):
-          data[key] = val
-      res = bp_api.update_analysis(analysis_id, data)
-      if res.get('error'):
-        sys.exit('ERROR: {}'.format(res.get('msg')))
-      return
-    sys.exit('ERROR: At least one uid required.')
+    try:
+      if analysis_id:
+        data = {}
+        if keys and vals:
+          for key, val in zip(keys, vals):
+            data[key] = val
+        res = bp_api.update_analysis(analysis_id, data)
+        if res.get('error'):
+          sys.exit('ERROR: {}'.format(res.get('msg')))
+        return
+      sys.exit('ERROR: At least one uid required.')
+    except:
+      sys.exit('ERROR: Something went wrong while updating analysis.')
+    
 
   @staticmethod
   def analysis_action_parser(action_parser):
@@ -143,7 +140,7 @@ class Analysis:
       '--sample', nargs='+', help='Sample id'
     )
     create_analysis_p.add_argument(
-      '--workflow', help='Workflow id'
+      '--pipeline', help='Pipeline id'
     )
     create_analysis_p.add_argument(
       '--instance', help='instance'
