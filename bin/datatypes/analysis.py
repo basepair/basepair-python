@@ -58,7 +58,7 @@ class Analysis:
       # download a file from an analysis by tags
       for uid in args.uid:
         bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
-      return
+      sys.exit('All analysis files have been downloaded succesfully.')
     sys.exit('ERROR: At least one uid required.')
 
   @staticmethod

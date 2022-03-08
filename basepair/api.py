@@ -214,20 +214,21 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
         return None
-    if not isinstance(uid, list):
-      uid = [uid]
-    try:
-      for item_id in uid:
-        analysis = self.get_analysis(item_id)
+
+    analysis = self.get_analysis(uid)
+    if analysis.get('error'):
+      return
+    if analysis['files']:
+      try:
         self.get_analysis_files(
           analysis=analysis,
           dirname=outdir,
           kind=tagkind,
           tags=tags,
         )
-    except:
-      sys.exit('ERROR: Something went wrong while downloading analysis files')
-    sys.exit('All analysis files have been downloaded succesfully.')
+      except:
+        sys.exit('ERROR: Something went wrong while downloading files for id {}'.format(uid))
+    eprint('Warning: No files present for analysis id {}'.format(uid))
 
   def fusionsalysis(
     self,
