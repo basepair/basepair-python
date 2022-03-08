@@ -44,67 +44,59 @@ class Sample:
   def delete_sample(bp_api, args):
     '''Delete sample'''
     uids = args.uid
-    if uids:
-      for uid in uids:
-        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
-        if answer:
-          bp_api.delete_sample(uid)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+      if answer:
+        bp_api.delete_sample(uid)
+    return
 
   @staticmethod
   def download_sample(bp_api, args):
     '''Download sample'''
-    if args.uid:
-      for uid in args.uid:
-        # check sample id is valid
-        sample = bp_api.get_sample(uid, add_analysis=True)
-        # if tags provided, download file by tags
-        if args.tags:
-          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
-        else:
-          bp_api.download_raw_files(sample, args.outdir)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in args.uid:
+      # check sample id is valid
+      sample = bp_api.get_sample(uid, add_analysis=True)
+      # if tags provided, download file by tags
+      if args.tags:
+        bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
+      else:
+        bp_api.download_raw_files(sample, args.outdir)
+    return
 
   @staticmethod
   def get_sample(bp_api, args):
     '''Get sample'''
     uids = args.uid
     is_json = args.json
-    if uids:
-      for uid in uids:
-        bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
+    return
 
   @staticmethod
   def update_sample(bp_api, args):
     '''Update sample'''
     try:
-      if args.sample:
-        data = {}
-        if args.name:
-          data['name'] = args.name
+      data = {}
+      if args.name:
+        data['name'] = args.name
 
-        if args.genome:
-          data['genome'] = args.genome
+      if args.genome:
+        data['genome'] = args.genome
 
-        if args.datatype:
-          data['datatype'] = args.datatype
+      if args.datatype:
+        data['datatype'] = args.datatype
 
-        if args.key and args.val:
-          for key, val in zip(args.key, args.val):
-            if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
-              data['info'] = data.get('info', {})
-              data['info'][key] = val  # set sample info field
+      if args.key and args.val:
+        for key, val in zip(args.key, args.val):
+          if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
+            data['info'] = data.get('info', {})
+            data['info'][key] = val  # set sample info field
 
-        res = bp_api.update_sample(args.sample, data)
-        res = {'error': True, 'msg': 'Update sample not supported.'}
-        if res.get('error'):
-          sys.exit('ERROR: {}'.format(res.get('msg')))
-        return
-      sys.exit('ERROR: At least one sample uid required.')
+      res = bp_api.update_sample(args.sample, data)
+      res = {'error': True, 'msg': 'Update sample not supported.'}
+      if res.get('error'):
+        sys.exit('ERROR: {}'.format(res.get('msg')))
+      return
     except:
       sys.exit('ERROR: Something went wrong while updating sample.')
 

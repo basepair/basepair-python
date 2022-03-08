@@ -14,16 +14,11 @@ class File:
   @staticmethod
   def download_file(bp_api, args):
     '''Download file by uid'''
-    if args.uid:
-      for uid in args.uid:
-        # if not bp_api._check_file(uid):
-        #   eprint('The provided file id: {id}, does not exist in Basepair.'.format(id=uid))
-        #   continue
-        file_i = bp_api.get_file(uid)
-        if file_i.get('id'):
-          bp_api.download_file(file_i['path'], dirname=args.outdir)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in args.uid:
+      file_i = bp_api.get_file(uid)
+      if file_i.get('id'):
+        bp_api.download_file(file_i['path'], dirname=args.outdir)
+    return
 
   @staticmethod
   def file_action_parser(action_parser):

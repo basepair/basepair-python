@@ -17,24 +17,20 @@ class Pipeline:
   def delete_pipeline(bp_api, args):
     '''Delete pipeline'''
     uids = args.uid
-    if uids:
-      for uid in uids:
-        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
-        if answer:
-          bp_api.delete_pipeline(uid)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+      if answer:
+        bp_api.delete_pipeline(uid)
+    return
 
   @staticmethod
   def get_pipeline(bp_api, args):
     '''Get pipeline'''
     uids = args.uid
     is_json = args.json
-    if uids:
-      for uid in uids:
-        bp_api.print_data(data_type='pipeline', uid=uid, is_json=is_json)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      bp_api.print_data(data_type='pipeline', uid=uid, is_json=is_json)
+    return
 
   @staticmethod
   def list_pipeline(bp_api, args):

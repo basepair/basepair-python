@@ -17,37 +17,31 @@ class Module:
   def delete_module(bp_api, args):
     '''Delete Module'''
     uids = args.uid
-    if uids:
-      for uid in uids:
-        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
-        if answer:
-          bp_api.delete_module(uid)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+      if answer:
+        bp_api.delete_module(uid)
+    return
 
   @staticmethod
   def get_module(bp_api, args):
     '''Get module'''
     uids = args.uid
     is_json = args.json
-    if uids:
-      for uid in uids:
-        bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
+    return
 
   @staticmethod
   def list_module(bp_api, args):
     '''List Modules'''
     uids = args.pipeline
     is_json = args.json
-    if uids:
-      if len(uids) == 1:
-        for uid in uids:
-          bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
-      else:
-        sys.exit('ERROR: Please provide only one pipeline id.')
-    sys.exit('ERROR: Pipeline id required.')
+    if len(uids) == 1:
+      for uid in uids:
+        bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
+    else:
+      sys.exit('ERROR: Please provide only one pipeline id.')
 
   @staticmethod
   def update_module(bp_api, args):

@@ -12,12 +12,6 @@ class Analysis:
     '''Create and submit an analysis'''
     params = {'node': {}}
 
-    if not args.pipeline:
-      sys.exit('ERROR: Pipeline uid required.')
-
-    if not args.sample:
-      sys.exit('ERROR: Sample uid required.')
-
     if args.params:
       for param in args.params:
         try:
@@ -43,46 +37,37 @@ class Analysis:
   def delete_analysis(bp_api, args):
     '''Delete analysis'''
     uids = args.uid
-    if uids:
-      for uid in uids:
-        answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
-        if answer:
-          bp_api.delete_analysis(uid)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
+      if answer:
+        bp_api.delete_analysis(uid)
+    return
 
   @staticmethod
   def download_analysis(bp_api, args):
     '''Download analysis'''
-    if args.uid:
-      # download a file from an analysis by tags
-      for uid in args.uid:
-        bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
-      sys.exit('All analysis files have been downloaded succesfully.')
-    sys.exit('ERROR: At least one uid required.')
+    # download a file from an analysis by tags
+    for uid in args.uid:
+      bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
+    sys.exit('All analysis files have been downloaded succesfully.')
 
   @staticmethod
   def download_log_analysis(bp_api, args):
     '''Download analysis log'''
-    print('logger')
-    if args.uid:
-      for uid in args.uid:
-        info = bp_api.get_analysis(uid)  # check analysis id is valid
-        if info.get('id'):
-          bp_api.get_log(uid, args.outdir)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in args.uid:
+      info = bp_api.get_analysis(uid)  # check analysis id is valid
+      if info.get('id'):
+        bp_api.get_log(uid, args.outdir)
+    return
 
   @staticmethod
   def get_analysis(bp_api, args):
     '''Get analysis'''
     uids = args.uid
     is_json = args.json
-    if uids:
-      for uid in uids:
-        bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for uid in uids:
+      bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
+    return
 
   @staticmethod
   def list_analysis(bp_api, args):
@@ -92,26 +77,22 @@ class Analysis:
   @staticmethod
   def reanalyze_analysis(bp_api, args):
     '''Restart analysis'''
-    if args.uid:
-      for each_uid in args.uid:
-        bp_api.restart_analysis(each_uid)
-      return
-    sys.exit('ERROR: At least one uid required.')
+    for each_uid in args.uid:
+      bp_api.restart_analysis(each_uid)
+    return
 
   @staticmethod
   def update_analysis(bp_api, analysis_id, keys, vals):
     '''Update analysis'''
     try:
-      if analysis_id:
-        data = {}
-        if keys and vals:
-          for key, val in zip(keys, vals):
-            data[key] = val
-        res = bp_api.update_analysis(analysis_id, data)
-        if res.get('error'):
-          sys.exit('ERROR: {}'.format(res.get('msg')))
-        return
-      sys.exit('ERROR: At least one uid required.')
+      data = {}
+      if keys and vals:
+        for key, val in zip(keys, vals):
+          data[key] = val
+      res = bp_api.update_analysis(analysis_id, data)
+      if res.get('error'):
+        sys.exit('ERROR: {}'.format(res.get('msg')))
+      return
     except:
       sys.exit('ERROR: Something went wrong while updating analysis.')
 
@@ -137,10 +118,10 @@ class Analysis:
     create_analysis_p.add_argument('--params', nargs='+')
     create_analysis_p.add_argument('--project', help='Project id')
     create_analysis_p.add_argument(
-      '--sample', nargs='+', help='Sample id'
+      '--sample', nargs='+', help='Sample id', required=True
     )
     create_analysis_p.add_argument(
-      '--pipeline', help='Pipeline id'
+      '--pipeline', help='Pipeline id', required=True
     )
     create_analysis_p.add_argument(
       '--instance', help='instance'

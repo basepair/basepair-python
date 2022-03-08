@@ -54,6 +54,7 @@ def add_uid_parser(parser,datatype):
     default=None,
     help='The unique id(s) for {}'.format(datatype),
     nargs='+',
+    required=True,
     type=valid_uid
   )
   return parser
@@ -65,6 +66,7 @@ def add_single_uid_parser(parser,datatype):
     '--uid',
     default=None,
     help='The unique id for {}'.format(datatype),
+    required=True,
     type=valid_uid
   )
   return parser

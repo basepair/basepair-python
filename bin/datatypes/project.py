@@ -23,33 +23,31 @@ class Project:
   @staticmethod
   def update_project(bp_api, args):
     '''Update project'''
-    if args.uid:
-      data = {}
-      if args.name:
-        data = {'name': args.name}
+    data = {}
+    if args.name:
+      data = {'name': args.name}
 
-      params = {}
+    params = {}
 
-      if args.emails and args.perm:
-        params = {
-          'params': json.dumps({
-            'permission_data': {
-              'emails': args.emails,
-              'perm': args.perm,
-            }
-          })
-        }
-      
-      if args.emails and not params:
-        sys.exit('ERROR: You have not provided any permission to update.')
+    if args.emails and args.perm:
+      params = {
+        'params': json.dumps({
+          'permission_data': {
+            'emails': args.emails,
+            'perm': args.perm,
+          }
+        })
+      }
+    
+    if args.emails and not params:
+      sys.exit('ERROR: You have not provided any permission to update.')
 
-      if not data and not params:
-        sys.exit('ERROR: You have not provided any data to update.')
+    if not data and not params:
+      sys.exit('ERROR: You have not provided any data to update.')
 
-      for project_id in args.uid:
-        bp_api.update_project(project_id, data=data, params=params)
-      return
-    sys.exit('ERROR: Minimum one project uid required.')
+    for project_id in args.uid:
+      bp_api.update_project(project_id, data=data, params=params)
+    return
 
   @staticmethod
   def project_action_parser(action_parser):
