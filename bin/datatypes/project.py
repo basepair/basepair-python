@@ -38,12 +38,12 @@ class Project:
           }
         })
       }
-    
-    if args.emails and not params:
-      sys.exit('ERROR: You have not provided any permission to update.')
+
+    if args.emails and not args.perm:
+      sys.exit('ERROR: Please provide permission to update.')
 
     if not data and not params:
-      sys.exit('ERROR: You have not provided any data to update.')
+      sys.exit('ERROR: Nothing to update.')
 
     for project_id in args.uid:
       bp_api.update_project(project_id, data=data, params=params)
@@ -80,7 +80,7 @@ class Project:
     update_project_parser.add_argument('--emails', default=[], nargs='+')
     update_project_parser.add_argument('--name')
     update_project_parser.add_argument(
-      '--perm', choices=['admin', 'edit', 'view'], default='view')
+      '--perm', choices=['admin', 'edit', 'view'])
     update_project_parser = add_uid_parser(update_project_parser, 'project')
 
     return action_parser
