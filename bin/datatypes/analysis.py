@@ -47,9 +47,7 @@ class Analysis:
   def download_analysis(bp_api, args):
     '''Download analysis'''
     # download a file from an analysis by tags
-    for uid in args.uid:
-      bp_api.download_analysis(uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
-    sys.exit('All analysis files have been downloaded succesfully.')
+    bp_api.download_analysis(args.uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
 
   @staticmethod
   def download_log_analysis(bp_api, args):
