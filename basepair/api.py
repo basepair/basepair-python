@@ -183,11 +183,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def restart_analysis(self, uid):
     '''Restart analysis'''
-    data = {
+    payload = {
       'id': uid,
       'source': 'cli'
     }
-    return (Analysis(self.conf.get('api'))).reanalyze(payload=data)
+    (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
+    eprint('Analysis {} has been restarted'.format(uid))
+    return
 
   def delete_analysis(self, uid):
     '''Delete method'''
