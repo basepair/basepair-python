@@ -114,7 +114,6 @@ class Analysis:
       sys.exit('ERROR: At least one uid required.')
     except:
       sys.exit('ERROR: Something went wrong while updating analysis.')
-    
 
   @staticmethod
   def analysis_action_parser(action_parser):

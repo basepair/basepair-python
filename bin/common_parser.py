@@ -144,4 +144,4 @@ def add_force_parser(parser, datatype):
 def valid_uid(value):
   if value.isdigit() and int(value) > 0:
     return value
-  raise argparse.ArgumentTypeError('ERROR: uid must be an positive integer'.format(value))
+  raise argparse.ArgumentTypeError('ERROR: uid must be a positive integer'.format(value))
