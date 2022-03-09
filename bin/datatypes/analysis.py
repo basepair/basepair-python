@@ -13,9 +13,6 @@ class Analysis:
   def create_analysis(bp_api, args):
     '''Create and submit an analysis'''
     params = {'node': {}, 'info': {}}
-    print(args.instance)
-    print(type(args.instance))
-    print(instance_choices)
     if args.instance:
       if args.instance not in instance_choices:
         sys.exit('ERROR: invalid instance_type see --help for available instance types.')
