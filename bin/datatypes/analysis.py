@@ -168,7 +168,7 @@ class Analysis:
     )
     list_analyses_p.add_argument(
       '--project',
-      help='List analyses of the project.',
+      help='List analyses of a project.',
       required=True
     )
     list_analyses_p = add_common_args(list_analyses_p)

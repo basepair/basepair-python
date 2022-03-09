@@ -132,7 +132,6 @@ class Sample:
     create_sample_p.add_argument('--val', action='append')
     create_sample_p.add_argument('--pipeline', help='Pipeline id')
     create_sample_p = add_common_args(create_sample_p)
-    create_sample_p = add_payload_args(create_sample_p)
 
     # delete sample parser
     delete_sample_p = action_parser.add_parser(
@@ -187,7 +186,7 @@ class Sample:
     )
     list_samples_p.add_argument(
       '--project',
-      help='List samples of the project.',
+      help='List samples of a project.',
       required=True
     )
     list_samples_p = add_common_args(list_samples_p)
