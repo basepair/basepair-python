@@ -233,6 +233,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           )
         except:
           sys.exit('ERROR: Something went wrong while downloading analysis.')
+      else:
         eprint('Warning: No files present for analysis id {}'.format(each_uid))
 
     if is_download:
@@ -1115,7 +1116,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
-    return 'aws s3 cp "{}" "{}"'.format(src, dest)
+    return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
     '''Get expression count text file - for RNA-Seq'''
