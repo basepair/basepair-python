@@ -233,7 +233,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           )
         except:
           sys.exit('ERROR: Something went wrong while downloading analysis.')
-      eprint('Warning: No files present for analysis id {}'.format(each_uid))
+        eprint('Warning: No files present for analysis id {}'.format(each_uid))
 
     if is_download:
       eprint('All analysis files have been downloaded successfully.')

@@ -12,16 +12,6 @@ class Sample:
   def create_sample(bp_api, args):
     '''Create sample'''
     try:
-      # if payload username or api key specified, make sure both are present
-      if args.payload_api_key is not None:
-        sys.exit('specify parameter --payload-api-key!')
-      elif args.payload_api_key is not None and args.payload_username is None:
-        sys.exit('specify parameter --payload-username!')
-      elif args.payload_username is not None:
-        bp_api.payload = {
-          'username': args.payload_username,
-          'api_key': args.payload_api_key,
-        }
       data = {
         'datatype': args.datatype,
         'default_workflow': int(args.pipeline) if args.pipeline else None,
@@ -132,7 +122,6 @@ class Sample:
     create_sample_p.add_argument('--val', action='append')
     create_sample_p.add_argument('--pipeline', help='Pipeline id')
     create_sample_p = add_common_args(create_sample_p)
-    create_sample_p = add_payload_args(create_sample_p)
 
     # delete sample parser
     delete_sample_p = action_parser.add_parser(
