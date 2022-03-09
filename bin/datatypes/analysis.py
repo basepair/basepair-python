@@ -12,7 +12,7 @@ class Analysis:
   @staticmethod
   def create_analysis(bp_api, args):
     '''Create and submit an analysis'''
-    params = {'node': {}}
+    params = {'node': {}, 'info': {}}
 
     if args.instance:
       if args.instance in instance_choices:
