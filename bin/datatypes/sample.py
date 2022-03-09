@@ -176,7 +176,7 @@ class Sample:
     )
     list_samples_p.add_argument(
       '--project',
-      help='List samples of the project.',
+      help='List samples of a project.',
       required=True
     )
     list_samples_p = add_common_args(list_samples_p)

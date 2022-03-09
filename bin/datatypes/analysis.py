@@ -2,6 +2,8 @@
 import sys
 # App Import
 from basepair.helpers import eprint
+from basepair.utils import instance
+from basepair.utils.instance import instance_choices
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
 
 class Analysis:
@@ -12,6 +14,11 @@ class Analysis:
     '''Create and submit an analysis'''
     params = {'node': {}}
 
+    if args.instance:
+      if args.instance in instance_choices:
+        params['info']['instance_type'] = args.instance
+      sys.exit('ERROR: invalid instance_type see --help for available instance types.')
+      
     if args.params:
       for param in args.params:
         try:
@@ -122,7 +129,7 @@ class Analysis:
       '--pipeline', help='Pipeline id', required=True
     )
     create_analysis_p.add_argument(
-      '--instance', help='instance'
+      '--instance', help='instance_type for analysis - '+' '.join(instance_choices), default='c3.xlarge'
     )
 
     # delete analysis parser
@@ -168,7 +175,7 @@ class Analysis:
     )
     list_analyses_p.add_argument(
       '--project',
-      help='List analyses of the project.',
+      help='List analyses of a project.',
       required=True
     )
     list_analyses_p = add_common_args(list_analyses_p)
