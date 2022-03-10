@@ -187,7 +187,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'id': uid,
       'source': 'cli'
     }
-    (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
+    res = (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
+    if res.get('error'):
+      return
     eprint('Analysis {} has been restarted'.format(uid))
     return
 
