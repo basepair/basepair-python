@@ -173,6 +173,20 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     analysis_api = Analysis(self.conf.get('api'))
     info = analysis_api.save(payload=data)
+    if info.get('warning'):
+      answer = self.yes_or_no('Are you sure you want to proceed?')
+      if answer:
+        return self.create_analysis(
+          control_ids=control_ids,
+          ignore_validation_warnings=True,
+          params=params,
+          project_id=project_id,
+          sample_ids=sample_ids,
+          workflow_id=workflow_id,
+          instance=instance
+        )
+    if info.get('error'):
+      sys.exit('ERROR: Analysis creation failed.')
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
       eprint('created: analysis {} with sample id(s) {}'.format(
@@ -650,17 +664,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         Whether to upload the sample to the server or not.
 
     '''
-
+    data['meta'] = {'source': source}
     # get api version
     prefix = self.conf.get('api', {}).get('prefix', '/api/v2/')
 
     # some input validation
     data['genome'] = self._get_genome_by_name(data.get('genome'))
-
-    if data.get('default_workflow'):
-      if not self._check_workflow(data['default_workflow']):
-        del data['default_workflow']
-        eprint('Provided workflow is not valid.')
 
     if 'filepaths1' in data and data['filepaths1'] is None:
       if self.verbose:
@@ -694,11 +703,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
 
     if data.get('projects'):
-      project = (Project(self.conf.get('api'))).get(data.get('projects'))
-      if project.get('error'):
-        eprint('ERROR: Looking for project. {}'.format(project.get('msg')))
-        return None
-      data['projects'] = [project.get('resource_uri')]
+      data['projects'] = '{}projects/{}'.format(prefix, data['projects'])
 
     info = (Sample(self.conf.get('api'))).save(payload=data)
     sample_id = info.get('id')
@@ -710,9 +715,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if sample_id:  # success
       if self.verbose:
         eprint('created: sample with id', sample_id)
-    else:  # failure
-      eprint('failed sample creation:', data['name'], info.get('msg'))
-      return None
 
     # do the actual upload, update filepath
     files_to_upload = []

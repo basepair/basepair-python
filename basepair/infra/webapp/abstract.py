@@ -129,8 +129,8 @@ class Abstract(object):
   def _parse_obj_response(cls, response, obj_id):
     '''General response parser with obj id'''
     error_msgs = {
-      401: 'You don\'t have access to resource with id {}.'.format(obj_id),
-      404: 'Resource with id {} not found.'.format(obj_id),
+      401: 'You don\'t have access to resource with id {}.'.format(obj_id) if obj_id else 'You don\'t have access to this resource.',
+      404: 'Resource with id {} not found.'.format(obj_id) if obj_id else 'Resource not found.',
       500: 'Error retrieving data from API!'
     }
     if response.status_code in error_msgs:
