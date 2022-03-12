@@ -13,7 +13,7 @@ class Sample:
     '''Create sample'''
     try:
       data = {
-        'datatype': args.datatype,
+        'datatype': args.type,
         'default_workflow': int(args.pipeline) if args.pipeline else None,
         'filepaths1': args.file1,
         'filepaths2': args.file2,
@@ -68,30 +68,24 @@ class Sample:
   @staticmethod
   def update_sample(bp_api, args):
     '''Update sample'''
-    try:
-      data = {}
-      if args.name:
-        data['name'] = args.name
+    data = {}
+    if args.name:
+      data['name'] = args.name
 
-      if args.genome:
-        data['genome'] = args.genome
+    if args.genome:
+      data['genome'] = args.genome
 
-      if args.datatype:
-        data['datatype'] = args.datatype
+    if args.type:
+      data['datatype'] = args.type
 
-      if args.key and args.val:
-        for key, val in zip(args.key, args.val):
-          if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
-            data['info'] = data.get('info', {})
-            data['info'][key] = val  # set sample info field
+    if args.key and args.val:
+      for key, val in zip(args.key, args.val):
+        if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
+          data['info'] = data.get('info', {})
+          data['info'][key] = val  # set sample info field
 
-      res = bp_api.update_sample(args.sample, data)
-      res = {'error': True, 'msg': 'Update sample not supported.'}
-      if res.get('error'):
-        sys.exit('ERROR: {}'.format(res.get('msg')))
-      return
-    except:
-      sys.exit('ERROR: Something went wrong while updating sample.')
+    res = bp_api.update_sample(args.uid, data)
+    return
 
   @staticmethod
   def list_sample(bp_api, args):
@@ -159,7 +153,7 @@ class Sample:
       help='Update information associated with a sample.'
     )
     update_sample_parser.add_argument(
-      '--datatype',
+      '--type',
       choices=[
         'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
         'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
