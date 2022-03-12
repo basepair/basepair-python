@@ -4,7 +4,8 @@ import sys
 from basepair.helpers import eprint
 from basepair.utils import instance
 from basepair.utils.instance import instance_choices
-from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, add_tags_parser, add_outdir_parser
+from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, \
+  add_tags_parser, add_outdir_parser, valid_uid
 
 class Analysis:
   '''Analysis action methods'''
@@ -112,7 +113,7 @@ class Analysis:
     )
     create_analysis_p = add_common_args(create_analysis_p)
     create_analysis_p.add_argument(
-      '--control', nargs='+', help='Control id'
+      '--control', nargs='+', help='Control id', type=valid_uid
     )
     create_analysis_p.add_argument(
       '--ignore-warning',
@@ -121,12 +122,12 @@ class Analysis:
       help='Ignore validation warnings',
     )
     create_analysis_p.add_argument('--params', nargs='+')
-    create_analysis_p.add_argument('--project', help='Project id')
+    create_analysis_p.add_argument('--project', help='Project id', type=valid_uid)
     create_analysis_p.add_argument(
-      '--sample', nargs='+', help='Sample id', required=True
+      '--sample', nargs='+', help='Sample id', required=True, type=valid_uid
     )
     create_analysis_p.add_argument(
-      '--pipeline', help='Pipeline id', required=True
+      '--pipeline', help='Pipeline id', required=True, type=valid_uid
     )
     create_analysis_p.add_argument(
       '--instance', help='instance_type for analysis - '+' '.join(instance_choices), default='c3.xlarge'
@@ -176,7 +177,8 @@ class Analysis:
     list_analyses_p.add_argument(
       '--project',
       help='List analyses of a project.',
-      required=True
+      required=True,
+      type=valid_uid
     )
     list_analyses_p = add_common_args(list_analyses_p)
     list_analyses_p = add_json_parser(list_analyses_p)

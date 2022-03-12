@@ -3,7 +3,7 @@ import sys
 # App imports
 from basepair.helpers import eprint
 from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, \
-add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser
+add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser, valid_uid
 
 class Sample:
   '''Sample action methods'''
@@ -115,9 +115,9 @@ class Sample:
     create_sample_p.add_argument('--key', action='append')
     create_sample_p.add_argument('--name')
     create_sample_p.add_argument('--platform')
-    create_sample_p.add_argument('--project', help='Project id')
+    create_sample_p.add_argument('--project', help='Project id', type=valid_uid)
     create_sample_p.add_argument('--val', action='append')
-    create_sample_p.add_argument('--pipeline', help='Pipeline id')
+    create_sample_p.add_argument('--pipeline', help='Pipeline id', type=valid_uid)
     create_sample_p = add_common_args(create_sample_p)
 
     # delete sample parser
@@ -174,7 +174,8 @@ class Sample:
     list_samples_p.add_argument(
       '--project',
       help='List samples of a project.',
-      required=True
+      required=True,
+      type=valid_uid
     )
     list_samples_p = add_common_args(list_samples_p)
     list_samples_p = add_json_parser(list_samples_p)

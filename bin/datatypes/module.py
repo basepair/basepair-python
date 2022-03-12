@@ -77,7 +77,7 @@ class Module:
       help='Get details of a module'
     )
     get_module_p = add_common_args(get_module_p)
-    get_module_p = add_uid_parser(get_module_p, 'module')
+    get_module_p = add_pid_parser(get_module_p, 'module')
     get_module_p = add_json_parser(get_module_p)
 
     # list module parser
