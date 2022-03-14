@@ -64,7 +64,6 @@ def add_single_uid_parser(parser,datatype):
   parser.add_argument(
     '-u',
     '--uid',
-    default=None,
     help='The unique id for {}'.format(datatype),
     required=True,
     type=valid_uid
@@ -76,8 +75,8 @@ def add_pid_parser(parser):
   parser.add_argument(
     '--pipeline',
     nargs='+',
-    default=None,
     help='The unique pipeline id',
+    required=True,
     type=valid_uid
   )
   return parser
