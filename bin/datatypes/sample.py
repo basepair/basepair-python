@@ -27,6 +27,8 @@ class Sample:
         for key, val in zip(args.key, args.val):
           data[key] = val
       bp_api.create_sample(data, upload=True, source='cli')
+      eprint('Sample created successfully.')
+      return
     except:
       sys.exit('ERROR: sample creation failed. Please try again!')
 
