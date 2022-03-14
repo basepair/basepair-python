@@ -48,7 +48,7 @@ class NicePrint:
       ]
 
       for sample in analysis['samples']:
-        to_print.append(['sample', sample.split('/')[-1]])
+        to_print.append(['sample', sample['id']])
 
       if analysis['controls']:
         for control in analysis['controls']:

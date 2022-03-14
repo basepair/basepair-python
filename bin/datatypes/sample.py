@@ -3,7 +3,7 @@ import sys
 # App imports
 from basepair.helpers import eprint
 from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, \
-add_uid_parser, add_outdir_parser, add_payload_args, add_tags_parser, valid_uid
+add_uid_parser, add_outdir_parser, add_tags_parser, valid_uid
 
 class Sample:
   '''Sample action methods'''
