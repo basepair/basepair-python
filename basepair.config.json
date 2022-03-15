@@ -1,0 +1,10 @@
+{
+  "api": {
+    "cli": true,
+    "host": "siddhant.local",
+    "prefix": "/api/v2/",
+    "ssl": false,
+    "username": "siddhant@basepairtech.com",
+    "key": "faf3b8c4f284f030c82d46166b93fa548c4733a4"
+  }
+}
