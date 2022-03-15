@@ -10,7 +10,7 @@ class Module(Abstract):
     super(Module, self).__init__(cfg)
     self.endpoint += 'modules/'
     protocol = 'https' if cfg.get('ssl', True) else 'http'
-    self.api_endpoint = protocol + '://' + cfg.get('host') + cfg.get('prefix') + 'pipeline/get_module'
+    self.api_endpoint = protocol + '://' + cfg.get('host') + '/pipeline/get_module'
 
   def get_pipeline_modules(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
     '''Get modules of an pipeline'''
