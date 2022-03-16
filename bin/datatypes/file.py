@@ -16,8 +16,7 @@ class File:
     '''Download file by uid'''
     for uid in args.uid:
       file_i = bp_api.get_file(uid)
-      if file_i.get('id'):
-        bp_api.download_file(file_i['path'], uid, dirname=args.outdir, file_type='file')
+      bp_api.download_file(file_i['path'], uid, dirname=args.outdir, file_type='file')
     return
 
   @staticmethod

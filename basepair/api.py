@@ -1445,8 +1445,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         data = getattr(self, method)(filters=filters)
 
     if not data:
-      eprint('No data found for the parameters you gave.')
-      return
+      sys.exit('No data found for the parameters you gave.')
 
     if isinstance(data, dict) and data.get('error'):
       eprint(data.get('msg', 'Error retrieving data.'))
@@ -1476,41 +1475,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     sample['analyses_full'] = analyses
     return sample
-
-  def _check_file(self, uid):
-    '''Check if the project is in the Basepair database'''
-    info = self.get_file(uid)
-    if info.get('id'):
-      return True
-    return False
-
-  def _check_project(self, uid):
-    '''Check if the project is in the Basepair database'''
-    info = self.get_project(uid)
-    if info.get('id'):
-      return True
-    return False
-
-  def _check_sample(self, uid):
-    '''Check if the sample is in the Basepair database'''
-    info = self.get_sample(uid, add_analysis=False)
-    if info.get('id'):
-      return True
-    return False
-
-  def _check_workflow(self, uid):
-    '''Check if the workflow is in the Basepair database'''
-    info = self.get_pipeline(uid)
-    if info.get('id'):
-      return True
-    return False
-
-  def _check_analysis(self, uid):
-    '''Check if the analysis is in the Basepair database'''
-    info = self.get_analysis(uid)
-    if info.get('id'):
-      return True
-    return False
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
     '''Execute s3 commands'''

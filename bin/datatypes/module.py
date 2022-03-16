@@ -37,11 +37,7 @@ class Module:
     '''List Modules'''
     uids = args.pipeline
     is_json = args.json
-    if len(uids) == 1:
-      for uid in uids:
-        bp_api.print_data(data_type='pipeline_modules', uid=uid, is_json=is_json)
-    else:
-      sys.exit('ERROR: Please provide only one pipeline id.')
+    bp_api.print_data(data_type='pipeline_modules', uid=uids, is_json=is_json)
 
   @staticmethod
   def update_module(bp_api, args):

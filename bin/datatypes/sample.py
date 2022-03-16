@@ -48,14 +48,11 @@ class Sample:
     for uid in args.uid:
       # check sample id is valid
       sample = bp_api.get_sample(uid, add_analysis=True)
-      if sample.get('error'):
-        continue
+      # if tags provided, download file by tags
+      if args.tags:
+        bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
       else:
-        # if tags provided, download file by tags
-        if args.tags:
-          bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
-        else:
-          bp_api.download_raw_files(sample, args.outdir)
+        bp_api.download_raw_files(sample, args.outdir)
     return
 
   @staticmethod
@@ -86,7 +83,7 @@ class Sample:
           data['info'] = data.get('info', {})
           data['info'][key] = val  # set sample info field
 
-    res = bp_api.update_sample(args.uid, data)
+    bp_api.update_sample(args.uid, data)
     return
 
   @staticmethod

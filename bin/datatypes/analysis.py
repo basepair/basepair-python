@@ -61,9 +61,8 @@ class Analysis:
   def download_log_analysis(bp_api, args):
     '''Download analysis log'''
     for uid in args.uid:
-      info = bp_api.get_analysis(uid)  # check analysis id is valid
-      if info.get('id'):
-        bp_api.get_log(uid, args.outdir)
+      bp_api.get_analysis(uid)  # check analysis id is valid
+      bp_api.get_log(uid, args.outdir)
     return
 
   @staticmethod

@@ -74,8 +74,7 @@ def add_pid_parser(parser):
   '''Add pipeline id parser'''
   parser.add_argument(
     '--pipeline',
-    nargs='+',
-    help='The unique pipeline id',
+    help='A unique pipeline id',
     required=True,
     type=valid_uid
   )
