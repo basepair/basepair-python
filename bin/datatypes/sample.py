@@ -83,6 +83,8 @@ class Sample:
           data['info'] = data.get('info', {})
           data['info'][key] = val  # set sample info field
 
+    if not data:
+      sys.exit('ERROR: You have not provided any data to update.')
     bp_api.update_sample(args.uid, data)
     return
 
