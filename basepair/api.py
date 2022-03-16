@@ -246,7 +246,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
             dirname=outdir,
             kind=tagkind,
             tags=tags,
+            uid=each_uid
           )
+        except PermissionError:
+          sys.exit('ERROR: Permission denied for the specified outdir.')
         except:
           sys.exit('ERROR: Something went wrong while downloading analysis.')
       else:
@@ -928,7 +931,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd)
 
-  def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
+  def download_file(self, filekey, uid, filename=None, file_type='file', dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -948,14 +951,22 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       # don't renaming the file
       # get the download directory
       prefix = self.scratch
+      if file_type == 'analyses':
+        analyses_type_path = os.path.dirname(filekey)
+        analyses_type = os.path.basename(analyses_type_path)
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
-      filepath = os.path.join(prefix, os.path.basename(filekey))
+        if file_type == 'analyses':
+          added_path = os.path.join(prefix, 'basepair_download/{}/{}/{}'.format(file_type, uid, analyses_type))
+        else:
+          added_path = os.path.join(prefix, 'basepair_download/{}/{}'.format(file_type, uid))
+        if not os.path.isdir(added_path):
+          os.makedirs(added_path)
+      filepath = os.path.join(added_path, os.path.basename(filekey))
     else:
       # rename the download file
       filepath = self.get_filepath(filename, dirname=dirname)
     filepath = os.path.expanduser(filepath)
-
     # if file not already there, download it
     if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
       if self.verbose:
@@ -1045,7 +1056,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return files[0:1]
     return files
 
-  def get_analysis_files(self, analysis, dirname=None, kind='exact', tags=None):  # pylint: disable=too-many-arguments
+  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', tags=None):  # pylint: disable=too-many-arguments
     '''
     For a analysis, go through files and get that match the tags
     Parameters
@@ -1079,6 +1090,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return [self.download_file(
       matching_file['path'],
       dirname=dirname,
+      uid=uid
     ) for matching_file in matching_files] if matching_files else None
 
   def get_bam_file(self, sample, tags=None, multiple=False):
