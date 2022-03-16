@@ -47,6 +47,10 @@ coverage.xml
 # Django stuff:
 *.log
 
+# Secure Credentials
+config/config.json
+basepair.config.json
+
 # Sphinx documentation
 docs/_build/
 
