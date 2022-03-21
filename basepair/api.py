@@ -129,8 +129,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     params=None,
     project_id=None,
     sample_id=None,
-    sample_ids=[],
-    instance=None
+    sample_ids=[]
   ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
@@ -158,8 +157,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'samples': self._parsed_sample_list(sample_ids, prefix),
       'ignore_validation_warning': ignore_validation_warnings,
       'meta': {'source': 'cli'},
-      'workflow': '{}pipelines/{}'.format(prefix, workflow_id),
-      'instance_type': instance
+      'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
     }
 
     if project_id:
@@ -182,8 +180,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           params=params,
           project_id=project_id,
           sample_ids=sample_ids,
-          workflow_id=workflow_id,
-          instance=instance
+          workflow_id=workflow_id
         )
     if info.get('error'):
       sys.exit('ERROR: Analysis creation failed.')

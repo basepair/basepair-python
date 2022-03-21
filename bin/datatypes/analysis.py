@@ -14,12 +14,9 @@ class Analysis:
   def create_analysis(bp_api, args):
     '''Create and submit an analysis'''
     params = {'node': {}, 'info': {}}
-    if args.instance not in instance_choices:
+    if args.instance and args.instance not in instance_choices:
       sys.exit('ERROR: invalid instance_type see --help for available instance types.')
-    if args.instance == 'c3.xlarge':
-      eprint('Warning: default instance_type c3.xlarge see --help for available instance types.')
     params['info']['instance_type'] = args.instance
-
     if args.params:
       for param in args.params:
         try:
@@ -37,8 +34,7 @@ class Analysis:
         params=params,
         project_id=args.project,
         sample_ids=args.sample,
-        workflow_id=args.pipeline,
-        instance=args.instance
+        workflow_id=args.pipeline
       )
 
   @staticmethod
@@ -129,7 +125,7 @@ class Analysis:
       '--pipeline', help='Pipeline id', required=True, type=valid_uid
     )
     create_analysis_p.add_argument(
-      '--instance', help='instance_type for analysis - '+' '.join(instance_choices), default='c3.xlarge'
+      '--instance', help='instance_type for analysis - '+' '.join(instance_choices)
     )
 
     # delete analysis parser
