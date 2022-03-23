@@ -16,28 +16,29 @@ class Module:
   @staticmethod
   def delete_module(bp_api, args):
     '''Delete Module'''
-    uids = args.uid
-    for uid in uids:
+    all_fail = True
+    for uid in args.uid:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
       if answer:
-        bp_api.delete_module(uid)
+        all_fail = not bool(bp_api.delete_module(uid)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Deleting sample failed.')
     return
 
   @staticmethod
   def get_module(bp_api, args):
     '''Get module'''
-    uids = args.uid
-    is_json = args.json
-    for uid in uids:
-      bp_api.print_data(data_type='module', uid=uid, is_json=is_json)
+    all_fail = True
+    for uid in args.uid:
+      all_fail = not bool(bp_api.print_data(data_type='module', uid=uid, is_json=args.json)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Module data not found.')
     return
 
   @staticmethod
   def list_module(bp_api, args):
     '''List Modules'''
-    uids = args.pipeline
-    is_json = args.json
-    bp_api.print_data(data_type='pipeline_modules', uid=uids, is_json=is_json)
+    bp_api.print_data(data_type='pipeline_modules', uid=args.pipeline, is_json=args.json)
 
   @staticmethod
   def update_module(bp_api, args):

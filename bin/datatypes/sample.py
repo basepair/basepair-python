@@ -36,32 +36,40 @@ class Sample:
   def delete_sample(bp_api, args):
     '''Delete sample'''
     uids = args.uid
+    all_fail = True
     for uid in uids:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
       if answer:
-        bp_api.delete_sample(uid)
+        all_fail = not bool(bp_api.delete_sample(uid)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Deleting Sample failed.')
     return
 
   @staticmethod
   def download_sample(bp_api, args):
     '''Download sample'''
+    all_fail = True
     for uid in args.uid:
       # check sample id is valid
       sample = bp_api.get_sample(uid, add_analysis=True)
       # if tags provided, download file by tags
       if args.tags:
-        bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)
+        all_fail = not (bool(sample.get('id')) and bp_api.get_file_by_tags(sample, tags=args.tags,kind=args.tagkind, dirname=args.outdir)) and all_fail
       else:
-        bp_api.download_raw_files(sample, args.outdir)
+        all_fail = not (bool(sample.get('id')) and bool(bp_api.download_raw_files(sample, args.outdir))) and all_fail
+
+    if all_fail:
+      sys.exit('ERROR: Downloading sample failed.')
     return
 
   @staticmethod
   def get_sample(bp_api, args):
     '''Get sample'''
-    uids = args.uid
-    is_json = args.json
-    for uid in uids:
-      bp_api.print_data(data_type='sample', uid=uid, is_json=is_json)
+    all_fail = True
+    for uid in args.uid:
+      all_fail = not bool(bp_api.print_data(data_type='sample', uid=uid, is_json=args.json)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Sample data not found.')
     return
 
   @staticmethod

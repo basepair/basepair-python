@@ -2,7 +2,6 @@
 import sys
 # App Import
 from basepair.helpers import eprint
-from basepair.utils import instance
 from basepair.utils.instance import instance_choices
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, \
   add_tags_parser, add_outdir_parser, valid_uid
@@ -41,33 +40,47 @@ class Analysis:
   def delete_analysis(bp_api, args):
     '''Delete analysis'''
     uids = args.uid
+    all_fail = True
     for uid in uids:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
       if answer:
-        bp_api.delete_analysis(uid)
+        all_fail = not bool(bp_api.delete_analysis(uid)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Deleting analysis failed.')
     return
 
   @staticmethod
   def download_analysis(bp_api, args):
     '''Download analysis'''
     # download a file from an analysis by tags
-    bp_api.download_analysis(args.uid, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags)
+    all_fail = True
+    for each_uid in args.uid:
+      analysis = bp_api.get_analysis(each_uid)
+      all_fail = not (bool(analysis.get('id')) and bool(bp_api.download_analysis(each_uid, analysis=analysis, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags))) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Downloading analysis failed.')
+    eprint('All analysis files have been downloaded successfully.')
+    return
 
   @staticmethod
   def download_log_analysis(bp_api, args):
     '''Download analysis log'''
+    all_fail = True
     for uid in args.uid:
-      bp_api.get_analysis(uid)  # check analysis id is valid
-      bp_api.get_log(uid, args.outdir)
+      analysis = bp_api.get_analysis(uid)  # check analysis id is valid
+      all_fail = not (bool(analysis.get('id')) and bool(bp_api.get_log(uid, args.outdir))) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Downloading logs failed.')
     return
 
   @staticmethod
   def get_analysis(bp_api, args):
     '''Get analysis'''
-    uids = args.uid
-    is_json = args.json
-    for uid in uids:
-      bp_api.print_data(data_type='analysis', uid=uid, is_json=is_json)
+    all_fail = True
+    for uid in args.uid:
+      all_fail = not bool(bp_api.print_data(data_type='analysis', uid=uid, is_json=args.json)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Analyses data not found.')
     return
 
   @staticmethod
@@ -78,8 +91,11 @@ class Analysis:
   @staticmethod
   def reanalyze_analysis(bp_api, args):
     '''Restart analysis'''
+    all_fail = True
     for each_uid in args.uid:
-      bp_api.restart_analysis(each_uid)
+      all_fail = not bool(bp_api.restart_analysis(each_uid)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: while re-analyze the analysis data.')
     return
 
   @staticmethod

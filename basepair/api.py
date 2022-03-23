@@ -200,21 +200,21 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     }
     res = (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
     if res.get('error'):
-      return
+      return False
     eprint('Analysis {} has been restarted'.format(uid))
-    return
+    return True
 
   def delete_analysis(self, uid):
     '''Delete method'''
     info = (Analysis(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      sys.exit('ERROR: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return False
 
     if self.verbose:
       eprint('deleted analysis', uid)
     return info
 
-  def download_analysis(self, uid, outdir='.', tagkind=None, tags=None):
+  def download_analysis(self, uid, analysis=None, outdir='.', tagkind=None, tags=None):
     '''
     Download files from one or more analysis.
     Parameters
@@ -228,33 +228,26 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
-        return None
+        return False
 
-    is_download = False
-    for each_uid in uid:
-      analysis = self.get_analysis(each_uid)
-      if analysis.get('error'):
-        continue
-      if analysis['files']:
-        is_download = True
-        try:
-          self.get_analysis_files(
-            analysis=analysis,
-            dirname=outdir,
-            kind=tagkind,
-            tags=tags,
-            uid=each_uid
-          )
-        except PermissionError:
-          sys.exit('ERROR: Permission denied for the specified outdir.')
-        except:
-          sys.exit('ERROR: Something went wrong while downloading analysis.')
-      else:
-        eprint('Warning: No files present for analysis id {}'.format(each_uid))
-
-    if is_download:
-      eprint('All analysis files have been downloaded successfully.')
-    return
+    if analysis['files']:
+      try:
+        return self.get_analysis_files(
+          analysis=analysis,
+          dirname=outdir,
+          kind=tagkind,
+          tags=tags,
+          uid=uid
+        )
+      except PermissionError:
+        eprint('ERROR: Permission denied for the specified outdir.')
+        return False
+      except:
+        eprint('ERROR: Something went wrong while downloading analysis.')
+        return False
+    else:
+      eprint('Warning: No files present for analysis id {}'.format(uid))
+      return False
 
   def fusionsalysis(
     self,
@@ -523,6 +516,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def delete_module(self, uid):
     '''Delete method'''
     info = (Module(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return False
+
     if self.verbose:
       eprint('deleted module', uid)
     return info
@@ -601,7 +598,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     info = (Pipeline(self.conf.get('api'))).delete(uid)
     if info.get('error'):
       eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return None
+      return False
 
     if self.verbose:
       eprint('deleted pipeline', uid)
@@ -762,7 +759,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Delete method'''
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      return
+      return False
 
     if self.verbose:
       eprint('deleted sample', uid)
@@ -928,7 +925,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd)
 
-  def download_file(self, filekey, uid, filename=None, file_type='file', dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
+  def download_file(self, filekey, uid=None, filename=None, file_type=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -943,9 +940,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     -------
     Absolute filepath to downloaded file
     '''
-
-    if not filename:
-      # don't renaming the file
+    try:
       # get the download directory
       prefix = self.scratch
       if file_type == 'analyses':
@@ -953,31 +948,40 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         analyses_type = os.path.basename(analyses_type_path)
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
-        if file_type == 'analyses':
-          added_path = os.path.join(prefix, 'basepair_download/{}/{}/{}'.format(file_type, uid, analyses_type))
-        else:
-          added_path = os.path.join(prefix, 'basepair_download/{}/{}'.format(file_type, uid))
-        if not os.path.isdir(added_path):
-          os.makedirs(added_path)
-      filepath = os.path.join(added_path, os.path.basename(filekey))
-    else:
-      # rename the download file
-      filepath = self.get_filepath(filename, dirname=dirname)
-    filepath = os.path.expanduser(filepath)
-    # if file not already there, download it
-    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-      if self.verbose:
-        eprint('downloading'+' ./'+filepath.split('/')[-1])
-      if not os.path.exists(os.path.dirname(filepath)):
-        os.makedirs(os.path.dirname(filepath))
-      self.copy_file(filekey, filepath, action='from')
-    elif self.verbose:
-      eprint('exists'+' ./'+filepath.split('/')[-1])
+      if file_type == 'analyses' and uid:
+        added_path = os.path.join(prefix, 'basepair_download/{}/{}/{}'.format(file_type, uid, analyses_type))
+      elif file_type and uid:
+        added_path = os.path.join(prefix, 'basepair_download/{}/{}'.format(file_type, uid))
+      elif uid:
+        added_path = os.path.join(prefix, 'basepair_download/{}'.format(uid))
+      else:
+        added_path = os.path.join(prefix, 'basepair_download/')
+      if not os.path.isdir(added_path):
+        os.makedirs(added_path)
+      if not filename:
+        # don't renaming the file
+        filepath = os.path.join(added_path, os.path.basename(filekey))
+      else:
+        # rename the download file
+        # filepath = self.get_filepath(filename, dirname=dirname)
+        filepath = os.path.join(added_path, os.path.basename(filename))
+      filepath = os.path.expanduser(filepath)
+      # if file not already there, download it
+      if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+        if self.verbose:
+          eprint('downloading'+' ./'+filepath.split('/')[-1])
+        if not os.path.exists(os.path.dirname(filepath)):
+          os.makedirs(os.path.dirname(filepath))
+        self.copy_file(filekey, filepath, action='from')
+      elif self.verbose:
+        eprint('exists'+' ./'+filepath.split('/')[-1])
 
-    if load:
-      data = open(filepath, 'r').read().strip()
-      return json.loads(data) if is_json else data
-    return filepath
+      if load:
+        data = open(filepath, 'r').read().strip()
+        return json.loads(data) if is_json else data
+      return filepath
+    except:
+      return False
 
   def download_raw_files(self, sample, outdir=None):
     '''
@@ -987,22 +991,25 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample: {dict} From calling bp.get_sample()       [Required]
     outdir: {str}  Output directory to save files to
     '''
-    uploads = sample['uploads']
-    files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
-    files_downloaded = []
-    for file_i in files:
-      outdir = outdir if outdir else self.scratch
-      fileout = os.path.join(outdir, os.path.split(file_i)[1])
-      if os.path.exists(fileout):
-        eprint('Not downloading. File exists: {}'.format(fileout))
-        output = True
-      else:
-        output = self.copy_file_from_s3(file_i, outdir)
+    try:
+      uploads = sample['uploads']
+      files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
+      files_downloaded = []
+      for file_i in files:
+        outdir = outdir if outdir else self.scratch
+        fileout = os.path.join(outdir, os.path.split(file_i)[1])
+        if os.path.exists(fileout):
+          eprint('Not downloading. File exists: {}'.format(fileout))
+          output = True
+        else:
+          output = self.copy_file_from_s3(file_i, outdir)
 
-      if output:
-        eprint('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
-        files_downloaded.append(fileout)
-    return files_downloaded
+        if output:
+          eprint('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
+          files_downloaded.append(fileout)
+      return files_downloaded
+    except:
+      return False
 
   @classmethod
   def filter_files_by_tags(cls, files, tags, exclude=None, kind='exact', multiple=False): # pylint: disable=too-many-arguments
@@ -1068,7 +1075,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       is_not_valid = not (isinstance(tags, list) and all((isinstance(item, list) for item in tags)))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
-        return None
+        return False
     else:
       tags = [None]
 
@@ -1087,7 +1094,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return [self.download_file(
       matching_file['path'],
       dirname=dirname,
-      uid=uid
+      uid=uid,
+      file_type='analyses'
     ) for matching_file in matching_files] if matching_files else None
 
   def get_bam_file(self, sample, tags=None, multiple=False):
@@ -1229,99 +1237,101 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     tags:          {list} List of list of tags for file filtering. If just list of tags, will convert to list of lists.
     workflow_id:   {int}  Workflow id to look for files in. NOT IMPLEMENTED YE
     '''
-    # some error checking
-    if tags is None:
-      eprint("Tags is None")
-      return None
+    try:
+      # some error checking
+      if tags is None:
+        eprint("Tags is None")
+        return False
 
-    # make sure tags is a list of lists
-    if isinstance(tags, list):
-      if not isinstance(tags[0], list):
-        tags = [tags]
+      # make sure tags is a list of lists
+      if isinstance(tags, list):
+        if not isinstance(tags[0], list):
+          tags = [tags]
 
-    matches = []
-    matching_file = []
-    for analysis in sample['analyses_full']:
-      if analysis['status'] == 'error':
-        eprint('analysis ended in error, skipping.')
-        continue
-
-      # dont even look if not the right type of analysis
-      should_continue = analysis_tags and not(
-        analysis['tags'] and set(analysis_tags) <= set(analysis['tags'])
-      )
-      if should_continue:
-        continue
-
-      if analysis['params'] and 'info' in analysis['params']:
-        if not analysis['params']['info'].get('genome_id'):
-          eprint('Could not find genome for analysis {}'.format(analysis['id']))
-          continue
-        sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
-        if not sample_genome_id:
-          eprint('Could not find genome for analysis {}'.format(analysis['id']))
-          continue
-        if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
-          eprint(
-            'analysis genome {}'.format(analysis['params']['info']['genome_id']),
-            'different from sample genome {}.'.format(sample_genome_id),
-          )
+      matches = []
+      matching_file = []
+      for analysis in sample['analyses_full']:
+        if analysis['status'] == 'error':
+          eprint('analysis ended in error, skipping.')
           continue
 
-      if self.verbose:
-        eprint('looking at', analysis['id'], 'status', analysis['status'])
-      for tags_sub in tags:
-        filtered_files = self.filter_files_by_tags(
-          analysis['files'],
-          tags_sub,
-          exclude=exclude,
-          kind=kind,
-          multiple=multiple,
+        # dont even look if not the right type of analysis
+        should_continue = analysis_tags and not(
+          analysis['tags'] and set(analysis_tags) <= set(analysis['tags'])
         )
+        if should_continue:
+          continue
 
-        if filtered_files:
-          matching_file += filtered_files
+        if analysis['params'] and 'info' in analysis['params']:
+          if not analysis['params']['info'].get('genome_id'):
+            eprint('Could not find genome for analysis {}'.format(analysis['id']))
+            continue
+          sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
+          if not sample_genome_id:
+            eprint('Could not find genome for analysis {}'.format(analysis['id']))
+            continue
+          if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
+            eprint(
+              'analysis genome {}'.format(analysis['params']['info']['genome_id']),
+              'different from sample genome {}.'.format(sample_genome_id),
+            )
+            continue
 
-      if matching_file:
-        if multiple:
-          for file in matching_file:
-            matches.append([analysis['id'], file])
-        else:
-          matches.append([analysis['id'], matching_file[0]])
+        if self.verbose:
+          eprint('looking at', analysis['id'], 'status', analysis['status'])
+        for tags_sub in tags:
+          filtered_files = self.filter_files_by_tags(
+            analysis['files'],
+            tags_sub,
+            exclude=exclude,
+            kind=kind,
+            multiple=multiple,
+          )
 
-    if not matches:
-      eprint('WARNING: no matching file for', tags)
-      eprint('in analyses with ids', [analysis['id'] for analysis in sample['analyses_full']])
-      eprint('for sample', sample['id'])
-      return None
+          if filtered_files:
+            matching_file += filtered_files
 
-    if len(matches) > 1:
-      matches.sort(
-        key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
-        reverse=True,
-      )
-      if not multiple:
-        eprint('WARNING: multiple matching file for', tags)
+        if matching_file:
+          if multiple:
+            for file in matching_file:
+              matches.append([analysis['id'], file])
+          else:
+            matches.append([analysis['id'], matching_file[0]])
+
+      if not matches:
+        eprint('WARNING: no matching file for', tags)
+        eprint('in analyses with ids', [analysis['id'] for analysis in sample['analyses_full']])
+        eprint('for sample', sample['id'])
+        return False
+
+      if len(matches) > 1:
+        matches.sort(
+          key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
+          reverse=True,
+        )
+        if not multiple:
+          eprint('WARNING: multiple matching file for', tags)
+        for match in matches:
+          eprint('\t', match[1]['last_updated'], match[1]['path'])
+
+
+      filepath = []
       for match in matches:
-        eprint('\t', match[1]['last_updated'], match[1]['path'])
+        if download:
+          path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
+            else self.download_file(match[1]['path'], dirname=dirname)
 
+          # if did download it then we added to the filepath else continue
+          if os.path.isfile(path):
+            filepath.append(path)
+            if not multiple:
+              break
+        else:
+          filepath.append(match[1]['path'])
 
-    filepath = []
-    for match in matches:
-      if download:
-        path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
-          else self.download_file(match[1]['path'], dirname=dirname)
-
-         # if did download it then we added to the filepath else continue
-        if os.path.isfile(path):
-          filepath.append(path)
-          if not multiple:
-            break
-      else:
-        filepath.append(match[1]['path'])
-
-    return filepath if multiple else filepath[0]
-
+      return filepath if multiple else filepath[0]
+    except:
+      return False
   def get_filepath(self, filename, dirname=None):
     '''Use scratch and [dirname] to construct a full filepath'''
     # move along, nothin to do
@@ -1364,8 +1374,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     user_id = self._get_analysis_owner_id(analysis_id)
     filekey = 'log/analyses/{}/{}/worker.log'.format(user_id, analysis_id)
-    filename = '{}/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
-    return self.download_file(filekey, filename, load=False, is_json=False)
+    filename = '{}/logs/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
+    return self.download_file(filekey, uid=analysis_id, filename=filename, file_type='logs', load=False, is_json=False)
 
   def get_window_score_filename(self, sample, kind=None, flanking=None):
     '''Get window score filename'''
@@ -1442,21 +1452,23 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         data = getattr(self, method)(filters=filters)
 
     if not data:
-      sys.exit('No data found for the parameters you gave.')
+      eprint('No data found for the parameters you gave.')
+      return False
 
     if isinstance(data, dict) and data.get('error'):
       eprint(data.get('msg', 'Error retrieving data.'))
-      return
+      return True
 
     # print the data as json
     if is_json:
       for item in data:
         eprint(item)
         eprint()
-      return
+      return True
 
     # print the data human readable
     getattr(NicePrint, data_type)(data)
+    return True
 
   ### Private methods ###
   def _add_full_analysis(self, sample):

@@ -3,7 +3,6 @@
 # General imports
 import json
 import os
-import sys
 
 # Lib imports
 import requests
@@ -135,7 +134,8 @@ class Abstract(object):
       500: 'Error retrieving data from API!'
     }
     if response.status_code in error_msgs:
-      sys.exit('ERROR: {}'.format(error_msgs[response.status_code]))
+      eprint('ERROR: {}'.format(error_msgs[response.status_code]))
+      return {'error': True, 'msg': error_msgs[response.status_code]}
 
     if response.status_code == 204:  # for delete response
       return {'error': False}
@@ -149,17 +149,18 @@ class Abstract(object):
           response = error
 
           if response.get('error_msgs'):
-            sys.exit('ERROR: {}'.format(response['error_msgs']))
+            eprint('ERROR: {}'.format(response['error_msgs']))
 
           if response.get('warning_msgs'):
             eprint('WARNING: {}'.format(response['warning_msgs']))
         else:
-          sys.exit('ERROR: {}'.format(error))
+          eprint('ERROR: {}'.format(error))
 
       return response
     except json.decoder.JSONDecodeError as error:
       msg = 'ERROR: Not able to parse response: {}.'.format(error)
-      sys.exit(msg)
+      eprint(msg)
+      return {'error': True, 'msg': msg}
 
   @classmethod
   def _parse_response(cls, response):
@@ -170,7 +171,8 @@ class Abstract(object):
       500: 'Error retrieving data from API!'
     }
     if response.status_code in error_msgs:
-      sys.exit('ERROR: {}'.format(error_msgs[response.status_code]))
+      eprint('ERROR: {}'.format(error_msgs[response.status_code]))
+      return {'error': True, 'msg': error_msgs[response.status_code]}
 
     if response.status_code == 204:  # for delete response
       return {'error': False}
@@ -184,17 +186,18 @@ class Abstract(object):
           response = error
 
           if response.get('error_msgs'):
-            sys.exit('ERROR: {}'.format(response['error_msgs']))
+            eprint('ERROR: {}'.format(response['error_msgs']))
 
           if response.get('warning_msgs'):
             eprint('WARNING: {}'.format(response['warning_msgs']))
         else:
-          sys.exit('ERROR: {}'.format(error))
+          eprint('ERROR: {}'.format(error))
 
       return response
     except json.decoder.JSONDecodeError as error:
       msg = 'ERROR: Not able to parse response: {}.'.format(error)
-      sys.exit(msg)
+      eprint(msg)
+      return {'error': True, 'msg': msg}
 
   @staticmethod
   def _save_cache(cache, content):

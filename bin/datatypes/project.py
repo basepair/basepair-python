@@ -4,7 +4,7 @@ import json
 import sys
 # App imports
 from basepair.helpers import eprint
-from bin.common_parser import add_common_args, add_payload_args, add_json_parser, add_uid_parser
+from bin.common_parser import add_common_args, add_json_parser, add_single_uid_parser
 
 class Project:
   '''Project action methods'''
@@ -45,9 +45,7 @@ class Project:
     if not data and not params:
       sys.exit('ERROR: Nothing to update.')
 
-    for project_id in args.uid:
-      bp_api.update_project(project_id, data=data, params=params)
-    return
+    bp_api.update_project(args.uid, data=data, params=params)
 
   @staticmethod
   def project_action_parser(action_parser):
@@ -81,6 +79,6 @@ class Project:
     update_project_parser.add_argument('--name')
     update_project_parser.add_argument(
       '--perm', choices=['admin', 'edit', 'view'])
-    update_project_parser = add_uid_parser(update_project_parser, 'project')
+    update_project_parser = add_single_uid_parser(update_project_parser, 'project')
 
     return action_parser

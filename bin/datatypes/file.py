@@ -1,10 +1,6 @@
 '''File datatype class'''
 import sys
-
-from isort import file
-
 # App imports
-from basepair.helpers import eprint
 from bin.common_parser import add_uid_parser, add_common_args, add_outdir_parser
 
 
@@ -14,9 +10,12 @@ class File:
   @staticmethod
   def download_file(bp_api, args):
     '''Download file by uid'''
+    all_fail = True
     for uid in args.uid:
       file_i = bp_api.get_file(uid)
-      bp_api.download_file(file_i['path'], uid, dirname=args.outdir, file_type='file')
+      all_fail = not (bool(file_i.get('id')) and bool(bp_api.download_file(file_i['path'], dirname=args.outdir, file_type='file'))) and all_fail
+    if all_fail:
+      sys.exit('ERROR: File downloading failed.')
     return
 
   @staticmethod

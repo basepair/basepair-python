@@ -10,10 +10,11 @@ class Genome:
   @staticmethod
   def get_genome(bp_api, args):
     '''Get genome'''
-    uids = args.uid
-    is_json = args.json
-    for uid in uids:
-      bp_api.print_data(data_type='genome', uid=uid, is_json=is_json)
+    all_fail = True
+    for uid in args.uid:
+      all_fail = not bool(bp_api.print_data(data_type='genome', uid=uid, is_json=args.json)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Failed to load genome data.')
     return
 
   @staticmethod

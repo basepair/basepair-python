@@ -16,20 +16,23 @@ class Pipeline:
   @staticmethod
   def delete_pipeline(bp_api, args):
     '''Delete pipeline'''
-    uids = args.uid
-    for uid in uids:
+    all_fail = True
+    for uid in args.uid:
       answer = bp_api.yes_or_no('Are you sure you want to delete {}?'.format(uid))
       if answer:
-        bp_api.delete_pipeline(uid)
+        all_fail = not bool(bp_api.delete_pipeline(uid)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Deleting Pipeling failed.')
     return
 
   @staticmethod
   def get_pipeline(bp_api, args):
     '''Get pipeline'''
-    uids = args.uid
-    is_json = args.json
-    for uid in uids:
-      bp_api.print_data(data_type='pipeline', uid=uid, is_json=is_json)
+    all_fail = True
+    for uid in args.uid:
+      all_fail = not bool(bp_api.print_data(data_type='pipeline', uid=uid, is_json=args.json)) and all_fail
+    if all_fail:
+      sys.exit('ERROR: Pipeline data not found.')
     return
 
   @staticmethod
