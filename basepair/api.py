@@ -983,7 +983,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     except:
       return False
 
-  def download_raw_files(self, sample, outdir=None):
+  def download_raw_files(self, sample, outdir=None, uid=None,):
     '''
     Download raw data associated with a sample
     Parameters
@@ -996,18 +996,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
       files_downloaded = []
       for file_i in files:
-        outdir = outdir if outdir else self.scratch
-        fileout = os.path.join(outdir, os.path.split(file_i)[1])
-        if os.path.exists(fileout):
-          eprint('Not downloading. File exists: {}'.format(fileout))
-          output = True
-        else:
-          output = self.copy_file_from_s3(file_i, outdir)
-
-        if output:
-          eprint('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
-          files_downloaded.append(fileout)
-      return files_downloaded
+        self.download_file(file_i, file_type='samples', uid=uid, dirname=outdir)
+      return True
     except:
       return False
 
@@ -1217,9 +1207,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname=None,
     download=True,
     exclude=None,
+    file_type=None,
     kind='exact',
     multiple=False,
     tags=None,
+    uid=None
     #workflow_id=None,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
     '''
@@ -1318,8 +1310,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       filepath = []
       for match in matches:
         if download:
-          path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
-            else self.download_file(match[1]['path'], dirname=dirname)
+          path = self.download_file(match[1]['path'], dirname=dest, filename=dest, file_type=file_type, uid=uid) if dest \
+            else self.download_file(match[1]['path'], dirname=dirname, file_type=file_type, uid=uid)
 
           # if did download it then we added to the filepath else continue
           if os.path.isfile(path):
