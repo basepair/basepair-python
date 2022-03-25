@@ -56,7 +56,7 @@ class Sample:
       if args.tags:
         all_fail = not (bool(sample.get('id')) and bp_api.get_file_by_tags(sample, file_type='samples', tags=args.tags, kind=args.tagkind, dirname=args.outdir, uid=uid)) and all_fail
       else:
-        all_fail = not (bool(sample.get('id')) and bool(bp_api.download_raw_files(sample, uid=uid, outdir=args.outdir))) and all_fail
+        all_fail = not (bool(sample.get('id')) and bool(bp_api.download_raw_files(sample, file_type='samples', uid=uid, outdir=args.outdir))) and all_fail
 
     if all_fail:
       sys.exit('ERROR: Downloading sample failed.')

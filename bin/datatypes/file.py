@@ -13,7 +13,7 @@ class File:
     all_fail = True
     for uid in args.uid:
       file_i = bp_api.get_file(uid)
-      all_fail = not (bool(file_i.get('id')) and bool(bp_api.download_file(file_i['path'], dirname=args.outdir, file_type='file'))) and all_fail
+      all_fail = not (bool(file_i.get('id')) and bool(bp_api.download_file(file_i['path'], uid=uid, dirname=args.outdir, file_type='files'))) and all_fail
     if all_fail:
       sys.exit('ERROR: File downloading failed.')
     return

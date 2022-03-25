@@ -183,7 +183,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           workflow_id=workflow_id
         )
     if info.get('error'):
-      sys.exit('ERROR: Analysis creation failed! {}'.format(info.get('msg')))
+      sys.exit('ERROR: Analysis creation failed!')
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
       eprint('created: analysis {} with sample id(s) {}'.format(
@@ -949,6 +949,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         added_path = os.path.join(prefix, 'basepair_download/{}/{}/{}'.format(file_type, uid, analyses_type))
       elif file_type and uid:
         added_path = os.path.join(prefix, 'basepair_download/{}/{}'.format(file_type, uid))
+      elif file_type:
+        added_path = os.path.join(prefix, 'basepair_download/{}'.format(file_type))
       elif uid:
         added_path = os.path.join(prefix, 'basepair_download/{}'.format(uid))
       else:
@@ -980,7 +982,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     except:
       return False
 
-  def download_raw_files(self, sample, outdir=None, uid=None,):
+  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None,):
     '''
     Download raw data associated with a sample
     Parameters
@@ -991,10 +993,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     try:
       uploads = sample['uploads']
       files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
-      files_downloaded = []
+      if not files:
+        eprint('Warning: No files present for sample with id {}'.format(uid))
+        return False
       for file_i in files:
-        self.download_file(file_i, file_type='samples', uid=uid, dirname=outdir)
-      return True
+        return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
     except:
       return False
 
@@ -1363,8 +1366,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     user_id = self._get_analysis_owner_id(analysis_id)
     filekey = 'log/analyses/{}/{}/worker.log'.format(user_id, analysis_id)
-    filename = '{}/logs/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
-    return self.download_file(filekey, uid=analysis_id, filename=filename, file_type='logs', load=False, is_json=False)
+    # filename not needed since download refactor based on id and file_type
+    # filename = '{}/logs/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
+    return self.download_file(filekey, uid=analysis_id, dirname=outdir, filename=None, file_type='logs', load=False, is_json=False)
 
   def get_window_score_filename(self, sample, kind=None, flanking=None):
     '''Get window score filename'''
