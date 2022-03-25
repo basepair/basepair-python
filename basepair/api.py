@@ -668,14 +668,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     # some input validation
     data['genome'] = self._get_genome_by_name(data.get('genome'))
 
-    if 'filepaths1' in data and data['filepaths1'] is None:
-      if self.verbose:
-        eprint('filepaths1 is None.')
-      del data['filepaths1']
-
     if 'filepaths2' in data and data['filepaths2'] is None:
       if self.verbose:
-        eprint('filepaths2 is None.')
+        eprint('file path 2 is None.')
       del data['filepaths2']
 
     # if only one sample as str, but into list
@@ -700,9 +695,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
 
     if data.get('projects'):
-      data['projects'] = '{}projects/{}'.format(prefix, data['projects'])
+      data['projects'] = ['{}projects/{}'.format(prefix, data['projects'])]
 
     info = (Sample(self.conf.get('api'))).save(payload=data)
+    if not info.get('id'):
+      sys.exit('ERROR: Sample creation failed.')
     sample_id = info.get('id')
 
     if self.verbose == 2:

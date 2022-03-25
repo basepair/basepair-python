@@ -3,7 +3,6 @@
 import json
 import sys
 # App imports
-from basepair.helpers import eprint
 from bin.common_parser import add_common_args, add_json_parser, add_single_uid_parser
 
 class Project:

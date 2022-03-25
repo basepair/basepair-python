@@ -1,4 +1,5 @@
 '''Sample datatype class'''
+import os
 import sys
 # App imports
 from basepair.helpers import eprint
@@ -11,26 +12,25 @@ class Sample:
   @staticmethod
   def create_sample(bp_api, args):
     '''Create sample'''
-    try:
-      data = {
-        'datatype': args.type,
-        'default_workflow': int(args.pipeline) if args.pipeline else None,
-        'filepaths1': args.file1,
-        'filepaths2': args.file2,
-        'genome': args.genome,
-        'name': args.name,
-        'platform': args.platform,
-        'projects': int(args.project) if args.project else None,
-      }
+    data = {
+      'datatype': args.type,
+      'default_workflow': int(args.pipeline) if args.pipeline else None,
+      'filepaths1': args.file1,
+      'filepaths2': args.file2,
+      'genome': args.genome,
+      'name': args.name,
+      'platform': args.platform,
+      'projects': int(args.project) if args.project else None,
+    }
+    if not os.path.isfile(args.file1) or args.file2 and not os.path.isfile(args.file2):
+      sys.exit('ERROR: Provided File does not exists.')
 
-      if args.key and args.val:
-        for key, val in zip(args.key, args.val):
-          data[key] = val
-      bp_api.create_sample(data, upload=True, source='cli')
-      eprint('Sample created successfully.')
-      return
-    except:
-      sys.exit('ERROR: sample creation failed. Please try again!')
+    if args.key and args.val:
+      for key, val in zip(args.key, args.val):
+        data[key] = val
+    bp_api.create_sample(data, upload=True, source='cli')
+    eprint('Sample created successfully.')
+    return
 
   @staticmethod
   def delete_sample(bp_api, args):
@@ -118,8 +118,8 @@ class Sample:
       ],
       default='rna-seq'
     )
-    create_sample_p.add_argument('--file1', nargs='+', required=True)
-    create_sample_p.add_argument('--file2', nargs='+')
+    create_sample_p.add_argument('--file1', required=True)
+    create_sample_p.add_argument('--file2')
     create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--key', action='append')
     create_sample_p.add_argument('--name')
