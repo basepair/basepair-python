@@ -38,7 +38,9 @@ class Module:
   @staticmethod
   def list_module(bp_api, args):
     '''List Modules'''
-    bp_api.print_data(data_type='pipeline_modules', uid=args.pipeline, is_json=args.json)
+    result = bp_api.print_data(data_type='pipeline_modules', uid=args.pipeline, is_json=args.json)
+    if not result:
+      sys.exit('ERROR: Module data not found.')
 
   @staticmethod
   def update_module(bp_api, args):

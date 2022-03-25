@@ -135,7 +135,7 @@ class Abstract(object):
     }
     if response.status_code in error_msgs:
       eprint('ERROR: {}'.format(error_msgs[response.status_code]))
-      return {'error': True, 'msg': error_msgs[response.status_code]}
+      return {'error': True, 'msg': response.json()['msg']}
 
     if response.status_code == 204:  # for delete response
       return {'error': False}

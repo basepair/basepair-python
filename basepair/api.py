@@ -183,7 +183,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           workflow_id=workflow_id
         )
     if info.get('error'):
-      sys.exit('ERROR: Analysis creation failed.')
+      sys.exit('ERROR: Analysis creation failed! {}'.format(info.get('msg')))
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
       eprint('created: analysis {} with sample id(s) {}'.format(
