@@ -129,7 +129,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     params=None,
     project_id=None,
     sample_id=None,
-    sample_ids=[]
+    sample_ids=[],
+    pipeline_yaml=None,
+    module_yaml=None
   ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
@@ -144,6 +146,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample_id:                  {str}   Sample id.
     sample_ids:                 {list}  List of sample id.
     '''
+    
+    # check for custom modules and pipelines
+    if not pipeline_yaml and not module_yaml and not workflow_id:
+      sys.exit('ERROR: Please provide --pipeline id.')
+    if pipeline_yaml and workflow_id:
+      sys.exit('ERROR: Please remove --pipeline id to proceed with custom pipeline via yaml file.')
+    if module_yaml and not workflow_id:
+      sys.exit('ERROR: Please provide --pipeline id.')
 
     # get api version
     prefix = self.conf.get('api', {}).get('prefix', '/api/v2/')
@@ -163,8 +173,41 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
 
+    if pipeline_yaml:
+      try:
+        path = os.path.abspath(os.path.expanduser(os.path.expandvars(pipeline_yaml)))
+        with open(path, 'r') as file:
+          yaml_string = file.read()
+        pipeline_yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+        pipeline_id = pipeline_yaml_data.get('id')
+      except:
+        sys.exit('ERROR: Unable to parse pipeline yaml file.')
+      data['yaml'] = {'pipeline': True, 'pipeline_data': yaml_string}
+      data['workflow'] = '{}pipelines/{}'.format(prefix, pipeline_id)
+
+    if module_yaml:
+      try:
+        module_data = []
+        for each in module_yaml:
+          path = os.path.abspath(os.path.expanduser(os.path.expandvars(each)))
+          with open(path, 'r') as file:
+            yaml_string = file.read()
+            module_data.append(yaml_string)
+          module_yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+          module_id = module_yaml_data.get('id')
+          if not module_id:
+            sys.exit('ERROR: Please provide module id in yaml file.')
+      except:
+        sys.exit('ERROR: Unable to parse pipeline yaml file.')
+      data['yaml'] = {'module': True, 'module_data': module_data}
+
     if self.verbose:
-      eprint(json.dumps(data, indent=2))
+      if data.get('yaml'):
+        temp_data = data.copy()
+        temp_data['yaml'] = True
+        eprint(json.dumps(temp_data, indent=2))
+      else:
+        eprint(json.dumps(data, indent=2))
 
     if params:
       data['params'] = params
@@ -180,7 +223,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           params=params,
           project_id=project_id,
           sample_ids=sample_ids,
-          workflow_id=workflow_id
+          workflow_id=workflow_id,
+          pipeline_yaml=pipeline_yaml,
+          module_yaml=module_yaml
         )
     if info.get('error'):
       sys.exit('ERROR: Analysis creation failed!')

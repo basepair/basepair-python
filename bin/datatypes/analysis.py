@@ -33,7 +33,9 @@ class Analysis:
         params=params,
         project_id=args.project,
         sample_ids=args.sample,
-        workflow_id=args.pipeline
+        workflow_id=args.pipeline,
+        pipeline_yaml=args.custom_pipeline,
+        module_yaml=args.custom_modules
       )
 
   @staticmethod
@@ -127,21 +129,27 @@ class Analysis:
       '--control', nargs='+', help='Control id', type=valid_uid
     )
     create_analysis_p.add_argument(
+      '--custom_modules', help='Paths to custom module yaml files', nargs='+'
+    )
+    create_analysis_p.add_argument(
+      '--custom_pipeline', help='Path to custom pipeline yaml file',
+    )
+    create_analysis_p.add_argument(
       '--ignore-warning',
       action='store_true',
       default=False,
       help='Ignore validation warnings',
     )
+    create_analysis_p.add_argument(
+      '--instance', help='instance_type for analysis - '+' '.join(instance_choices)
+    )
     create_analysis_p.add_argument('--params', nargs='+')
     create_analysis_p.add_argument('--project', help='Project id', type=valid_uid)
     create_analysis_p.add_argument(
+      '--pipeline', help='Pipeline id', type=valid_uid
+    )
+    create_analysis_p.add_argument(
       '--sample', nargs='+', help='Sample id', required=True, type=valid_uid
-    )
-    create_analysis_p.add_argument(
-      '--pipeline', help='Pipeline id', required=True, type=valid_uid
-    )
-    create_analysis_p.add_argument(
-      '--instance', help='instance_type for analysis - '+' '.join(instance_choices)
     )
 
     # delete analysis parser
