@@ -100,7 +100,7 @@ class Abstract(object):
     '''Generate resource uri from obj id'''
     return '{}{}'.format(self.endpoint, obj_id)
 
-  def save(self, obj_id=None, params={}, payload={}, verify=True): # pylint: disable=dangerous-default-value
+  def save(self, obj_id=None, params={}, payload={}, verify=True, datatype='analysis'): # pylint: disable=dangerous-default-value
     '''Save or update resource'''
     params.update(self.payload)
     try:
@@ -111,6 +111,8 @@ class Abstract(object):
         params=params,
         verify=verify,
       )
+      if datatype == 'analysis':
+        return self._parse_analysis_response(response, obj_id)
       return self._parse_obj_response(response, obj_id)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
@@ -155,6 +157,41 @@ class Abstract(object):
             eprint('WARNING: {}'.format(response['warning_msgs']))
         else:
           eprint('ERROR: {}'.format(error))
+
+      return response
+    except json.decoder.JSONDecodeError as error:
+      msg = 'ERROR: Not able to parse response: {}.'.format(error)
+      eprint(msg)
+      return {'error': True, 'msg': msg}
+
+  @classmethod
+  def _parse_analysis_response(cls, response, obj_id):
+    '''General response parser with obj id'''
+    error_msgs = {
+      401: 'You don\'t have access to resource with id {}.'.format(obj_id) if obj_id else 'You don\'t have access to this resource.',
+      500: 'Error retrieving data from API!'
+    }
+    if response.status_code in error_msgs:
+      eprint('ERROR: {}'.format(error_msgs[response.status_code]))
+      return {'error': True, 'msg': error_msgs[response.status_code]}
+
+    if response.status_code == 204:  # for delete response
+      return {'error': False}
+
+    try:
+      response = response.json()
+      error = isinstance(response, dict) and response.get('error')
+      if error:
+        if isinstance(error, dict):
+          response = error
+
+          if response.get('error_msgs'):
+            eprint('ERROR: {}'.format(response['error_msgs']))
+
+          if response.get('warning_msgs'):
+            eprint('WARNING: {}'.format(response['warning_msgs']))
+        else:
+          eprint('ERROR: {}'.format(response['msg']))
 
       return response
     except json.decoder.JSONDecodeError as error:

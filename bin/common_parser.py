@@ -1,6 +1,7 @@
 '''Common parser used in datatypes parsing'''
 import argparse
 import sys, os
+import re
 # App imports
 from basepair.helpers import eprint
 
@@ -145,3 +146,9 @@ def valid_uid(value):
   if value.isdigit() and int(value) > 0:
     return value
   raise argparse.ArgumentTypeError('ERROR: uid must be a positive integer'.format(value))
+
+def valid_email(value):
+  pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+  if not pattern.match(value):
+    raise argparse.ArgumentTypeError('ERROR: Invalid email format.'.format(value))
+  return value

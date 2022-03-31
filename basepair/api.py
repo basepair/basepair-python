@@ -182,7 +182,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         pipeline_id = pipeline_yaml_data.get('id')
       except:
         sys.exit('ERROR: Unable to parse pipeline yaml file.')
-      data['yaml'] = {'pipeline': True, 'pipeline_data': yaml_string}
+      data['yaml'] = {'pipeline_data': yaml_string}
       data['workflow'] = '{}pipelines/{}'.format(prefix, pipeline_id)
 
     if module_yaml:
@@ -199,7 +199,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
             sys.exit('ERROR: Please provide module id in yaml file.')
       except:
         sys.exit('ERROR: Unable to parse pipeline yaml file.')
-      data['yaml'] = {'module': True, 'module_data': module_data}
+      data['yaml'] = {'module_data': module_data}
 
     if self.verbose:
       if data.get('yaml'):
@@ -213,7 +213,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       data['params'] = params
 
     analysis_api = Analysis(self.conf.get('api'))
-    info = analysis_api.save(payload=data)
+    info = analysis_api.save(payload=data, datatype='analysis')
     if info.get('warning'):
       answer = self.yes_or_no('Are you sure you want to proceed?')
       if answer:
@@ -598,7 +598,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       workflow_id = info.get('id')
       workflow_name = info.get('name')
       if self.verbose:
-        eprint('created: workflow {} with id {}'.format(workflow_name, workflow_id))
+        eprint('created: pipeline {} with id {}'.format(workflow_name, workflow_id))
       return
     except:
       sys.exit('ERROR: Something went wrong while creating pipeline.')

@@ -3,7 +3,7 @@
 import json
 import sys
 # App imports
-from bin.common_parser import add_common_args, add_json_parser, add_single_uid_parser
+from bin.common_parser import add_common_args, add_json_parser, add_single_uid_parser, valid_email
 
 class Project:
   '''Project action methods'''
@@ -74,7 +74,7 @@ class Project:
       help='Update information associated with a project.'
     )
     update_project_parser = add_common_args(update_project_parser)
-    update_project_parser.add_argument('--emails', default=[], nargs='+')
+    update_project_parser.add_argument('--emails', default=[], nargs='+', type=valid_email)
     update_project_parser.add_argument('--name')
     update_project_parser.add_argument(
       '--perm', choices=['admin', 'edit', 'view'])
