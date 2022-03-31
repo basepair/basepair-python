@@ -512,10 +512,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
               self.update_module(data)
           return
         sys.exit('ERROR: failure in module creation')
-      module_id = info.get('id')
-      module_name = info.get('name')
-      if self.verbose:
-        eprint('created: module {} with id {}'.format(module_name, module_id))
+      if info.get('id'):
+        eprint('created: module {} with id {}'.format(info.get('name'), info.get('id')))
       return
     except:
       sys.exit('ERROR: Something went wrong while creating module.')
@@ -536,10 +534,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       info = (Module(self.conf.get('api'))).save(obj_id=module_id, payload=payload)
       if info.get('error'):
         sys.exit('ERROR: failed while updating module')
-      module_id = info.get('id')
-      if self.verbose:
-        module_name = info.get('name')
-        eprint('updated: module {} with id {}'.format(module_name, module_id))
+      if info.get('id'):
+        eprint('updated: module {} with id {}'.format(info.get('name'), info.get('id')))
       return
     except:
       sys.exit('ERROR: Something went wrong while updating module.')
@@ -595,11 +591,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
               self.update_pipeline(data)
           return
         sys.exit('ERROR: pipeline creation failed')
-      workflow_id = info.get('id')
-      workflow_name = info.get('name')
-      if self.verbose:
-        eprint('created: pipeline {} with id {}'.format(workflow_name, workflow_id))
-      return
+      if info.get('id'):
+        eprint('created: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
+        return
     except:
       sys.exit('ERROR: Something went wrong while creating pipeline.')
 
@@ -619,11 +613,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
       if info.get('error'):
         sys.exit('ERROR: failed while updating pipeline')
-      workflow_id = info.get('id')
-      if self.verbose:
-        workflow_name = info.get('name')
-        eprint('updated: pipeline {} with id {}'.format(workflow_name, workflow_id))
-      return
+      if info.get('id'):
+        eprint('updated: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
+        return
     except:
       sys.exit('ERROR: Something went wrong while updating pipeline.')
 
@@ -991,24 +983,24 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
       if file_type == 'analyses' and uid:
-        added_path = os.path.join(prefix, 'basepair_download/{}/{}/{}'.format(file_type, uid, analyses_type))
+        added_path = os.path.join(prefix, 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type))
       elif file_type and uid:
-        added_path = os.path.join(prefix, 'basepair_download/{}/{}'.format(file_type, uid))
+        added_path = os.path.join(prefix, 'basepair/{}/{}'.format(file_type, uid))
       elif file_type:
-        added_path = os.path.join(prefix, 'basepair_download/{}'.format(file_type))
+        added_path = os.path.join(prefix, 'basepair/{}'.format(file_type))
       elif uid:
-        added_path = os.path.join(prefix, 'basepair_download/{}'.format(uid))
+        added_path = os.path.join(prefix, 'basepair/{}'.format(uid))
       else:
-        added_path = os.path.join(prefix, 'basepair_download/')
+        added_path = os.path.join(prefix, 'basepair/')
       if not os.path.isdir(added_path):
         os.makedirs(added_path)
-      if not filename:
-        # don't renaming the file
-        filepath = os.path.join(added_path, os.path.basename(filekey))
-      else:
+      if filename:
         # rename the download file
         # filepath = self.get_filepath(filename, dirname=dirname)
         filepath = os.path.join(added_path, os.path.basename(filename))
+      else:
+        # don't renaming the file
+        filepath = os.path.join(added_path, os.path.basename(filekey))
       filepath = os.path.expanduser(filepath)
       # if file not already there, download it
       if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:

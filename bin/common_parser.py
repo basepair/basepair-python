@@ -29,7 +29,7 @@ def add_common_args(parser):
   '''Add common args'''
   parser.add_argument('-c', '--config', help='API config info')
   parser.add_argument('--quiet', action='store_true')
-  parser.add_argument('--keep-cloud-service-conf', action='store_true')
+  parser.add_argument('--cache-cloud-credential', dest='keep_cloud_service_conf', action='store_true')
   parser.add_argument('--use-cache', action='store_true')
   parser.add_argument('--scratch', default='.', help='Scratch dir for files')
   parser.add_argument('--verbose', action='store_true')

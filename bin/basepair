@@ -48,7 +48,10 @@ def main():
     verbose=args.verbose
   )
 
-  method_name = '{}_{}'.format(args.action_type, args.datatype)
+  if args.action_type == 'download-log':
+    method_name = 'download_log_analysis'
+  else:
+    method_name = '{}_{}'.format(args.action_type, args.datatype)
   datatype_handler = {
     'analysis': Analysis,
     'file': File,

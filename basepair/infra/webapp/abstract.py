@@ -100,7 +100,7 @@ class Abstract(object):
     '''Generate resource uri from obj id'''
     return '{}{}'.format(self.endpoint, obj_id)
 
-  def save(self, obj_id=None, params={}, payload={}, verify=True, datatype='analysis'): # pylint: disable=dangerous-default-value
+  def save(self, obj_id=None, params={}, payload={}, verify=True, datatype=None): # pylint: disable=dangerous-default-value
     '''Save or update resource'''
     params.update(self.payload)
     try:

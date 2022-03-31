@@ -129,10 +129,10 @@ class Analysis:
       '--control', nargs='+', help='Control id', type=valid_uid
     )
     create_analysis_p.add_argument(
-      '--custom_modules', help='Paths to custom module yaml files', nargs='+'
+      '--custom-modules', dest='custom_modules', help='Path to custom module yaml files', nargs='+'
     )
     create_analysis_p.add_argument(
-      '--custom_pipeline', help='Path to custom pipeline yaml file',
+      '--custom-pipeline', dest='custom_pipeline', help='Path to custom pipeline yaml file',
     )
     create_analysis_p.add_argument(
       '--ignore-warning',
@@ -172,7 +172,7 @@ class Analysis:
 
     # download analysis log parser
     download_log_p = action_parser.add_parser(
-      'download_log',
+      'download-log',
       help='Download analysis logs for one or more analyses.'
     )
     download_log_p = add_uid_parser(download_log_p, 'analysis')
