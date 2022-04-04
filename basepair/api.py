@@ -365,8 +365,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       payload=data,
     )
     if info.get('error'):
-      eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
-      return None
+      sys.exit('ERROR: couldn\'t update analysis {}.'.format(uid))
 
     if self.verbose:
       eprint('analysis', uid, 'updated')

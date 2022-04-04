@@ -101,16 +101,16 @@ class Analysis:
     return
 
   @staticmethod
-  def update_analysis(bp_api, analysis_id, keys, vals):
+  def update_analysis(bp_api, args):
     '''Update analysis'''
     try:
       data = {}
+      keys = args.key
+      vals = args.val
       if keys and vals:
         for key, val in zip(keys, vals):
           data[key] = val
-      res = bp_api.update_analysis(analysis_id, data)
-      if res.get('error'):
-        sys.exit('ERROR: {}'.format(res.get('msg')))
+      bp_api.update_analysis(args.uid, data)
       return
     except:
       sys.exit('ERROR: Something went wrong while updating analysis.')
@@ -215,8 +215,8 @@ class Analysis:
       'update',
       help='Update information associated with an analysis.'
     )
-    update_analysis_parser.add_argument('--key', action='append')
-    update_analysis_parser.add_argument('--val', action='append')
+    update_analysis_parser.add_argument('--key', action='append', required=True)
+    update_analysis_parser.add_argument('--val', action='append', required=True)
     update_analysis_parser = add_common_args(update_analysis_parser)
     update_analysis_parser = add_single_uid_parser(update_analysis_parser, 'analysis')
 
