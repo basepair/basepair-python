@@ -191,7 +191,7 @@ class Abstract(object):
           if response.get('warning_msgs'):
             eprint('WARNING: {}'.format(response['warning_msgs']))
         else:
-          eprint('ERROR: {}'.format(response['msg']))
+          eprint('ERROR: {}'.format(error))
 
       return response
     except json.decoder.JSONDecodeError as error:
