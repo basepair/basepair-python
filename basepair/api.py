@@ -146,13 +146,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample_id:                  {str}   Sample id.
     sample_ids:                 {list}  List of sample id.
     '''
-    
+
     # check for custom modules and pipelines
-    if not pipeline_yaml and not module_yaml and not workflow_id:
-      sys.exit('ERROR: Please provide --pipeline id.')
-    if pipeline_yaml and workflow_id:
-      sys.exit('ERROR: Please remove --pipeline id to proceed with custom pipeline via yaml file.')
-    if module_yaml and not workflow_id:
+    if (pipeline_yaml and module_yaml) or (pipeline_yaml and workflow_id) or (pipeline_yaml and module_yaml and workflow_id):
+      sys.exit('ERROR: Please select either of Custom pipeline or module or normal pipeline flow.')
+    if (not pipeline_yaml and not module_yaml and not workflow_id) or (module_yaml and not workflow_id):
       sys.exit('ERROR: Please provide --pipeline id.')
 
     # get api version

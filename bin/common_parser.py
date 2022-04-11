@@ -21,9 +21,17 @@ def is_valid_yaml_arg(args):
     sys.exit('ERROR: Please provide only one yaml')
   yaml_path = args.file[0]
   valid_extensions = ('.yaml', '.yml')
-  if yaml_path.endswith(valid_extensions):
+  if yaml_path.endswith(valid_extensions) and os.path.isfile(yaml_path):
     return True
-  sys.exit('Please provide yaml file only')
+  sys.exit('Please provide yaml file .yaml, .yml or file does not exist.')
+
+def validate_pipeline_modules_yaml(yaml_argument):
+  '''Checks yaml file'''
+  for each_yaml in yaml_argument:
+    valid_extensions = ('.yaml', '.yml')
+    if each_yaml.endswith(valid_extensions) and os.path.isfile(each_yaml):
+      return True
+    sys.exit('Please provide yaml file .yaml, .yml or file does not exist.')
 
 def add_common_args(parser):
   '''Add common args'''

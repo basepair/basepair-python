@@ -4,7 +4,7 @@ import sys
 from basepair.helpers import eprint
 from basepair.utils.instance import instance_choices
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, \
-  add_tags_parser, add_outdir_parser, valid_uid
+  add_tags_parser, add_outdir_parser, valid_uid, validate_pipeline_modules_yaml
 
 class Analysis:
   '''Analysis action methods'''
@@ -15,6 +15,8 @@ class Analysis:
     params = {'node': {}, 'info': {}}
     if args.instance and args.instance not in instance_choices:
       sys.exit('ERROR: invalid instance_type see --help for available instance types.')
+    if args.custom_pipeline or args.custom_modules:
+      validate_pipeline_modules_yaml(args.custom_pipeline if args.custom_pipeline else args.custom_modules)
     params['info']['instance_type'] = args.instance
     if args.params:
       for param in args.params:
