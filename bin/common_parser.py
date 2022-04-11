@@ -1,5 +1,6 @@
 '''Common parser used in datatypes parsing'''
 import argparse
+from ast import Return
 import sys, os
 import re
 # App imports
@@ -21,17 +22,23 @@ def is_valid_yaml_arg(args):
     sys.exit('ERROR: Please provide only one yaml')
   yaml_path = args.file[0]
   valid_extensions = ('.yaml', '.yml')
-  if yaml_path.endswith(valid_extensions) and os.path.isfile(yaml_path):
-    return True
-  sys.exit('Please provide yaml file .yaml, .yml or file does not exist.')
+  if not yaml_path.endswith(valid_extensions):
+    sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
+  elif not os.path.isfile(yaml_path):
+    sys.exit(f'ERROR: File does not exist at {yaml_path}.')
+  return True
 
 def validate_pipeline_modules_yaml(yaml_argument):
   '''Checks yaml file'''
+  if not isinstance(yaml_argument, list):
+    yaml_argument = [yaml_argument]
   for each_yaml in yaml_argument:
     valid_extensions = ('.yaml', '.yml')
-    if each_yaml.endswith(valid_extensions) and os.path.isfile(each_yaml):
-      return True
-    sys.exit('Please provide yaml file .yaml, .yml or file does not exist.')
+    if not each_yaml.endswith(valid_extensions):
+      sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
+    elif not os.path.isfile(each_yaml):
+      sys.exit(f'ERROR: File does not exist at {each_yaml}.')
+  return True
 
 def add_common_args(parser):
   '''Add common args'''
