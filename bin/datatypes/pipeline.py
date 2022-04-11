@@ -23,7 +23,6 @@ class Pipeline:
         all_fail = not bool(bp_api.delete_pipeline(uid)) and all_fail
     if all_fail:
       sys.exit('ERROR: Deleting Pipeling failed.')
-    return
 
   @staticmethod
   def get_pipeline(bp_api, args):
@@ -33,7 +32,6 @@ class Pipeline:
       all_fail = not bool(bp_api.print_data(data_type='pipeline', uid=uid, is_json=args.json)) and all_fail
     if all_fail:
       sys.exit('ERROR: Pipeline data not found.')
-    return
 
   @staticmethod
   def list_pipeline(bp_api, args):

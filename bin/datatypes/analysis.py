@@ -25,7 +25,7 @@ class Analysis:
           if node_id not in params['node']:
             params['node'][node_id] = {}
           params['node'][node_id][arg] = val
-        except:
+        except ValueError:
           sys.exit('ERROR: Missing : in params values.')
     else:
       eprint('You specified no parameters, submitting with default ones.')
@@ -51,7 +51,6 @@ class Analysis:
         all_fail = not bool(bp_api.delete_analysis(uid)) and all_fail
     if all_fail:
       sys.exit('ERROR: Deleting analysis failed.')
-    return
 
   @staticmethod
   def download_analysis(bp_api, args):
@@ -60,11 +59,12 @@ class Analysis:
     all_fail = True
     for each_uid in args.uid:
       analysis = bp_api.get_analysis(each_uid)
-      all_fail = not (bool(analysis.get('id')) and bool(bp_api.download_analysis(each_uid, analysis=analysis, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags))) and all_fail
+      all_fail = not (bool(analysis.get('id')) \
+        and bool(bp_api.download_analysis(each_uid, analysis=analysis, outdir=args.outdir, tagkind=args.tagkind, tags=args.tags))) \
+        and all_fail
     if all_fail:
       sys.exit('ERROR: Downloading analysis failed.')
     eprint('All analysis files have been downloaded successfully.')
-    return
 
   @staticmethod
   def download_log_analysis(bp_api, args):
@@ -75,7 +75,6 @@ class Analysis:
       all_fail = not (bool(analysis.get('id')) and bool(bp_api.get_log(uid, args.outdir))) and all_fail
     if all_fail:
       sys.exit('ERROR: Downloading logs failed.')
-    return
 
   @staticmethod
   def get_analysis(bp_api, args):
@@ -85,7 +84,6 @@ class Analysis:
       all_fail = not bool(bp_api.print_data(data_type='analysis', uid=uid, is_json=args.json)) and all_fail
     if all_fail:
       sys.exit('ERROR: Analyses data not found.')
-    return
 
   @staticmethod
   def list_analysis(bp_api, args):
@@ -100,22 +98,15 @@ class Analysis:
       all_fail = not bool(bp_api.restart_analysis(each_uid)) and all_fail
     if all_fail:
       sys.exit('ERROR: while re-analyze the analysis data.')
-    return
 
   @staticmethod
   def update_analysis(bp_api, args):
     '''Update analysis'''
-    try:
-      data = {}
-      keys = args.key
-      vals = args.val
-      if keys and vals:
-        for key, val in zip(keys, vals):
-          data[key] = val
-      bp_api.update_analysis(args.uid, data)
-      return
-    except:
-      sys.exit('ERROR: Something went wrong while updating analysis.')
+    data = {}
+    if args.key and args.val:
+      for key, val in zip(args.key, args.val):
+        data[key] = val
+    bp_api.update_analysis(args.uid, data)
 
   @staticmethod
   def analysis_action_parser(action_parser):

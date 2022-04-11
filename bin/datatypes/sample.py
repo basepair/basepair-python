@@ -30,7 +30,6 @@ class Sample:
         data[key] = val
     bp_api.create_sample(data, upload=True, source='cli')
     eprint('Sample created successfully.')
-    return
 
   @staticmethod
   def delete_sample(bp_api, args):
@@ -43,7 +42,6 @@ class Sample:
         all_fail = not bool(bp_api.delete_sample(uid)) and all_fail
     if all_fail:
       sys.exit('ERROR: Deleting Sample failed.')
-    return
 
   @staticmethod
   def download_sample(bp_api, args):
@@ -54,13 +52,16 @@ class Sample:
       sample = bp_api.get_sample(uid, add_analysis=True)
       # if tags provided, download file by tags
       if args.tags:
-        all_fail = not (bool(sample.get('id')) and bp_api.get_file_by_tags(sample, file_type='samples', tags=args.tags, kind=args.tagkind, dirname=args.outdir, uid=uid)) and all_fail
+        all_fail = not (bool(sample.get('id')) \
+          and bp_api.get_file_by_tags(sample, file_type='samples', tags=args.tags, kind=args.tagkind, dirname=args.outdir, uid=uid)) \
+          and all_fail
       else:
-        all_fail = not (bool(sample.get('id')) and bool(bp_api.download_raw_files(sample, file_type='samples', uid=uid, outdir=args.outdir))) and all_fail
+        all_fail = not (bool(sample.get('id')) \
+          and bool(bp_api.download_raw_files(sample, file_type='samples', uid=uid, outdir=args.outdir))) \
+          and all_fail
 
     if all_fail:
       sys.exit('ERROR: Downloading sample failed.')
-    return
 
   @staticmethod
   def get_sample(bp_api, args):
@@ -70,7 +71,6 @@ class Sample:
       all_fail = not bool(bp_api.print_data(data_type='sample', uid=uid, is_json=args.json)) and all_fail
     if all_fail:
       sys.exit('ERROR: Sample data not found.')
-    return
 
   @staticmethod
   def update_sample(bp_api, args):
@@ -94,7 +94,6 @@ class Sample:
     if not data:
       sys.exit('ERROR: You have not provided any data to update.')
     bp_api.update_sample(args.uid, data)
-    return
 
   @staticmethod
   def list_sample(bp_api, args):

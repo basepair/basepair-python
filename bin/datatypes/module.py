@@ -23,7 +23,6 @@ class Module:
         all_fail = not bool(bp_api.delete_module(uid)) and all_fail
     if all_fail:
       sys.exit('ERROR: Deleting sample failed.')
-    return
 
   @staticmethod
   def get_module(bp_api, args):
@@ -33,7 +32,6 @@ class Module:
       all_fail = not bool(bp_api.print_data(data_type='module', uid=uid, is_json=args.json)) and all_fail
     if all_fail:
       sys.exit('ERROR: Module data not found.')
-    return
 
   @staticmethod
   def list_module(bp_api, args):

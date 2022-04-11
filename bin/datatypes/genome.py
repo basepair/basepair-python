@@ -15,7 +15,6 @@ class Genome:
       all_fail = not bool(bp_api.print_data(data_type='genome', uid=uid, is_json=args.json)) and all_fail
     if all_fail:
       sys.exit('ERROR: Failed to load genome data.')
-    return
 
   @staticmethod
   def list_genome(bp_api, args):
