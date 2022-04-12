@@ -168,6 +168,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
     }
 
+    if params['info'].get('instance_type'):
+      data['instance'] = params['info']['instance_type']
+
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
 
@@ -235,6 +238,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       ))
     return analysis_id
 
+  def get_instances(self):
+    res = (Analysis(self.conf.get('api'))).get_instances()
+    return res['data']
+  
   def restart_analysis(self, uid):
     '''Restart analysis'''
     payload = {

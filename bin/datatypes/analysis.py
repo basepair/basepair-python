@@ -13,11 +13,13 @@ class Analysis:
   def create_analysis(bp_api, args):
     '''Create and submit an analysis'''
     params = {'node': {}, 'info': {}}
-    if args.instance and args.instance not in instance_choices:
-      sys.exit('ERROR: invalid instance_type see --help for available instance types.')
+    if args.instance:
+      instance_choices = bp_api.get_instances()
+      if args.instance not in instance_choices:
+        sys.exit(f"ERROR: invalid instance_type available instances - {' '.join(instance_choices)}")
+      params['info']['instance_type'] = args.instance
     if args.custom_pipeline or args.custom_modules:
       validate_pipeline_modules_yaml(args.custom_pipeline if args.custom_pipeline else args.custom_modules)
-    params['info']['instance_type'] = args.instance
     if args.params:
       for param in args.params:
         try:
@@ -134,7 +136,7 @@ class Analysis:
       help='Ignore validation warnings',
     )
     create_analysis_p.add_argument(
-      '--instance', help='instance_type for analysis - '+' '.join(instance_choices)
+      '--instance', help='instance_type for analysis'
     )
     create_analysis_p.add_argument('--params', nargs='+')
     create_analysis_p.add_argument('--project', help='Project id', type=valid_uid)
