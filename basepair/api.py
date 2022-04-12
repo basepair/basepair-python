@@ -189,8 +189,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if module_yaml:
       try:
         module_data = []
-        for each in module_yaml:
-          path = os.path.abspath(os.path.expanduser(os.path.expandvars(each)))
+        for each_yaml in module_yaml:
+          path = os.path.abspath(os.path.expanduser(os.path.expandvars(each_yaml)))
           with open(path, 'r') as file:
             yaml_string = file.read()
             module_data.append(yaml_string)
@@ -1099,6 +1099,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname:  {str}   Directory to download files to
     kind:     {str}   Type of tag filtering. Options: exact, subset
     tags:     {list}  List of lists of tags to filter by
+    uid:      {number} Unique analysis id
     '''
     # some input checking
     if tags:
@@ -1267,7 +1268,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     kind:          {str}  Type of tag filtering to do. Options: exact, diff, or subset
     multiple:      {bool} Whether to return multiple files or just the first one
     tags:          {list} List of list of tags for file filtering. If just list of tags, will convert to list of lists.
-    workflow_id:   {int}  Workflow id to look for files in. NOT IMPLEMENTED YE
+    uid:           {int}  Workflow id to look for files in.
+    file_type:     {str}  Datatype to download ex - analyses, file, sample
     '''
     try:
       # some error checking
@@ -1587,13 +1589,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     Parameters
     ----------
-    question - str
-        Is a string that is presented to the user.
-
-    default - str
-        is the presumed answer if the user just hits <Enter>.
-        It must be "yes" (the default), "no" or None (meaning
-        an answer is required of the user).
+    question: {str}   Is a string that is presented to the user.
 
     '''
     valid = {

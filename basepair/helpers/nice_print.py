@@ -16,35 +16,23 @@ class NicePrint:
   @staticmethod
   def analyses(data):
     '''Print analyses'''
-    to_print = [
-      [
-        analysis['id'],
-        analysis['name'],
-        analysis['started_on'],
-        analysis['completed_on'],
-        analysis['status'],
-        analysis['tags']
-      ] for analysis in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
-      'started on',
-      'completed on',
+      'started_on',
+      'completed_on',
       'status',
       'tags',
-    ]))
+    ]
+    to_print = [[analysis[field] for field in headers] for analysis in data]
+    eprint(tabulate(to_print, headers=[header.replace('_', ' ') for header in headers]))
 
   @staticmethod
   def analysis(data):
     '''Print analysis'''
     for analysis in data:
-      to_print = [
-        ['id', analysis['id']],
-        ['name', analysis['name']],
-        ['date_created', analysis['date_created']],
-        ['completed_on', analysis['completed_on']],
-      ]
+      fields = ['id', 'name', 'date_created', 'completed_on']
+      to_print = [[field, analysis[field]] for field in fields]
 
       for sample in analysis['samples']:
         to_print.append(['sample', sample['id']])
@@ -102,40 +90,27 @@ class NicePrint:
   @staticmethod
   def module(data):
     '''Print module'''
-    to_print = [
-      [
-        module['id'],
-        module['name'],
-        module['date_created'],
-        module['visibility'],
-        module['status']
-      ] for module in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
       'date_created',
       'visibility',
       'status'
-    ]))
+    ]
+    to_print = [[module[field] for field in headers] for module in data]
+    eprint(tabulate(to_print, headers=[header for header in headers]))
 
   @staticmethod
   def pipeline_modules(data):
     '''Print modules of a pipeline'''
-    to_print = [
-      [
-        module['id'],
-        module['name'],
-        module['owner'],
-        module['created']
-      ] for module in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
       'owner',
       'date_created'
-    ]))
+    ]
+    to_print = [[module[field] for field in headers] for module in data]
+    eprint(tabulate(to_print, headers=[header for header in headers]))
 
   @staticmethod
   def sample(data):
@@ -148,18 +123,7 @@ class NicePrint:
       eprint('Sample data created: {}'.format(sample['date_created']))
       eprint('Sample num reads: {}'.format(sample['meta']['num_reads']))
       eprint('Analyses:')
-      to_print = [
-        [
-          analysis['id'],
-          analysis['name'],
-          analysis['started_on'],
-          analysis['completed_on'],
-          analysis['status'],
-          analysis['meta']['num_files'],
-          analysis['tags']
-        ] for analysis in sample['analyses_full']
-      ]
-      eprint(tabulate(to_print, headers=[
+      headers = [
         'id',
         'name',
         'started on',
@@ -167,87 +131,60 @@ class NicePrint:
         'status',
         'num files',
         'tags',
-      ]))
+      ]
+      to_print = [[analysis[field] for field in headers] for analysis in sample['analyses_full']]
+      eprint(tabulate(to_print, headers=[header for header in headers]))
       eprint('\n\n')
 
   @staticmethod
   def samples(data):
     '''Print samples'''
-    to_print = [
-      [
-        sample['id'],
-        sample['name'],
-        sample['datatype'],
-        sample['genome_name'] or sample['genome'],
-        sample['date_created'],
-        sample['meta']['num_reads']
-      ] for sample in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
       'datatype',
       'genome',
       'date created',
       'num reads',
-    ]))
+    ]
+    to_print = [[sample[field] for field in headers] for sample in data]
+    eprint(tabulate(to_print, headers=[header for header in headers]))
 
   @staticmethod
   def pipelines(data):
     '''Print pipelines'''
-    to_print = [
-      [
-        pipeline['id'],
-        pipeline['name'],
-        pipeline['datatype'],
-        pipeline['description'],
-        pipeline['tags']
-      ] for pipeline in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
       'datatype',
       'description',
       'tags',
-    ]))
+    ]
+    to_print = [[pipeline[field] for field in headers] for pipeline in data]
+    eprint(tabulate(to_print, headers=[header for header in headers]))
 
   @staticmethod
   def pipeline(data):
     '''Print pipelines'''
-    to_print = [
-      [
-        pipeline['id'],
-        pipeline['name'],
-        pipeline['datatype'],
-        pipeline['description'],
-        pipeline['tags']
-      ] for pipeline in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
       'datatype',
       'description',
       'tags',
-    ]))
+    ]
+    to_print = [[pipeline[field] for field in headers] for pipeline in data]
+    eprint(tabulate(to_print, headers=[header for header in headers]))
 
   @staticmethod
   def projects(data):
     '''Print projects'''
-    to_print = [
-      [
-        project['id'],
-        project['name'],
-        project['owner_fullname'],
-        project['last_updated'],
-        project['visibility']
-      ] for project in data
-    ]
-    eprint(tabulate(to_print, headers=[
+    headers = [
       'id',
       'name',
       'owner_fullname',
       'last_updated',
       'visibility',
-    ]))
+    ]
+    to_print = [[project[field] for field in headers] for project in data]
+    eprint(tabulate(to_print, headers=[header.replace('_', ' ') for header in headers]))

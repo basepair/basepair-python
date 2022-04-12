@@ -8,8 +8,8 @@ class Module(Abstract):
   '''Webapp Module class'''
   def __init__(self, cfg):
     super(Module, self).__init__(cfg)
+    self.api_endpoint = f'{self.endpoint}pipelines/get_module'
     self.endpoint += 'modules/'
-    self.api_endpoint = f'{self.endpoint}pipeline/get_module'
 
   def get_pipeline_modules(self, obj_id, cache=False, params={}, verify=True): # pylint: disable=dangerous-default-value
     '''Get modules of an pipeline'''

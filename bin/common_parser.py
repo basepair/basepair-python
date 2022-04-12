@@ -167,6 +167,6 @@ def valid_uid(value):
 def valid_email(value):
   '''Validates the email'''
   pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
-  if not pattern.match(value):
-    raise argparse.ArgumentTypeError('ERROR: Invalid email format.')
-  return value
+  if pattern.match(value):
+    return value
+  raise argparse.ArgumentTypeError('ERROR: Invalid email format.')
