@@ -14,7 +14,7 @@ class Abstract(object):
   '''Webapp abastract class'''
   def __init__(self, cfg):
     protocol = 'https' if cfg.get('ssl', True) else 'http'
-    self.endpoint = protocol + '://' + cfg.get('host') + cfg.get('prefix')
+    self.endpoint = "{}://{}{}".format(protocol, cfg.get('host'), cfg.get('prefix'))
     self.payload = {
       'username': cfg.get('username'),
       'api_key': cfg.get('key')
@@ -111,8 +111,8 @@ class Abstract(object):
         params=params,
         verify=verify,
       )
-      if datatype == 'analysis':
-        return self._parse_analysis_response(response, obj_id)
+      if datatype == 'analysis' or datatype == 'sample':
+        return self._parse_validated_response(response, obj_id)
       return self._parse_obj_response(response, obj_id)
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
@@ -165,7 +165,7 @@ class Abstract(object):
       return {'error': True, 'msg': msg}
 
   @classmethod
-  def _parse_analysis_response(cls, response, obj_id):
+  def _parse_validated_response(cls, response, obj_id):
     '''General response parser with obj id'''
     error_msgs = {
       401: 'You don\'t have access to resource with id {}.'.format(obj_id) if obj_id else 'You don\'t have access to this resource.',

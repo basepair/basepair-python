@@ -26,8 +26,7 @@ class BaseTest(unittest.TestCase):
             confs[conf_name] = json.load(open(os.environ.get(
                 'BP{}API_CONFIG'.format(conf_name), None)))
         except:
-            sys.exit(('Error in config file.' +
-                ' Please properly set BP {} API_CONFIG.'.format(conf_name)),
+            sys.exit(('Error in config file. Please properly set BP {} API_CONFIG.'.format(conf_name)),
                 file=sys.stderr)
 
     # TODO: for now leave as is; maybe later put this in above loop and change test files where appropriate

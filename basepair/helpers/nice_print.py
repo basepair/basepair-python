@@ -32,7 +32,6 @@ class NicePrint:
       'started on',
       'completed on',
       'status',
-      'num files',
       'tags',
     ]))
 

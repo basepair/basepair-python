@@ -1,6 +1,7 @@
 '''Sample datatype class'''
 import os
 import sys
+
 # App imports
 from basepair.helpers import eprint
 from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, \
@@ -28,8 +29,9 @@ class Sample:
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
         data[key] = val
-    bp_api.create_sample(data, upload=True, source='cli')
-    eprint('Sample created successfully.')
+    sample_id = bp_api.create_sample(data, upload=True, source='cli')
+    if sample_id:
+      eprint('Sample created successfully.')
 
   @staticmethod
   def delete_sample(bp_api, args):
@@ -41,7 +43,7 @@ class Sample:
       if answer:
         all_fail = not bool(bp_api.delete_sample(uid)) and all_fail
     if all_fail:
-      sys.exit('ERROR: Deleting Sample failed.')
+      sys.exit('ERROR: Deleting Sample(s) failed.')
 
   @staticmethod
   def download_sample(bp_api, args):
@@ -85,10 +87,10 @@ class Sample:
     if args.type:
       data['datatype'] = args.type
 
+    data['info'] = data.get('info', {})
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
         if key in ['adapter', 'amplicon', 'barcode', 'regions', 'stranded']:
-          data['info'] = data.get('info', {})
           data['info'][key] = val  # set sample info field
 
     if not data:

@@ -568,6 +568,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def create_pipeline(self,data):
     '''create pipeline from yaml'''
     try:
+      print(data['force'])
       path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
       with open(path, 'r') as file:
         yaml_string = file.read()
@@ -715,15 +716,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       data['filepaths2'] = [data['filepaths2']]
 
     if data.get('filepaths2') and not data.get('filepaths1'):
-      eprint('ERROR: Parameter filepaths1 cannot be empty if filepaths2 is specified.')
-      return None
+      sys.exit('ERROR: Parameter filepaths1 cannot be empty if filepaths2 is specified.')
 
     # validate unique file between filepaths1 and filepaths2
-    does_repeast = data.get('filepaths2') \
+    does_repeat = data.get('filepaths2') \
       and any(path in data.get('filepaths2') for path in data.get('filepaths1'))
-    if does_repeast:
-      eprint('ERROR: Same file cannot be use in filepaths1 and filepaths2.')
-      return None
+    if does_repeat:
+      sys.exit('ERROR: Same file cannot be use in filepaths1 and filepaths2.')
 
     if data.get('default_workflow'):
       data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
@@ -731,7 +730,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if data.get('projects'):
       data['projects'] = ['{}projects/{}'.format(prefix, data['projects'])]
 
-    info = (Sample(self.conf.get('api'))).save(payload=data)
+    info = (Sample(self.conf.get('api'))).save(payload=data, datatype='sample')
     if not info.get('id'):
       sys.exit('ERROR: Sample creation failed.')
     sample_id = info.get('id')
