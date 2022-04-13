@@ -575,7 +575,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def create_pipeline(self,data):
     '''create pipeline from yaml'''
     try:
-      print(data['force'])
       path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
       with open(path, 'r') as file:
         yaml_string = file.read()
