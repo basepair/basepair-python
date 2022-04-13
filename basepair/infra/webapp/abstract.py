@@ -96,6 +96,11 @@ class Abstract(object):
       offset += limit
     return item_list
 
+  def resource_uri(self, obj_id):
+    '''Generate resource uri from obj id'''
+    path = self.endpoint.replace(self.host, '')
+    return '{}{}'.format(path, obj_id)
+
   def resource_url(self, obj_id):
     '''Generate resource uri from obj id'''
     return '{}{}'.format(self.endpoint, obj_id)
