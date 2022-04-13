@@ -506,7 +506,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       info = (Module(self.conf.get('api'))).save(payload=payload)
       if info.get('error'):
         if 'already exists' in info['error']:
-          if data['force']:
+          if data.get('force'):
             eprint('Using force override the existing resource')
             self.update_module(data)
           else:
@@ -585,7 +585,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       info = (Pipeline(self.conf.get('api'))).save(payload=payload)
       if info.get('error'):
         if 'already exists' in info['error']:
-          if data['force']:
+          if data.get('force'):
             eprint('Using force override the existing resource')
             self.update_pipeline(data)
           else:
