@@ -5,7 +5,7 @@ import sys
 # App imports
 from basepair.helpers import eprint
 from bin.common_parser import add_json_parser, add_common_args, add_single_uid_parser, \
-add_uid_parser, add_outdir_parser, add_tags_parser, valid_uid
+add_uid_parser, add_outdir_parser, add_tags_parser, valid_uid, valid_sample_extensions , validate_sample_file
 
 class Sample:
   '''Sample action methods'''
@@ -25,6 +25,8 @@ class Sample:
     }
     if not os.path.isfile(args.file1) or args.file2 and not os.path.isfile(args.file2):
       sys.exit('ERROR: Provided File does not exists.')
+
+    validate_sample_file(args)
 
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
@@ -119,8 +121,8 @@ class Sample:
       ],
       default='rna-seq'
     )
-    create_sample_p.add_argument('--file1', required=True)
-    create_sample_p.add_argument('--file2')
+    create_sample_p.add_argument('--file1', required=True, help=f"Available file types - {' '.join(valid_sample_extensions)}")
+    create_sample_p.add_argument('--file2', help=f"Available file types - {' '.join(valid_sample_extensions)}")
     create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--key', action='append')
     create_sample_p.add_argument('--name')

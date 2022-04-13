@@ -7,40 +7,6 @@ import sys
 # App imports
 from basepair.helpers import eprint
 
-def validate_conf(args):
-  '''Helper to validate the proper configuration argument is being set'''
-  if args.config:
-    return eprint('Using config file', args.config)
-  if 'BP_CONFIG_FILE' in os.environ:
-    return eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
-  return sys.exit('ERROR: Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
-
-def is_valid_yaml_arg(args):
-  '''Checks yaml file'''
-  if not args.file:
-    sys.exit('ERROR: Yaml file required.')
-  if len(args.file) != 1:
-    sys.exit('ERROR: Please provide only one yaml')
-  yaml_path = args.file[0]
-  valid_extensions = ('.yaml', '.yml')
-  if not yaml_path.endswith(valid_extensions):
-    sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
-  elif not os.path.isfile(yaml_path):
-    sys.exit(f'ERROR: File does not exist at {yaml_path}.')
-  return True
-
-def validate_pipeline_modules_yaml(yaml_argument):
-  '''Checks yaml file'''
-  if not isinstance(yaml_argument, list):
-    yaml_argument = [yaml_argument]
-  for each_yaml in yaml_argument:
-    valid_extensions = ('.yaml', '.yml')
-    if not each_yaml.endswith(valid_extensions):
-      sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
-    elif not os.path.isfile(each_yaml):
-      sys.exit(f'ERROR: File does not exist at {each_yaml}.')
-  return True
-
 def add_common_args(parser):
   '''Add common args'''
   parser.add_argument('-c', '--config', help='API config info')
@@ -63,16 +29,32 @@ def add_payload_args(parser):
   )
   return parser
 
-def add_uid_parser(parser,datatype):
-  '''Add uid parser'''
+def add_force_parser(parser, datatype):
+  '''Add force parser'''
   parser.add_argument(
-    '-u',
-    '--uid',
-    default=None,
-    help='The unique id(s) for {}'.format(datatype),
-    nargs='+',
-    required=True,
-    type=valid_uid
+    '--force',
+    action='store_true',
+    help='(Optional) Override existing {}.'.format(datatype)
+  )
+  return parser
+
+def add_json_parser(parser):
+  '''Add json parser'''
+  parser.add_argument(
+    '--json',
+    action='store_true',
+    help='(Optional) Print the data in JSON format (this shows all data associated with each item).'
+  )
+  return parser
+
+def add_outdir_parser(parser):
+  '''Add outdir parser'''
+  parser.add_argument(
+    '-o',
+    '--outdir',
+    required=False,
+    default='.',
+    help='Base directory to save files to (default \'.\').'
   )
   return parser
 
@@ -97,26 +79,6 @@ def add_pid_parser(parser):
   )
   return parser
 
-def add_json_parser(parser):
-  '''Add json parser'''
-  parser.add_argument(
-    '--json',
-    action='store_true',
-    help='(Optional) Print the data in JSON format (this shows all data associated with each item).'
-  )
-  return parser
-
-def add_outdir_parser(parser):
-  '''Add outdir parser'''
-  parser.add_argument(
-    '-o',
-    '--outdir',
-    required=False,
-    default='.',
-    help='Base directory to save files to (default \'.\').'
-  )
-  return parser
-
 def add_tags_parser(parser):
   '''Add tags parser'''
   parser.add_argument(
@@ -138,6 +100,19 @@ def add_tags_parser(parser):
   )
   return parser
 
+def add_uid_parser(parser,datatype):
+  '''Add uid parser'''
+  parser.add_argument(
+    '-u',
+    '--uid',
+    default=None,
+    help='The unique id(s) for {}'.format(datatype),
+    nargs='+',
+    required=True,
+    type=valid_uid
+  )
+  return parser
+
 def add_yaml_parser(parser):
   '''Add yaml file parser'''
   parser.add_argument(
@@ -146,15 +121,6 @@ def add_yaml_parser(parser):
     required=True,
     help='The filepath of YAML',
     nargs='+'
-  )
-  return parser
-
-def add_force_parser(parser, datatype):
-  '''Add force parser'''
-  parser.add_argument(
-    '--force',
-    action='store_true',
-    help='(Optional) Override existing {}.'.format(datatype)
   )
   return parser
 
@@ -170,3 +136,47 @@ def valid_email(value):
   if pattern.match(value):
     return value
   raise argparse.ArgumentTypeError('ERROR: Invalid email format.')
+
+valid_sample_extensions = ('.ab1', '.bam', '.csfasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz')
+
+def validate_sample_file(args):
+  '''Validates sample file type'''
+  if args.file1.endswith(valid_sample_extensions) and not args.file2:
+    return True
+  if args.file2 and args.file1.endswith(valid_sample_extensions) and args.file2.endswith(valid_sample_extensions):
+    return True
+  sys.exit(f"ERROR: Please provide valid sample file. Available File types - {' '.join(valid_sample_extensions)}")
+
+def validate_conf(args):
+  '''Helper to validate the proper configuration argument is being set'''
+  if args.config:
+    return eprint('Using config file', args.config)
+  if 'BP_CONFIG_FILE' in os.environ:
+    return eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
+  return sys.exit('ERROR: Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
+
+def validate_analysis_yaml(yaml_argument):
+  '''Checks yaml file'''
+  if not isinstance(yaml_argument, list):
+    yaml_argument = [yaml_argument]
+  for each_yaml in yaml_argument:
+    valid_extensions = ('.yaml', '.yml')
+    if not each_yaml.endswith(valid_extensions):
+      sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
+    elif not os.path.isfile(each_yaml):
+      sys.exit(f'ERROR: File does not exist at {each_yaml}.')
+  return True
+
+def validate_yaml(args):
+  '''Validates yaml file'''
+  if not args.file:
+    sys.exit('ERROR: Yaml file required.')
+  if len(args.file) != 1:
+    sys.exit('ERROR: Please provide only one yaml')
+  yaml_path = args.file[0]
+  valid_extensions = ('.yaml', '.yml')
+  if not yaml_path.endswith(valid_extensions):
+    sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
+  elif not os.path.isfile(yaml_path):
+    sys.exit(f'ERROR: File does not exist at {yaml_path}.')
+  return True

@@ -2,9 +2,8 @@
 import sys
 # App Import
 from basepair.helpers import eprint
-from basepair.utils.instance import instance_choices
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, \
-  add_tags_parser, add_outdir_parser, valid_uid, validate_pipeline_modules_yaml
+  add_tags_parser, add_outdir_parser, valid_uid, validate_analysis_yaml
 
 class Analysis:
   '''Analysis action methods'''
@@ -19,7 +18,7 @@ class Analysis:
         sys.exit(f"ERROR: invalid instance_type available instances - {' '.join(instance_choices)}")
       params['info']['instance_type'] = args.instance
     if args.custom_pipeline or args.custom_modules:
-      validate_pipeline_modules_yaml(args.custom_pipeline if args.custom_pipeline else args.custom_modules)
+      validate_analysis_yaml(args.custom_pipeline if args.custom_pipeline else args.custom_modules)
     if args.params:
       for param in args.params:
         try:

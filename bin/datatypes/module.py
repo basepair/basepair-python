@@ -1,7 +1,7 @@
 '''Module datatype class'''
 import sys
 # App imports
-from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_pid_parser, add_force_parser, is_valid_yaml_arg
+from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_pid_parser, add_force_parser, validate_yaml
 
 class Module:
   '''Module action methods'''
@@ -9,7 +9,7 @@ class Module:
   @staticmethod
   def create_module(bp_api, args):
     '''Create module'''
-    valid = is_valid_yaml_arg(args)
+    valid = validate_yaml(args)
     if valid:
       bp_api.create_module({'yamlpath': args.file[0], 'force': args.force})
 
@@ -43,7 +43,7 @@ class Module:
   @staticmethod
   def update_module(bp_api, args):
     '''Update module'''
-    valid = is_valid_yaml_arg(args)
+    valid = validate_yaml(args)
     if valid:
       bp_api.update_module({'yamlpath': args.file[0]})
 

@@ -1,7 +1,7 @@
 '''Pipeline datatype class'''
 import sys
 # App imports
-from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser, is_valid_yaml_arg
+from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser, validate_yaml
 
 class Pipeline:
   '''Pipeline action methods'''
@@ -9,7 +9,7 @@ class Pipeline:
   @staticmethod
   def create_pipeline(bp_api, args):
     '''Create pipeline'''
-    valid = is_valid_yaml_arg(args)
+    valid = validate_yaml(args)
     if valid:
       bp_api.create_pipeline({'yamlpath': args.file[0], 'force': args.force})
 
@@ -41,7 +41,7 @@ class Pipeline:
   @staticmethod
   def update_pipeline(bp_api, args):
     '''Update pipeline'''
-    valid = is_valid_yaml_arg(args)
+    valid = validate_yaml(args)
     if valid:
       bp_api.update_pipeline({'yamlpath': args.file[0]})
 
