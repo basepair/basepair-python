@@ -38,7 +38,7 @@ class Project:
         })
       }
 
-    if (args.emails and not args.perm) or (args.perm and not args.email):
+    if (args.emails and not args.perm) or (args.perm and not args.emails):
       sys.exit('ERROR: Please provide permission and emails to update.')
 
     if not data and not params:
