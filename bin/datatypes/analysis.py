@@ -13,7 +13,10 @@ class Analysis:
     '''Create and submit an analysis'''
     params = {'node': {}, 'info': {}}
     if args.instance:
-      instance_choices = bp_api.get_instances()
+      try:
+        instance_choices = bp_api.get_instances()
+      except KeyError:
+        sys.exit('ERROR: Failed to get instance data.')
       if args.instance not in instance_choices:
         sys.exit(f"ERROR: invalid instance_type available instances - {' '.join(instance_choices)}")
       params['info']['instance_type'] = args.instance

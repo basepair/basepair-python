@@ -168,7 +168,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
     }
 
-    if params['info'].get('instance_type'):
+    if params.get('info', {}).get('instance_type'):
       data['instance'] = params['info']['instance_type']
 
     if project_id:
