@@ -1,4 +1,5 @@
 '''Sample datatype class'''
+
 # General Import
 import os
 import sys

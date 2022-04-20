@@ -1,4 +1,5 @@
 '''Pipeline datatype class'''
+
 # General Import
 import sys
 

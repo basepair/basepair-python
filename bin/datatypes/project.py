@@ -1,4 +1,5 @@
 '''Project dataype class'''
+
 # General Import
 import json
 import sys

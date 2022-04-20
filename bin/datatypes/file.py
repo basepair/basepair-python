@@ -1,4 +1,5 @@
 '''File datatype class'''
+
 # General Import
 import sys
 

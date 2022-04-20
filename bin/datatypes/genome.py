@@ -1,4 +1,5 @@
 '''Genome datatype class'''
+
 # General Import
 import sys
 
