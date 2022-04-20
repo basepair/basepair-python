@@ -1,8 +1,9 @@
 '''File datatype class'''
+# General Import
 import sys
+
 # App imports
 from bin.common_parser import add_uid_parser, add_common_args, add_outdir_parser
-
 
 class File:
   '''File action methods'''

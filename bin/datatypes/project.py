@@ -1,7 +1,8 @@
 '''Project dataype class'''
-
+# General Import
 import json
 import sys
+
 # App imports
 from bin.common_parser import add_common_args, add_json_parser, add_single_uid_parser, valid_email
 

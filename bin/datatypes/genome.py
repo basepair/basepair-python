@@ -1,8 +1,9 @@
 '''Genome datatype class'''
+# General Import
 import sys
+
 # App imports
 from bin.common_parser import add_common_args, add_uid_parser, add_json_parser
-
 
 class Genome:
   '''Genome action methods'''

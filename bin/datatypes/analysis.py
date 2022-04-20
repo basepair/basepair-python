@@ -1,5 +1,7 @@
 '''Analysis datatype class'''
+# General Import
 import sys
+
 # App Import
 from basepair.helpers import eprint
 from bin.common_parser import add_common_args, add_single_uid_parser, add_uid_parser, add_json_parser, \

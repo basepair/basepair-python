@@ -1,5 +1,7 @@
 '''Module datatype class'''
+# General Import
 import sys
+
 # App imports
 from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_pid_parser, add_force_parser, validate_yaml
 
