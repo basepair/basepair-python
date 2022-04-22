@@ -181,7 +181,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           yaml_string = file.read()
         pipeline_yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
         pipeline_id = pipeline_yaml_data.get('id')
-      except: # pylint: disable=bare-except
+      except Exception: # pylint: disable=bare-except
         sys.exit('ERROR: Unable to parse pipeline yaml file.')
       data['yaml'] = {'pipeline_data': yaml_string}
       data['workflow'] = '{}pipelines/{}'.format(prefix, pipeline_id)
@@ -198,17 +198,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           module_id = module_yaml_data.get('id')
           if not module_id:
             sys.exit('ERROR: Please provide module id in yaml file.')
-      except:# pylint: disable=bare-except
+      except Exception:# pylint: disable=bare-except
         sys.exit('ERROR: Unable to parse pipeline yaml file.')
       data['yaml'] = {'module_data': module_data}
 
     if self.verbose:
+      temp_data = data.copy()
       if data.get('yaml'):
-        temp_data = data.copy()
         temp_data['yaml'] = True
-        eprint(json.dumps(temp_data, indent=2))
-      else:
-        eprint(json.dumps(data, indent=2))
+      eprint(json.dumps(temp_data, indent=2))
 
     if params:
       data['params'] = params
@@ -269,10 +267,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Download files from one or more analysis.
     Parameters
     ----------
-    uid:     {int}  One or more uids identifying the analysesself             [Required]
+    uid:     {int}  Unique id of the analysis             [Required]
     outdir:  {str}  Output directory to download results to
     tagkind: {str}  Type of tag filtering to do. Options: exact, diff, subset
     tags:    {list} List of list of tags to filter files by
+    analysis:{dict} Analysis data for the uid
     '''
     if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
@@ -280,6 +279,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint('Invalid tags argument. Provide a list of list of tags.')
         return False
 
+    success = False
     if analysis['files']:
       try:
         return self.get_analysis_files(
@@ -291,13 +291,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         )
       except PermissionError:
         eprint('ERROR: Permission denied for the specified outdir.')
-        return False
-      except:# pylint: disable=bare-except
+      except Exception:# pylint: disable=bare-except
         eprint('ERROR: Something went wrong while downloading analysis.')
-        return False
     else:
       eprint('Warning: No files present for analysis id {}'.format(uid))
-      return False
+    return success
 
   def fusionsalysis(
     self,
@@ -373,7 +371,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       sys.exit('ERROR: couldn\'t update analysis {}.'.format(uid))
 
     if self.verbose:
-      eprint('analysis', uid, 'updated')
+      eprint('analysis {} updated'.format(uid))
     return info
 
   ################################################################################################
@@ -519,7 +517,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if info.get('id'):
         eprint('created: module {} with id {}'.format(info.get('name'), info.get('id')))
       return
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while creating module.')
 
   def update_module(self, data):
@@ -540,8 +538,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         sys.exit('ERROR: failed while updating module')
       if info.get('id'):
         eprint('updated: module {} with id {}'.format(info.get('name'), info.get('id')))
-      return
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while updating module.')
 
   def get_module(self, uid):
@@ -598,7 +595,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if info.get('id'):
         eprint('created: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
         return
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while creating pipeline.')
 
   def update_pipeline(self,data):
@@ -620,7 +617,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if info.get('id'):
         eprint('updated: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
         return
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while updating pipeline.')
 
   def get_pipeline(self, uid):
@@ -1018,7 +1015,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         data = open(filepath, 'r').read().strip()
         return json.loads(data) if is_json else data
       return filepath
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       return False
 
   def download_raw_files(self, sample, file_type=None, outdir=None, uid=None,):
@@ -1037,7 +1034,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return False
       for file_i in files:
         return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       return False
 
   @classmethod
@@ -1363,7 +1360,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           filepath.append(match[1]['path'])
 
       return filepath if multiple else filepath[0]
-    except:# pylint: disable=bare-except
+    except Exception:# pylint: disable=bare-except
       return False
 
   def get_filepath(self, filename, dirname=None):
