@@ -136,8 +136,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Create analysis
     Parameters
     ----------
-    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
-
     control_id:                 {str}   Control sample id.
     control_ids:                {list}  Control sample id.
     ignore_validation_warnings: {bool}  Ignore validation warnings
@@ -145,6 +143,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     project_id:                 {str}   Project id.
     sample_id:                  {str}   Sample id.
     sample_ids:                 {list}  List of sample id.
+    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
     '''
 
     # check for custom modules and pipelines
@@ -251,11 +250,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Download files from one or more analysis.
     Parameters
     ----------
-    uid:      {int}  Unique id of the analysis             [Required]
     outdir:   {str}  Output directory to download results to
     tagkind:  {str}  Type of tag filtering to do. Options: exact, diff, subset
     tags:     {list} List of list of tags to filter files by
     analysis: {dict} Analysis data for the uid
+    uid:      {int}  Unique id of the analysis             [Required]
     '''
     if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
@@ -290,13 +289,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample_id=None,
     sample_ids=[]
   ): # pylint: disable=dangerous-default-value,too-many-arguments
-    '''Create analysis
+    '''fusion analysis
     Parameters
     ----------
-    Parameters
-    ----------
-    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
-
+    workflow_id:                {str}   Pipeline id. Run bp.get_workflows() to see what is available.  [Required]
     control_id:                 {str}   Control sample id.
     control_ids:                {list}  Control sample id.
     params:                     {dict}  Dictionary of parameter values.
@@ -330,7 +326,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return analysis_id
 
   def get_analysis(self, uid):
-    '''Get resource'''
+    '''Get analysis'''
     return (Analysis(self.conf.get('api'))).get(
       uid,
       cache='{}/json/analysis.{}.json'.format(self.scratch, uid) if self.use_cache else False,
@@ -346,6 +342,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return (Analysis(self.conf.get('api'))).list_all(filters=filters)
 
   def get_instances(self):
+    '''get all available instances for analysis'''
     res = (Analysis(self.conf.get('api'))).get_instances()
     return res['data']
 
@@ -362,7 +359,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return True
 
   def update_analysis(self, uid, data):
-    '''Update resource'''
+    '''Update analysis'''
     info = (Analysis(self.conf.get('api'))).save(
       obj_id=uid,
       payload=data,
@@ -378,40 +375,40 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### FILE #######################################################################################
   ################################################################################################
   def create_file(self, uid, data):
-    '''Create resource'''
+    '''Create file'''
     return (File(self.conf.get('api'))).save(obj_id=uid, payload=data)
 
   def get_file(self, uid):
-    '''Get resource'''
+    '''Get file'''
     return (File(self.conf.get('api'))).get(
       uid,
       cache='{}/json/file.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def update_file(self, uid, data):
-    '''Update resource'''
+    '''Update file'''
     return (File(self.conf.get('api'))).save(obj_id=uid, payload=data)
 
   ################################################################################################
   ### GENE #######################################################################################
   ################################################################################################
   def create_gene(self, data):
-    '''Create resource'''
+    '''Create gene'''
     return (Gene(self.conf.get('api'))).save(payload=data)
 
   def delete_gene(self, uid):
-    '''Delete method'''
+    '''Delete gene'''
     return (Gene(self.conf.get('api'))).delete(uid)
 
   def get_gene(self, uid):
-    '''Get resource'''
+    '''Get gene'''
     return (Gene(self.conf.get('api'))).get(
       uid,
       cache='{}/json/gene.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def get_genes(self):
-    '''Get resource list'''
+    '''Get genes list'''
     info = (Gene(self.conf.get('api'))).list(
       params={'limit': 0}
     )
@@ -430,7 +427,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return info.get('objects', [])
 
   def update_gene(self, uid, data):
-    '''Update resource'''
+    '''Update gene'''
     info = (Gene(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
       eprint('gene', uid, 'updated')
@@ -440,26 +437,26 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### GENOME #####################################################################################
   ################################################################################################
   def create_genome(self, data):
-    '''Create resource'''
+    '''Create genome'''
     return (Genome(self.conf.get('api'))).save(payload=data)
 
   def delete_genome(self, uid):
-    '''Delete method'''
+    '''Delete genome'''
     return (Genome(self.conf.get('api'))).delete(uid)
 
   def get_genome(self, uid):
-    '''Get resource'''
+    '''Get genome'''
     return (Genome(self.conf.get('api'))).get(
       uid,
       cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def get_genomes(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get resource list'''
+    '''Get genomes list'''
     return (Genome(self.conf.get('api'))).list_all(filters=filters)
 
   def update_genome(self, uid, data):
-    '''Update resource'''
+    '''Update genome'''
     info = (Genome(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
       eprint('genome', uid, 'updated')
@@ -515,6 +512,31 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while creating module.')
 
+  def delete_module(self, uid):
+    '''Delete module'''
+    info = (Module(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return False
+
+    if self.verbose:
+      eprint('deleted module', uid)
+    return info
+
+  def get_module(self, uid):
+    '''Get module'''
+    return (Module(self.conf.get('api'))).get(
+      uid,
+      cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
+  def get_pipeline_modules(self, uid):
+    '''Get modules of a pipeline'''
+    return (Module(self.conf.get('api'))).get_pipeline_modules(
+      uid,
+      cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
   def update_module(self, data):
     '''update module from yaml'''
     try:
@@ -535,31 +557,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint('updated: module {} with id {}'.format(info.get('name'), info.get('id')))
     except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while updating module.')
-
-  def get_module(self, uid):
-    '''Get module resource'''
-    return (Module(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
-
-  def get_pipeline_modules(self, uid):
-    '''Get resources for a workflow'''
-    return (Module(self.conf.get('api'))).get_pipeline_modules(
-      uid,
-      cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
-
-  def delete_module(self, uid):
-    '''Delete method'''
-    info = (Module(self.conf.get('api'))).delete(uid)
-    if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return False
-
-    if self.verbose:
-      eprint('deleted module', uid)
-    return info
 
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
@@ -588,6 +585,28 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while creating pipeline.')
 
+  def delete_pipeline(self, uid):
+    '''Delete pipelines'''
+    info = (Pipeline(self.conf.get('api'))).delete(uid)
+    if info.get('error'):
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return False
+
+    if self.verbose:
+      eprint('deleted pipeline', uid)
+    return info
+
+  def get_pipeline(self, uid):
+    '''Get pipeline'''
+    return (Pipeline(self.conf.get('api'))).get(
+      uid,
+      cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
+
+  def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
+    '''Get pipelines list'''
+    return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
+
   def update_pipeline(self,data):
     '''update pipeline from yaml'''
     try:
@@ -610,31 +629,23 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     except Exception:# pylint: disable=bare-except
       sys.exit('ERROR: Something went wrong while updating pipeline.')
 
-  def get_pipeline(self, uid):
-    '''Get resource'''
-    return (Pipeline(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
-
-  def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get resource list'''
-    return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
-
-  def delete_pipeline(self, uid):
-    '''Delete method'''
-    info = (Pipeline(self.conf.get('api'))).delete(uid)
-    if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return False
-
-    if self.verbose:
-      eprint('deleted pipeline', uid)
-    return info
-
   ################################################################################################
   ### PROJECT ####################################################################################
   ################################################################################################
+  def create_project(self, data):
+    '''Create project'''
+    info = (Project(self.conf.get('api'))).save(payload=data)
+    if self.verbose == 2:
+      eprint('Creating project:')
+      eprint('Data:', data)
+
+    project_id = info.get('id', None)
+    if project_id and self.verbose:  # success
+      eprint('created: project with id', project_id)
+    else:  # failure
+      eprint('failed project creation:', data['name'], info.get('msg'))
+    return project_id
+
   def get_project(self, uid):
     '''Get project'''
     return (Project(self.conf.get('api'))).get(
@@ -645,23 +656,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get project list'''
     return (Project(self.conf.get('api'))).list_all(filters=filters)
 
-  def create_project(self, data):
-    '''Create resource'''
-    info = (Project(self.conf.get('api'))).save(payload=data)
-    if self.verbose == 2:
-      eprint('Creating project:')
-      eprint('Data:', data)
-
-    project_id = info.get('id', None)
-    if project_id:  # success
-      if self.verbose:
-        eprint('created: project with id', project_id)
-    else:  # failure
-      eprint('failed project creation:', data['name'], info.get('msg'))
-    return project_id
-
   def update_project(self, uid, data, params=None):
-    '''Update resource'''
+    '''Update project'''
     info = (Project(self.conf.get('api'))).save(
       obj_id=uid,
       payload=data,
@@ -679,15 +675,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     Parameters
     ----------
-    data : dict
-        Dictionary of sample information.
-
-    source : str
-        TODO
-
-    upload : bool
-        Whether to upload the sample to the server or not.
-
+    data   : {dict}  Dictionary of sample information.
+    source : {str}   source of the request
+    upload : {bool}  Whether to upload the sample to the server or not.
     '''
     data['meta'] = {'source': source}
     # get api version
@@ -732,9 +722,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('Creating sample:')
       eprint('Data:', data)
 
-    if sample_id:  # success
-      if self.verbose:
-        eprint('created: sample with id', sample_id)
+    if sample_id and self.verbose:  # success
+      eprint('created: sample with id', sample_id)
 
     # do the actual upload, update filepath
     files_to_upload = []
@@ -779,7 +768,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return sample_id
 
   def delete_sample(self, uid):
-    '''Delete method'''
+    '''Delete sample'''
     info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
       return False
@@ -789,7 +778,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return info
 
   def get_sample(self, uid, add_analysis=True):
-    '''Get resource'''
+    '''Get sample'''
     info = (Sample(self.conf.get('api'))).get(
       uid,
       cache='{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False,
@@ -804,7 +793,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return self.get_user(user_id) if user_id else None
 
   def get_samples(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get resource list'''
+    '''Get samples list'''
     return (Sample(self.conf.get('api'))).list_all(filters=filters)
 
   def samples_by_name(self, name, project_id=None):
@@ -812,7 +801,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return (Sample(self.conf.get('api'))).by_name(name, project_id)
 
   def update_sample(self, uid, data):
-    '''Update resource'''
+    '''Update sample'''
     genome = data.get('genome')
     if genome:
       data['genome'] = self._get_genome_by_name(genome)
@@ -909,7 +898,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### USER #######################################################################################
   ################################################################################################
   def get_user(self, uid):
-    '''Get resource'''
+    '''Get user'''
     return (User(self.conf.get('api'))).get(
       uid,
       cache='{}/json/user.{}.json'.format(self.scratch, uid) if self.use_cache else False,
@@ -928,8 +917,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Low level function to copy a file from cloud to disk
     Parameters
     ----------
-    src:  {str} File path on AWS S3, not including the bucket           [Required]
     dest: {str} Directory or file path where file will be downloaded to [Required]
+    src:  {str} File path on AWS S3, not including the bucket           [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
     if not src.startswith('s3://'):
@@ -957,10 +946,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     filekey:  {str}   The full file path on AWS S3               [Required]
     dirname:  {str}   Directory to download the file to
     filename: {str}   Give the download file a new name
+    filetype: {str}   datatype to be downloaded
     isjson:   {bool}  Whether the downloaded file is JSON format
     load:     {bool}  Load the file after downloading
     uid:      {int}   Unique id of the datatype
-    filetype: {str}   datatype to be downloaded
     Returns
     -------
     Absolute filepath to downloaded file
@@ -1010,9 +999,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Download raw data associated with a sample
     Parameters
     ----------
-    sample:    {dict} From calling bp.get_sample()       [Required]
-    outdir:    {str}  Output directory to save files to
     file_type: {str}  Datatype to be downloaded
+    outdir:    {str}  Output directory to save files to
+    sample:    {dict} From calling bp.get_sample()       [Required]
     uid:       {int}  unique id for the datatype
     '''
     try:
@@ -1140,8 +1129,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     ----------
     src:    {str}     Path to file on AWS S3                                          [Required]
     dest:   {str}     Destination directory or path where file will be downloaded to  [Required]
-    sse:    {bool}    Whether to use sever side encryption
     params: {dict}    Other download paramters
+    sse:    {bool}    Whether to use sever side encryption
     '''
     _params = ''
     if sse:
@@ -1243,18 +1232,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     For a sample, go through analysis and get files that match the tags.
     Parameters
-    ----------
-    sample:        {dict} Sample information                                       [Required]
+    ----------                              
     analysis_tags: {list} Analysis tags to filter analyses when looking for files
     dest:          {str}  File name to save the file to
     dirname:       {str}  Ouput directory to save the file to
     download:      {bool} Whether to download the file(s)
     exclude:       {list} List of tags to exclude
+    file_type:     {str}  Datatype to download ex - analyses, file, sample
     kind:          {str}  Type of tag filtering to do. Options: exact, diff, or subset
     multiple:      {bool} Whether to return multiple files or just the first one
+    sample:        {dict} Sample information   [Required]
     tags:          {list} List of list of tags for file filtering. If just list of tags, will convert to list of lists.
     uid:           {int}  Workflow id to look for files in.
-    file_type:     {str}  Datatype to download ex - analyses, file, sample
     '''
     try:
       # some error checking
@@ -1332,7 +1321,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           eprint('WARNING: multiple matching file for', tags)
         for match in matches:
           eprint('\t', match[1]['last_updated'], match[1]['path'])
-
 
       filepath = []
       for match in matches:
@@ -1421,9 +1409,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Parameters
     ----------
     data_type: {str}   Type of data to print (e.g. workflows)
-    is_json:      {bool}  By default, data is printed in a human-readable format
+    is_json:   {bool}  By default, data is printed in a human-readable format
+    project:   {int}   Project id to filter data
     uid:       {list}  One or more ids of the objects you want
-    project: {int} project id to filter data
     '''
 
     if not isinstance(uid, list):
