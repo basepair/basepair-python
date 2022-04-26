@@ -126,7 +126,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     control_id=None,
     control_ids=[],
     ignore_validation_warnings=False,
-    params=None,
+    params={},
     project_id=None,
     sample_id=None,
     sample_ids=[],
@@ -267,11 +267,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Download files from one or more analysis.
     Parameters
     ----------
-    uid:     {int}  Unique id of the analysis             [Required]
-    outdir:  {str}  Output directory to download results to
-    tagkind: {str}  Type of tag filtering to do. Options: exact, diff, subset
-    tags:    {list} List of list of tags to filter files by
-    analysis:{dict} Analysis data for the uid
+    uid:      {int}  Unique id of the analysis             [Required]
+    outdir:   {str}  Output directory to download results to
+    tagkind:  {str}  Type of tag filtering to do. Options: exact, diff, subset
+    tags:     {list} List of list of tags to filter files by
+    analysis: {dict} Analysis data for the uid
     '''
     if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
@@ -502,18 +502,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         sys.exit('ERROR: Please provide module name in YAML')
       payload = {'data': yaml_string}
       info = (Module(self.conf.get('api'))).save(payload=payload)
+      if 'already exists' in info.get('error'):
+        forced = data.get('force')
+        message = 'Using force override the existing resource' if forced else 'A module with id {} already exists, do you want to overwrite it?'.format(yaml_data.get("id"))
+        forced and eprint(message)
+        return (forced or BpApi.yes_or_no(message)) and self.update_module(data)
       if info.get('error'):
-        if 'already exists' in info['error']:
-          if data.get('force'):
-            eprint('Using force override the existing resource')
-            self.update_module(data)
-          else:
-            answer = BpApi.yes_or_no(
-              'A module with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
-            if answer:
-              self.update_module(data)
-          return
-        sys.exit('ERROR: failure in module creation')
+        sys.exit('ERROR: module creation failed')
       if info.get('id'):
         eprint('created: module {} with id {}'.format(info.get('name'), info.get('id')))
       return
@@ -580,17 +575,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         sys.exit('Please provide pipeline name in YAML')
       payload = {'data': yaml_string}
       info = (Pipeline(self.conf.get('api'))).save(payload=payload)
+      if 'already exists' in info.get('error'):
+        forced = data.get('force')
+        message = 'Using force override the existing resource' if forced else 'A pipeline with id {} already exists, do you want to overwrite it?'.format(yaml_data.get("id"))
+        forced and eprint(message)
+        return (forced or BpApi.yes_or_no(message)) and self.update_pipeline(data)
       if info.get('error'):
-        if 'already exists' in info['error']:
-          if data.get('force'):
-            eprint('Using force override the existing resource')
-            self.update_pipeline(data)
-          else:
-            answer = BpApi.yes_or_no(
-              'A pipeline with ID {} already exists, do you want to overwrite it?'.format(yaml_data.get("id")))
-            if answer:
-              self.update_pipeline(data)
-          return
         sys.exit('ERROR: pipeline creation failed')
       if info.get('id'):
         eprint('created: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
@@ -646,7 +636,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### PROJECT ####################################################################################
   ################################################################################################
   def get_project(self, uid):
-    '''Get resource'''
+    '''Get project'''
     return (Project(self.conf.get('api'))).get(
       uid
     )
@@ -969,6 +959,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     filename: {str}   Give the download file a new name
     isjson:   {bool}  Whether the downloaded file is JSON format
     load:     {bool}  Load the file after downloading
+    uid:      {int}   Unique id of the datatype
+    filetype: {str}   datatype to be downloaded
     Returns
     -------
     Absolute filepath to downloaded file
@@ -981,35 +973,30 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         analyses_type = os.path.basename(analyses_type_path)
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
+      suffix = 'basepair/'
       if file_type == 'analyses' and uid:
-        added_path = os.path.join(prefix, 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type))
+        suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
       elif file_type and uid:
-        added_path = os.path.join(prefix, 'basepair/{}/{}'.format(file_type, uid))
+        suffix = 'basepair/{}/{}'.format(file_type, uid)
       elif file_type:
-        added_path = os.path.join(prefix, 'basepair/{}'.format(file_type))
+        suffix = 'basepair/{}'.format(file_type)
       elif uid:
-        added_path = os.path.join(prefix, 'basepair/{}'.format(uid))
-      else:
-        added_path = os.path.join(prefix, 'basepair/')
+        suffix = 'basepair/{}'.format(uid)
+      added_path = os.path.join(prefix, suffix)
       if not os.path.isdir(added_path):
         os.makedirs(added_path)
-      if filename:
-        # rename the download file
-        # filepath = self.get_filepath(filename, dirname=dirname)
-        filepath = os.path.join(added_path, os.path.basename(filename))
-      else:
-        # don't renaming the file
-        filepath = os.path.join(added_path, os.path.basename(filekey))
+      # rename the file if filename present otherwise use filekey
+      filepath = os.path.join(added_path, os.path.basename(filename if filename else filekey))
       filepath = os.path.expanduser(filepath)
       # if file not already there, download it
       if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
         if self.verbose:
-          eprint('downloading'+' ./'+filepath.split('/')[-1])
+          eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
         if not os.path.exists(os.path.dirname(filepath)):
           os.makedirs(os.path.dirname(filepath))
         self.copy_file(filekey, filepath, action='from')
       elif self.verbose:
-        eprint('exists'+' ./'+filepath.split('/')[-1])
+        eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
 
       if load:
         data = open(filepath, 'r').read().strip()
@@ -1023,8 +1010,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Download raw data associated with a sample
     Parameters
     ----------
-    sample: {dict} From calling bp.get_sample()       [Required]
-    outdir: {str}  Output directory to save files to
+    sample:    {dict} From calling bp.get_sample()       [Required]
+    outdir:    {str}  Output directory to save files to
+    file_type: {str}  Datatype to be downloaded
+    uid:       {int}  unique id for the datatype
     '''
     try:
       uploads = sample['uploads']
@@ -1095,7 +1084,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname:  {str}   Directory to download files to
     kind:     {str}   Type of tag filtering. Options: exact, subset
     tags:     {list}  List of lists of tags to filter by
-    uid:      {number} Unique analysis id
+    uid:      {int}   Unique analysis id
     '''
     # some input checking
     if tags:
