@@ -149,7 +149,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # check for custom modules and pipelines
     if (pipeline_yaml and module_yaml) or (pipeline_yaml and workflow_id) or (pipeline_yaml and module_yaml and workflow_id): #pylint: disable=too-many-boolean-expressions
-      sys.exit('ERROR: Please select either of Custom pipeline or Module or Normal flow.')
+      sys.exit('ERROR: Please select either of custom pipeline or module (in case of custom modules provide pipeline id) for analysis or just pipeline id.')
     if (not pipeline_yaml and not module_yaml and not workflow_id) or (module_yaml and not workflow_id):
       sys.exit('ERROR: Please provide --pipeline id.')
 
@@ -219,12 +219,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return self.create_analysis(
           control_ids=control_ids,
           ignore_validation_warnings=True,
+          module_yaml=module_yaml,
           params=params,
+          pipeline_yaml=pipeline_yaml,
           project_id=project_id,
           sample_ids=sample_ids,
-          workflow_id=workflow_id,
-          pipeline_yaml=pipeline_yaml,
-          module_yaml=module_yaml
+          workflow_id=workflow_id
         )
     if info.get('error'):
       sys.exit('ERROR: Analysis creation failed!')
@@ -235,22 +235,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         ','.join(sample_ids),
       ))
     return analysis_id
-
-  def get_instances(self):
-    res = (Analysis(self.conf.get('api'))).get_instances()
-    return res['data']
-  
-  def restart_analysis(self, uid):
-    '''Restart analysis'''
-    payload = {
-      'id': uid,
-      'source': 'cli'
-    }
-    res = (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
-    if res.get('error'):
-      return False
-    eprint('Analysis {} has been restarted'.format(uid))
-    return True
 
   def delete_analysis(self, uid):
     '''Delete method'''
@@ -360,6 +344,22 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_analyses(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     return (Analysis(self.conf.get('api'))).list_all(filters=filters)
+
+  def get_instances(self):
+    res = (Analysis(self.conf.get('api'))).get_instances()
+    return res['data']
+
+  def restart_analysis(self, uid):
+    '''Restart analysis'''
+    payload = {
+      'id': uid,
+      'source': 'cli'
+    }
+    res = (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
+    if res.get('error'):
+      return False
+    eprint('Analysis {} has been restarted'.format(uid))
+    return True
 
   def update_analysis(self, uid, data):
     '''Update resource'''
