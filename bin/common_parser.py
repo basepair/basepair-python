@@ -167,7 +167,7 @@ def validate_analysis_yaml(yaml_argument):
       sys.exit(f'ERROR: File does not exist at {each_yaml}.')
   return True
 
-def validate_yaml(args):
+def validate_update_yaml(args):
   '''Validates yaml file'''
   if not args.file:
     sys.exit('ERROR: Yaml file required.')
@@ -179,4 +179,17 @@ def validate_yaml(args):
     sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
   elif not os.path.isfile(yaml_path):
     sys.exit(f'ERROR: File does not exist at {yaml_path}.')
+  return True
+
+def validate_create_yaml(args):
+  '''Validates yaml file'''
+  if not args.file:
+    sys.exit('ERROR: Yaml file required.')
+  for i in range(0, len(args.file)):
+    yaml_path = args.file[i]
+    valid_extensions = ('.yaml', '.yml')
+    if not yaml_path.endswith(valid_extensions):
+      sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
+    elif not os.path.isfile(yaml_path):
+      sys.exit(f'ERROR: File does not exist at {yaml_path}.')
   return True

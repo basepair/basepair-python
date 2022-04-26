@@ -502,7 +502,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         sys.exit('ERROR: Please provide module name in YAML')
       payload = {'data': yaml_string}
       info = (Module(self.conf.get('api'))).save(payload=payload)
-      if 'already exists' in info.get('error'):
+      if info.get('error') and 'already exists' in info.get('error'):
         forced = data.get('force')
         message = 'Using force override the existing resource' if forced else 'A module with id {} already exists, do you want to overwrite it?'.format(yaml_data.get("id"))
         forced and eprint(message)
@@ -575,7 +575,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         sys.exit('Please provide pipeline name in YAML')
       payload = {'data': yaml_string}
       info = (Pipeline(self.conf.get('api'))).save(payload=payload)
-      if 'already exists' in info.get('error'):
+      if info.get('error') and 'already exists' in info.get('error'):
         forced = data.get('force')
         message = 'Using force override the existing resource' if forced else 'A pipeline with id {} already exists, do you want to overwrite it?'.format(yaml_data.get("id"))
         forced and eprint(message)

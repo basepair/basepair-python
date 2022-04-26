@@ -4,7 +4,7 @@
 import sys
 
 # App imports
-from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser, validate_yaml
+from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser, validate_create_yaml, validate_update_yaml
 
 class Pipeline:
   '''Pipeline action methods'''
@@ -12,9 +12,10 @@ class Pipeline:
   @staticmethod
   def create_pipeline(bp_api, args):
     '''Create pipeline'''
-    valid = validate_yaml(args)
+    valid = validate_create_yaml(args)
     if valid:
-      bp_api.create_pipeline({'yamlpath': args.file[0], 'force': args.force})
+      for each_yaml in args.file:
+        bp_api.create_pipeline({'yamlpath': each_yaml, 'force': args.force})
 
   @staticmethod
   def delete_pipeline(bp_api, args):
@@ -44,7 +45,7 @@ class Pipeline:
   @staticmethod
   def update_pipeline(bp_api, args):
     '''Update pipeline'''
-    valid = validate_yaml(args)
+    valid = validate_update_yaml(args)
     if valid:
       bp_api.update_pipeline({'yamlpath': args.file[0]})
 
