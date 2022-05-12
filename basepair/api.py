@@ -114,7 +114,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       cache = '{}/json/config.json'.format(self.scratch)
 
     if self.conf.get('api', {}).get('cli'):
-      configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
+      configuration = User(self.conf.get('api')).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
   ################################################################################################
@@ -587,7 +587,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def delete_pipeline(self, uid):
     '''Delete pipelines'''
-    info = (Pipeline(self.conf.get('api'))).delete(uid)
+    info = Pipeline(self.conf.get('api')).delete(uid)
     if info.get('error'):
       eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
       return False
@@ -598,14 +598,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_pipeline(self, uid):
     '''Get pipeline'''
-    return (Pipeline(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
+    cache = '{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False
+    return Pipeline(self.conf.get('api')).get(uid, cache=cache)
 
   def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get pipelines list'''
-    return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
+    return Pipeline(self.conf.get('api')).list_all(filters=filters)
 
   def update_pipeline(self,data):
     '''update pipeline from yaml'''
@@ -648,17 +646,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_project(self, uid):
     '''Get project'''
-    return (Project(self.conf.get('api'))).get(
-      uid
-    )
+    return Project(self.conf.get('api')).get(uid)
 
   def get_projects(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get project list'''
-    return (Project(self.conf.get('api'))).list_all(filters=filters)
+    return Project(self.conf.get('api')).list_all(filters=filters)
 
   def update_project(self, uid, data, params=None):
     '''Update project'''
-    info = (Project(self.conf.get('api'))).save(
+    info = Project(self.conf.get('api')).save(
       obj_id=uid,
       payload=data,
       params=params
@@ -769,7 +765,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def delete_sample(self, uid):
     '''Delete sample'''
-    info = (Sample(self.conf.get('api'))).delete(uid)
+    info = Sample(self.conf.get('api')).delete(uid)
     if info.get('error'):
       return False
 
@@ -779,10 +775,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_sample(self, uid, add_analysis=True):
     '''Get sample'''
-    info = (Sample(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
+    cache = '{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False
+    info = Sample(self.conf.get('api')).get(uid, cache=cache)
     if info and add_analysis:
       info = self._add_full_analysis(info)
     return info
@@ -794,11 +788,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_samples(self, filters={}): # pylint: disable=dangerous-default-value
     '''Get samples list'''
-    return (Sample(self.conf.get('api'))).list_all(filters=filters)
+    return Sample(self.conf.get('api')).list_all(filters=filters)
 
   def samples_by_name(self, name, project_id=None):
     '''Get sample id from name'''
-    return (Sample(self.conf.get('api'))).by_name(name, project_id)
+    return Sample(self.conf.get('api')).by_name(name, project_id)
 
   def update_sample(self, uid, data):
     '''Update sample'''
@@ -1439,10 +1433,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # if it is a detail
     if data_type in detail_methods:
-      if uid is None:
-        eprint('Your uid is invalid: {}'.format(uid))
-        return False
-
       for item_id in uid:
         data_tmp = getattr(self, detail_methods.get(data_type))(item_id)
         if data_tmp.get('id'):

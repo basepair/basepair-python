@@ -126,10 +126,9 @@ class NicePrint:
       headers = [
         'id',
         'name',
-        'started on',
-        'completed on',
+        'started_on',
+        'completed_on',
         'status',
-        'num files',
         'tags',
       ]
       to_print = [[analysis[field] for field in headers] for analysis in sample['analyses_full']]
@@ -144,10 +143,10 @@ class NicePrint:
       'name',
       'datatype',
       'genome',
-      'date created',
-      'num reads',
+      'date_created',
+      'num_reads',
     ]
-    to_print = [[sample[field] for field in headers] for sample in data]
+    to_print = [[sample['meta'][field] if field == 'num_reads' else sample[field] for field in headers] for sample in data]
     eprint(tabulate(to_print, headers=[header for header in headers]))
 
   @staticmethod
