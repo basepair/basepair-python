@@ -14,9 +14,8 @@ class BaseTest(unittest.TestCase):
     # try:
     #     conf = json.load(open(os.environ.get('BP_API_CONFIG', None)))
     # except:
-    #     print >>sys.stderr, ('Error in config file.'
+    #     sys.exit('Error in config file.'
     #                          ' Please properly set BP_API_CONFIG.')
-    #     sys.exit(1)
 
     # bp = basepair.connect(conf=conf)
 
@@ -27,10 +26,8 @@ class BaseTest(unittest.TestCase):
             confs[conf_name] = json.load(open(os.environ.get(
                 'BP{}API_CONFIG'.format(conf_name), None)))
         except:
-            print(('Error in config file.' +
-                ' Please properly set BP{}API_CONFIG.'.format(conf_name)),
+            sys.exit(('Error in config file. Please properly set BP {} API_CONFIG.'.format(conf_name)),
                 file=sys.stderr)
-            sys.exit(1)
 
     # TODO: for now leave as is; maybe later put this in above loop and change test files where appropriate
     bp = basepair.connect(conf=confs['_'],verbose=True)
