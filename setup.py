@@ -19,6 +19,8 @@ packages = [
     'basepair.infra.configuration',
     'basepair.infra.webapp',
     'basepair.utils',
+    'bin',
+    'bin.datatypes'
 ]
 
 setup(

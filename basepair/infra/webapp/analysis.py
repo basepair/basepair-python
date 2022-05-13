@@ -29,6 +29,21 @@ class Analysis(Abstract):
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
+  def get_instances(self, payload={}, verify=True):
+    '''Get available instances for analyses'''
+    try:
+      response = requests.post(
+        '{}get_instances'.format(self.endpoint),
+        data=json.dumps(payload),
+        headers=self.headers,
+        params=self.payload,
+        verify=verify,
+      )
+      return self._parse_response(response)
+    except requests.exceptions.RequestException as error:
+      eprint('ERROR: {}'.format(error))
+      return {'error': True, 'msg': error}
+
   def reanalyze(self, payload={}, verify=True):
     '''Restart analysis'''
     try:
@@ -43,3 +58,4 @@ class Analysis(Abstract):
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
+
