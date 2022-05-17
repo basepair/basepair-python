@@ -32,7 +32,7 @@ import yaml
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
@@ -343,7 +343,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_instances(self):
     '''get all available instances for analysis'''
-    res = Analysis(self.conf.get('api')).get_instances()
+    res = Instance(self.conf.get('api')).get_instances()
     return res['data']
 
   def restart_analysis(self, uid, instance_type):

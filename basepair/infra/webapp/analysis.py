@@ -31,6 +31,7 @@ class Analysis(Abstract):
 
   def get_instances(self, payload={}, verify=True):
     '''Get available instances for analyses'''
+    print("endpoint ==", self.endpoint)
     try:
       response = requests.post(
         '{}get_instances'.format(self.endpoint),

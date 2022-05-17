@@ -10,3 +10,4 @@ from .project import Project
 from .sample import Sample
 from .upload import Upload
 from .user import User
+from .instance import Instance
