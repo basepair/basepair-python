@@ -100,9 +100,17 @@ class Analysis:
   @staticmethod
   def reanalyze_analysis(bp_api, args):
     '''Restart analysis'''
+    if args.instance:
+      try:
+        instance_choices = bp_api.get_instances()
+      except KeyError:
+        sys.exit('ERROR: Failed to get instance data.')
+      if args.instance not in instance_choices:
+        sys.exit(f"ERROR: invalid instance_type available instances - {' '.join(instance_choices)}")
+
     all_fail = True
     for each_uid in args.uid:
-      all_fail = not bool(bp_api.restart_analysis(each_uid)) and all_fail
+      all_fail = not bool(bp_api.restart_analysis(each_uid, args.instance)) and all_fail
     if all_fail:
       sys.exit('ERROR: while re-analyze the analysis data.')
 
@@ -206,6 +214,9 @@ class Analysis:
     reanalyze_p = action_parser.add_parser(
       'reanalyze',
       help='Reanalyze analyses.'
+    )
+    reanalyze_p.add_argument(
+      '--instance', help='instance_type for analysis'
     )
     reanalyze_p = add_common_args(reanalyze_p)
     reanalyze_p = add_uid_parser(reanalyze_p, 'analysis')
