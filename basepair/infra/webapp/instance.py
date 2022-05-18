@@ -28,3 +28,4 @@ class Instance(Abstract):
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
+      
