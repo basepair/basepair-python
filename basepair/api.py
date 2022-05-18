@@ -343,7 +343,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_instances(self):
     '''get all available instances for analysis'''
-    res = Instance(self.conf.get('api')).get_instances()
+    res = Instance(self.conf.get('api')).list()
     return res['data']
 
   def restart_analysis(self, uid, instance_type):

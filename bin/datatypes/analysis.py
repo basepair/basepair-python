@@ -21,7 +21,7 @@ class Analysis:
       except KeyError:
         sys.exit('ERROR: Failed to get instance data.')
       if args.instance not in instance_choices:
-        sys.exit(f"ERROR: invalid instance_type available instances - {' '.join(instance_choices)}")
+        sys.exit('ERROR: invalid instance_type available instances - {}'.format(' '.join(instance_choices)))
       params['info']['instance_type'] = args.instance
     if args.custom_pipeline or args.custom_modules:
       validate_analysis_yaml(args.custom_pipeline if args.custom_pipeline else args.custom_modules)
@@ -106,7 +106,7 @@ class Analysis:
       except KeyError:
         sys.exit('ERROR: Failed to get instance data.')
       if args.instance not in instance_choices:
-        sys.exit(f"ERROR: invalid instance_type available instances - {' '.join(instance_choices)}")
+        sys.exit('ERROR: invalid instance_type available instances - {}'.format(' '.join(instance_choices)))
 
     all_fail = True
     for each_uid in args.uid:
