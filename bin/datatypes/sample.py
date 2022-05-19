@@ -123,8 +123,8 @@ class Sample:
       ],
       default='rna-seq'
     )
-    create_sample_p.add_argument('--file1', required=True, help=f"Available file types - {' '.join(valid_sample_extensions)}")
-    create_sample_p.add_argument('--file2', help=f"Available file types - {' '.join(valid_sample_extensions)}")
+    create_sample_p.add_argument('--file1', required=True, help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
+    create_sample_p.add_argument('--file2', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
     create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--key', action='append')
     create_sample_p.add_argument('--name')

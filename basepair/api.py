@@ -32,7 +32,7 @@ import yaml
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
@@ -343,16 +343,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def get_instances(self):
     '''get all available instances for analysis'''
-    res = (Analysis(self.conf.get('api'))).get_instances()
+    res = Instance(self.conf.get('api')).list()
     return res['data']
 
-  def restart_analysis(self, uid):
+  def restart_analysis(self, uid, instance_type):
     '''Restart analysis'''
     payload = {
       'id': uid,
-      'source': 'cli'
+      'source': 'cli',
     }
-    res = (Analysis(self.conf.get('api'))).reanalyze(payload=payload)
+    if instance_type:
+      payload.update(instance_type=instance_type)
+    res = Analysis(self.conf.get('api')).reanalyze(payload=payload)
     if res.get('error'):
       return False
     eprint('Analysis {} has been restarted'.format(uid))
@@ -509,7 +511,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if info.get('id'):
         eprint('created: module {} with id {}'.format(info.get('name'), info.get('id')))
       return
-    except Exception:# pylint: disable=bare-except
+    except Exception:# pylint: disable=broad-except
       sys.exit('ERROR: Something went wrong while creating module.')
 
   def delete_module(self, uid):
@@ -1006,7 +1008,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return False
       for file_i in files:
         return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
-    except Exception:# pylint: disable=bare-except
+    except Exception:# pylint: disable=broad-except
       return False
 
   @classmethod
@@ -1331,7 +1333,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           filepath.append(match[1]['path'])
 
       return filepath if multiple else filepath[0]
-    except Exception:# pylint: disable=bare-except
+    except Exception:# pylint: disable=broad-except
       return False
 
   def get_filepath(self, filename, dirname=None):

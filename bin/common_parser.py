@@ -145,14 +145,14 @@ def validate_sample_file(args):
     return True
   if args.file2 and args.file1.endswith(valid_sample_extensions) and args.file2.endswith(valid_sample_extensions):
     return True
-  sys.exit(f"ERROR: Please provide valid sample file. Available File types - {' '.join(valid_sample_extensions)}")
+  sys.exit('ERROR: Please provide valid sample file. Available File types - {}'.format(' '.join(valid_sample_extensions)))
 
 def validate_conf(args):
   '''Helper to validate the proper configuration argument is being set'''
   if args.config:
     return eprint('Using config file', args.config)
   if 'BP_CONFIG_FILE' in os.environ:
-    return eprint(f"Using config file {os.environ['BP_CONFIG_FILE']}")
+    return eprint('Using config file {}'.format(os.environ['BP_CONFIG_FILE']))
   return sys.exit('ERROR: Please either use the -c or --config param or set the environment variable BP_CONFIG_FILE!')
 
 def validate_analysis_yaml(yaml_argument):
@@ -164,7 +164,7 @@ def validate_analysis_yaml(yaml_argument):
     if not each_yaml.endswith(valid_extensions):
       sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
     elif not os.path.isfile(each_yaml):
-      sys.exit(f'ERROR: File does not exist at {each_yaml}.')
+      sys.exit('ERROR: File does not exist at {}.'.format(each_yaml))
   return True
 
 def validate_update_yaml(args):
@@ -178,7 +178,7 @@ def validate_update_yaml(args):
   if not yaml_path.endswith(valid_extensions):
     sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
   elif not os.path.isfile(yaml_path):
-    sys.exit(f'ERROR: File does not exist at {yaml_path}.')
+    sys.exit('ERROR: File does not exist at {}.'.format(yaml_path))
   return True
 
 def validate_create_yaml(args):
@@ -191,5 +191,5 @@ def validate_create_yaml(args):
     if not yaml_path.endswith(valid_extensions):
       sys.exit('ERROR: Please provide yaml file with extension .yaml, .yml ')
     elif not os.path.isfile(yaml_path):
-      sys.exit(f'ERROR: File does not exist at {yaml_path}.')
+      sys.exit('ERROR: File does not exist at {}.'.format(yaml_path))
   return True
