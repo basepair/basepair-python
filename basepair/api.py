@@ -481,7 +481,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   def get_host_by_domain(self, domain):
     '''Get host by domain'''
-    info = (Host(self.conf.get('api'))).list({
+    info = (Host(self.conf.get('api'))).list(params={
       'domain__exact': domain,
       'limit': 1,
     })
