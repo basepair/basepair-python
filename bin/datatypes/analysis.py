@@ -115,6 +115,12 @@ class Analysis:
       sys.exit('ERROR: while re-analyze the analysis data.')
 
   @staticmethod
+  def terminate_analysis(bp_api, args):
+    '''Terminate analysis'''
+    for each_uid in args.uid:
+      bp_api.terminate_analysis(each_uid, args.instance)
+
+  @staticmethod
   def update_analysis(bp_api, args):
     '''Update analysis'''
     data = {}
@@ -220,6 +226,14 @@ class Analysis:
     )
     reanalyze_p = add_common_args(reanalyze_p)
     reanalyze_p = add_uid_parser(reanalyze_p, 'analysis')
+
+    # terminate parser
+    terminate_p = action_parser.add_parser(
+      'terminate',
+      help='Terminate analyses.'
+    )
+    terminate_p = add_common_args(terminate_p)
+    terminate_p = add_uid_parser(terminate_p, 'analysis')
 
     # update an analysis parser
     update_analysis_parser = action_parser.add_parser(

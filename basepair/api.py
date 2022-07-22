@@ -360,6 +360,19 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     eprint('Analysis {} has been restarted'.format(uid))
     return True
 
+  def terminate_analysis(self, uid):
+    '''Terminate analysis'''
+    payload = {
+      'id': uid,
+      'source': 'cli',
+    }
+    res = Analysis(self.conf.get('api')).terminate(payload=payload)
+    if res.get('error'):
+      eprint('ERROR: Analysis termination process initiation failed - {}'.format(res.get('error')))
+      return False
+    eprint('INFO: Termination process initiated for analysis id - {}.'.format(uid))
+    return True
+
   def update_analysis(self, uid, data):
     '''Update analysis'''
     info = (Analysis(self.conf.get('api'))).save(

@@ -100,7 +100,7 @@ def add_tags_parser(parser):
   )
   return parser
 
-def add_uid_parser(parser,datatype):
+def add_uid_parser(parser, datatype):
   '''Add uid parser'''
   parser.add_argument(
     '-u',
