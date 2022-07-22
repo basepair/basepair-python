@@ -44,3 +44,18 @@ class Analysis(Abstract):
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
+  def terminate(self, payload={}, verify=True):
+    '''Terminate analysis'''
+    try:
+      response = requests.post(
+        '{}terminate'.format(self.endpoint),
+        data=json.dumps(payload),
+        headers=self.headers,
+        params=self.payload,
+        verify=verify,
+      )
+      return self._parse_response(response)
+    except requests.exceptions.RequestException as error:
+      eprint('ERROR: {}'.format(error))
+      return {'error': True, 'msg': error}
+
