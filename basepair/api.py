@@ -368,7 +368,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     }
     res = Analysis(self.conf.get('api')).terminate(payload=payload)
     if res.get('error'):
-      eprint('ERROR: Analysis termination process initiation failed - {}'.format(res.get('error')))
       return False
     eprint('INFO: Termination process initiated for analysis id - {}.'.format(uid))
     return True

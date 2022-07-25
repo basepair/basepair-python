@@ -118,7 +118,7 @@ class Analysis:
   def terminate_analysis(bp_api, args):
     '''Terminate analysis'''
     for each_uid in args.uid:
-      bp_api.terminate_analysis(each_uid, args.instance)
+      bp_api.terminate_analysis(each_uid)
 
   @staticmethod
   def update_analysis(bp_api, args):
