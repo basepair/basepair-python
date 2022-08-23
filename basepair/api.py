@@ -27,12 +27,11 @@ import subprocess
 from subprocess import CalledProcessError
 import time
 import datetime
-import yaml
 
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
 
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
@@ -76,9 +75,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       self.conf = json.load(open(os.environ['BP_CONFIG_FILE']))
     else:
       if 'BP_USERNAME' not in os.environ:
-        sys.exit('ERROR: BP_USERNAME not set in env')
+        eprint('ERROR: BP_USERNAME not set in env')
+        sys.exit(1)
       if 'BP_API_KEY' not in os.environ:
-        sys.exit('ERROR: BP_API_KEY not set in env')
+        eprint('ERROR: BP_API_KEY not set in env')
+        sys.exit(1)
       username = os.environ['BP_USERNAME']
       api_key = os.environ['BP_API_KEY']
       self.conf = {
@@ -92,9 +93,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       }
 
     if self.conf.get('api', {}).get('ssl') is None:
-      sys.exit('ERROR: The config file need to be updated. Please visit:\n \
-                https://test.basepairtech.com/api/v2/users/api_key\n \
-                To get your new config file.')
+      eprint('ERROR: The config file need to be updated. Please visit:')
+      eprint('https://test.basepairtech.com/api/v2/users/api_key')
+      eprint('To get your new config file.')
+      sys.exit(1)
 
     self.scratch = self.conf.get('scratch', scratch).rstrip('/')
     self.use_cache = use_cache
@@ -114,7 +116,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       cache = '{}/json/config.json'.format(self.scratch)
 
     if self.conf.get('api', {}).get('cli'):
-      configuration = User(self.conf.get('api')).get_configuration(cache=cache)
+      configuration = (User(self.conf.get('api'))).get_configuration(cache=cache)
     self.configuration = Parser(configuration)
 
   ################################################################################################
@@ -126,16 +128,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     control_id=None,
     control_ids=[],
     ignore_validation_warnings=False,
-    params={},
+    params=None,
     project_id=None,
     sample_id=None,
     sample_ids=[],
-    pipeline_yaml=None,
-    module_yaml=None
-  ): # pylint: disable=dangerous-default-value,too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+  ): # pylint: disable=dangerous-default-value,too-many-arguments
     '''Create analysis
     Parameters
     ----------
+    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
+
     control_id:                 {str}   Control sample id.
     control_ids:                {list}  Control sample id.
     ignore_validation_warnings: {bool}  Ignore validation warnings
@@ -143,14 +145,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     project_id:                 {str}   Project id.
     sample_id:                  {str}   Sample id.
     sample_ids:                 {list}  List of sample id.
-    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
     '''
-
-    # check for custom modules and pipelines
-    if (pipeline_yaml and module_yaml) or (pipeline_yaml and workflow_id) or (pipeline_yaml and module_yaml and workflow_id): #pylint: disable=too-many-boolean-expressions
-      sys.exit('ERROR: Please select either of custom pipeline or module (in case of custom modules provide pipeline id) for analysis or just pipeline id.')
-    if (not pipeline_yaml and not module_yaml and not workflow_id) or (module_yaml and not workflow_id):
-      sys.exit('ERROR: Please provide --pipeline id.')
 
     # get api version
     prefix = self.conf.get('api', {}).get('prefix', '/api/v2/')
@@ -158,6 +153,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       control_ids.append(control_id)
     if sample_id:
       sample_ids.append(sample_id)
+
+    # check if valid workflow id
+    if not self._check_workflow(workflow_id):
+      return None
+
+    # check if all sample ids are valid
+    if not all((self._check_sample(item_id) for item_id in sample_ids)):
+      return None
 
     data = {
       'controls': self._parsed_sample_list(control_ids, prefix),
@@ -167,118 +170,53 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'workflow': '{}pipelines/{}'.format(prefix, workflow_id)
     }
 
-    if params.get('info', {}).get('instance_type'):
-      data['instance'] = params['info']['instance_type']
-
     if project_id:
       data['projects'] = ['{}projects/{}'.format(prefix, project_id)]
-
-    if pipeline_yaml:
-      try:
-        path = os.path.abspath(os.path.expanduser(os.path.expandvars(pipeline_yaml)))
-        with open(path, 'r') as file:
-          yaml_string = file.read()
-        pipeline_yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-        pipeline_id = pipeline_yaml_data.get('id')
-      except Exception: # pylint: disable=bare-except
-        sys.exit('ERROR: Unable to parse pipeline yaml file.')
-      data['yaml'] = {'pipeline_data': yaml_string}
-      data['workflow'] = '{}pipelines/{}'.format(prefix, pipeline_id)
-
-    if module_yaml:
-      try:
-        module_data = []
-        for each_yaml in module_yaml:
-          path = os.path.abspath(os.path.expanduser(os.path.expandvars(each_yaml)))
-          with open(path, 'r') as file:
-            yaml_string = file.read()
-            module_data.append(yaml_string)
-          module_yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-          module_id = module_yaml_data.get('id')
-          if not module_id:
-            sys.exit('ERROR: Please provide module id in yaml file.')
-      except Exception:# pylint: disable=bare-except
-        sys.exit('ERROR: Unable to parse pipeline yaml file.')
-      data['yaml'] = {'module_data': module_data}
-
-    if self.verbose:
-      temp_data = data.copy()
-      if data.get('yaml'):
-        temp_data['yaml'] = True
-      eprint(json.dumps(temp_data, indent=2))
+    eprint(json.dumps(data, indent=2))
 
     if params:
       data['params'] = params
 
     analysis_api = Analysis(self.conf.get('api'))
-    info = analysis_api.save(payload=data, datatype='analysis')
-    if info.get('warning'):
-      answer = self.yes_or_no('Are you sure you want to proceed?')
-      if answer:
-        return self.create_analysis(
-          control_ids=control_ids,
-          ignore_validation_warnings=True,
-          module_yaml=module_yaml,
-          params=params,
-          pipeline_yaml=pipeline_yaml,
-          project_id=project_id,
-          sample_ids=sample_ids,
-          workflow_id=workflow_id
-        )
-    if info.get('error'):
-      sys.exit('ERROR: Analysis creation failed!')
+    info = analysis_api.save(payload=data)
     analysis_id = info.get('id')
     if self.verbose and analysis_id:
       eprint('created: analysis {} with sample id(s) {}'.format(
-        analysis_id,
-        ','.join(sample_ids),
+          analysis_id,
+          ','.join(sample_ids),
       ))
     return analysis_id
 
   def delete_analysis(self, uid):
     '''Delete method'''
-    info = (Analysis(self.conf.get('api'))).delete(uid)
-    if info.get('error'):
-      return False
+    return (Analysis(self.conf.get('api'))).delete(uid)
 
-    if self.verbose:
-      eprint('deleted analysis', uid)
-    return info
-
-  def download_analysis(self, uid, analysis=None, outdir='.', tagkind=None, tags=None):# pylint:disable=too-many-arguments
+  def download_analysis(self, uid, outdir='.', tagkind=None, tags=None):
     '''
     Download files from one or more analysis.
     Parameters
     ----------
-    outdir:   {str}  Output directory to download results to
-    tagkind:  {str}  Type of tag filtering to do. Options: exact, diff, subset
-    tags:     {list} List of list of tags to filter files by
-    analysis: {dict} Analysis data for the uid
-    uid:      {int}  Unique id of the analysis             [Required]
+    uid:     {int}  One or more uids identifying the analysesself             [Required]
+    outdir:  {str}  Output directory to download results to
+    tagkind: {str}  Type of tag filtering to do. Options: exact, diff, subset
+    tags:    {list} List of list of tags to filter files by
     '''
     if tags:
       is_not_valid = not (isinstance(tags, list) and isinstance(tags[0], list))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
-        return False
-
-    success = False
-    if analysis['files']:
-      try:
-        return self.get_analysis_files(
-          analysis=analysis,
-          dirname=outdir,
-          kind=tagkind,
-          tags=tags,
-          uid=uid
-        )
-      except PermissionError:
-        eprint('ERROR: Permission denied for the specified outdir.')
-      except Exception:# pylint: disable=bare-except
-        eprint('ERROR: Something went wrong while downloading analysis.')
-    else:
-      eprint('Warning: No files present for analysis id {}'.format(uid))
-    return success
+        return None
+    if not isinstance(uid, list):
+      uid = [uid]
+    for item_id in uid:
+      analysis = self.get_analysis(item_id)
+      self.get_analysis_files(
+        analysis=analysis,
+        dirname=outdir,
+        kind=tagkind,
+        tags=tags,
+      )
+    return None
 
   def fusionsalysis(
     self,
@@ -289,10 +227,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample_id=None,
     sample_ids=[]
   ): # pylint: disable=dangerous-default-value,too-many-arguments
-    '''fusion analysis
+    '''Create analysis
     Parameters
     ----------
-    workflow_id:                {str}   Pipeline id. Run bp.get_workflows() to see what is available.  [Required]
+    Parameters
+    ----------
+    workflow_id:                {str}   Workflow id. Run bp.get_workflows() to see what is available.  [Required]
+
     control_id:                 {str}   Control sample id.
     control_ids:                {list}  Control sample id.
     params:                     {dict}  Dictionary of parameter values.
@@ -326,10 +267,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return analysis_id
 
   def get_analysis(self, uid):
-    '''Get analysis'''
+    '''Get resource'''
     return (Analysis(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/analysis.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+        uid,
+        cache='{}/json/analysis.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def get_analysis_owner(self, analysis_id):
@@ -341,90 +282,60 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get resource list'''
     return (Analysis(self.conf.get('api'))).list_all(filters=filters)
 
-  def get_instances(self):
-    '''get all available instances for analysis'''
-    res = Instance(self.conf.get('api')).list()
-    return res['data']
-
-  def restart_analysis(self, uid, instance_type):
-    '''Restart analysis'''
-    payload = {
-      'id': uid,
-      'source': 'cli',
-    }
-    if instance_type:
-      payload.update(instance_type=instance_type)
-    res = Analysis(self.conf.get('api')).reanalyze(payload=payload)
-    if res.get('error'):
-      return False
-    eprint('Analysis {} has been restarted'.format(uid))
-    return True
-
-  def terminate_analysis(self, uid):
-    '''Terminate analysis'''
-    payload = {
-      'id': uid,
-      'source': 'cli',
-    }
-    res = Analysis(self.conf.get('api')).terminate(payload=payload)
-    if res.get('error'):
-      return False
-    eprint('INFO: Termination process initiated for analysis id - {}.'.format(uid))
-    return True
-
   def update_analysis(self, uid, data):
-    '''Update analysis'''
+    '''Update resource'''
     info = (Analysis(self.conf.get('api'))).save(
-      obj_id=uid,
-      payload=data,
+        obj_id=uid,
+        payload=data,
     )
     if info.get('error'):
-      sys.exit('ERROR: couldn\'t update analysis {}.'.format(uid))
+      eprint('couldn\'t update analysis {}, msg: {}'.format(uid, info.get('msg')))
+      return None
 
     if self.verbose:
-      eprint('analysis {} updated'.format(uid))
+      eprint('analysis', uid, 'updated')
     return info
 
   ################################################################################################
   ### FILE #######################################################################################
   ################################################################################################
   def create_file(self, uid, data):
-    '''Create file'''
+    '''Create resource'''
     return (File(self.conf.get('api'))).save(obj_id=uid, payload=data)
 
   def get_file(self, uid):
-    '''Get file'''
+    '''Get resource'''
     return (File(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/file.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+        uid,
+        cache='{}/json/file.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def update_file(self, uid, data):
-    '''Update file'''
+    '''Update resource'''
     return (File(self.conf.get('api'))).save(obj_id=uid, payload=data)
 
   ################################################################################################
   ### GENE #######################################################################################
   ################################################################################################
   def create_gene(self, data):
-    '''Create gene'''
+    '''Create resource'''
     return (Gene(self.conf.get('api'))).save(payload=data)
 
   def delete_gene(self, uid):
-    '''Delete gene'''
+    '''Delete method'''
     return (Gene(self.conf.get('api'))).delete(uid)
 
   def get_gene(self, uid):
-    '''Get gene'''
+    '''Get resource'''
     return (Gene(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/gene.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+        uid,
+        cache='{}/json/gene.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def get_genes(self):
-    '''Get genes list'''
+    '''Get resource list'''
     info = (Gene(self.conf.get('api'))).list(
-      params={'limit': 0}
+        params={'limit': 0}
     )
     return info.get('objects', [])
 
@@ -441,7 +352,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return info.get('objects', [])
 
   def update_gene(self, uid, data):
-    '''Update gene'''
+    '''Update resource'''
     info = (Gene(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
       eprint('gene', uid, 'updated')
@@ -451,26 +362,26 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### GENOME #####################################################################################
   ################################################################################################
   def create_genome(self, data):
-    '''Create genome'''
+    '''Create resource'''
     return (Genome(self.conf.get('api'))).save(payload=data)
 
   def delete_genome(self, uid):
-    '''Delete genome'''
+    '''Delete method'''
     return (Genome(self.conf.get('api'))).delete(uid)
 
   def get_genome(self, uid):
-    '''Get genome'''
+    '''Get resource'''
     return (Genome(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+        uid,
+        cache='{}/json/genome.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   def get_genomes(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get genomes list'''
+    '''Get resource list'''
     return (Genome(self.conf.get('api'))).list_all(filters=filters)
 
   def update_genome(self, uid, data):
-    '''Update genome'''
+    '''Update resource'''
     info = (Genome(self.conf.get('api'))).save(obj_id=uid, payload=data)
     if self.verbose and not info.get('error'):
       eprint('genome', uid, 'updated')
@@ -493,185 +404,60 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   def get_host_by_domain(self, domain):
     '''Get host by domain'''
-    info = (Host(self.conf.get('api'))).list(params={
-      'domain__exact': domain,
-      'limit': 1,
+    info = (Host(self.conf.get('api'))).list({
+        'domain__exact': domain,
+        'limit': 1,
     })
     return info.get('objects')[0] if info.get('objects') else None
 
   ################################################################################################
   ### MODULE #####################################################################################
   ################################################################################################
-  def create_module(self, data):
-    '''create module from yaml'''
-    try:
-      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-      with open(path, 'r') as file:
-        yaml_string = file.read()
-      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-      if not yaml_data.get('name'):
-        sys.exit('ERROR: Please provide module name in YAML')
-      payload = {'data': yaml_string}
-      info = (Module(self.conf.get('api'))).save(payload=payload)
-      if info.get('error') and 'already exists' in info.get('error'):
-        forced = data.get('force')
-        message = 'Using force override the existing resource' if forced else 'A module with id {} already exists, do you want to overwrite it?'.format(yaml_data.get("id"))
-        forced and eprint(message)
-        return (forced or BpApi.yes_or_no(message)) and self.update_module(data)
-      if info.get('error'):
-        sys.exit('ERROR: module creation failed')
-      if info.get('id'):
-        eprint('created: module {} with id {}'.format(info.get('name'), info.get('id')))
-      return
-    except Exception:# pylint: disable=broad-except
-      sys.exit('ERROR: Something went wrong while creating module.')
-
-  def delete_module(self, uid):
-    '''Delete module'''
-    info = (Module(self.conf.get('api'))).delete(uid)
-    if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return False
-
-    if self.verbose:
-      eprint('deleted module', uid)
-    return info
-
   def get_module(self, uid):
-    '''Get module'''
+    '''Get resource'''
     return (Module(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+        uid,
+        cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
-
-  def get_pipeline_modules(self, uid):
-    '''Get modules of a pipeline'''
-    return (Module(self.conf.get('api'))).get_pipeline_modules(
-      uid,
-      cache='{}/json/module.{}.json'.format(self.scratch, uid) if self.use_cache else False,
-    )
-
-  def update_module(self, data):
-    '''update module from yaml'''
-    try:
-      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-      with open(path, 'r') as file:
-        yaml_string = file.read()
-      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-      module_id = yaml_data.get('id')
-      if not yaml_data.get('name'):
-        sys.exit('ERROR: Please provide module name in YAML')
-      if not module_id:
-        sys.exit('ERROR: Please provide module id in YAML')
-      payload = {'data': yaml_string}
-      info = (Module(self.conf.get('api'))).save(obj_id=module_id, payload=payload)
-      if info.get('error'):
-        sys.exit('ERROR: failed while updating module')
-      if info.get('id'):
-        eprint('updated: module {} with id {}'.format(info.get('name'), info.get('id')))
-    except Exception:# pylint: disable=bare-except
-      sys.exit('ERROR: Something went wrong while updating module.')
 
   ################################################################################################
   ### PIPELINE / WORKFLOW ########################################################################
   ################################################################################################
-  def create_pipeline(self,data):
-    '''create pipeline from yaml'''
-    try:
-      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-      with open(path, 'r') as file:
-        yaml_string = file.read()
-      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-      if not yaml_data.get('name'):
-        sys.exit('Please provide pipeline name in YAML')
-      payload = {'data': yaml_string}
-      info = (Pipeline(self.conf.get('api'))).save(payload=payload)
-      if info.get('error') and 'already exists' in info.get('error'):
-        forced = data.get('force')
-        message = 'Using force override the existing resource' if forced else 'A pipeline with id {} already exists, do you want to overwrite it?'.format(yaml_data.get("id"))
-        forced and eprint(message)
-        return (forced or BpApi.yes_or_no(message)) and self.update_pipeline(data)
-      if info.get('error'):
-        sys.exit('ERROR: pipeline creation failed')
-      if info.get('id'):
-        eprint('created: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
-        return
-    except Exception:# pylint: disable=bare-except
-      sys.exit('ERROR: Something went wrong while creating pipeline.')
+  def get_workflow(self, uid):
+    '''Get resource'''
+    return (Pipeline(self.conf.get('api'))).get(
+        uid,
+        cache='{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
 
-  def delete_pipeline(self, uid):
-    '''Delete pipelines'''
-    info = Pipeline(self.conf.get('api')).delete(uid)
-    if info.get('error'):
-      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
-      return False
-
-    if self.verbose:
-      eprint('deleted pipeline', uid)
-    return info
-
-  def get_pipeline(self, uid):
-    '''Get pipeline'''
-    cache = '{}/json/workflow.{}.json'.format(self.scratch, uid) if self.use_cache else False
-    return Pipeline(self.conf.get('api')).get(uid, cache=cache)
-
-  def get_pipelines(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get pipelines list'''
-    return Pipeline(self.conf.get('api')).list_all(filters=filters)
-
-  def update_pipeline(self,data):
-    '''update pipeline from yaml'''
-    try:
-      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-      with open(path, 'r') as file:
-        yaml_string = file.read()
-      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-      workflow_id = yaml_data.get('id')
-      if not yaml_data.get('name'):
-        sys.exit('Please provide pipeline name in YAML')
-      if not yaml_data.get('id'):
-        sys.exit('Please provide pipeline id in YAML')
-      payload = {'data': yaml_string}
-      info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
-      if info.get('error'):
-        sys.exit('ERROR: failed while updating pipeline')
-      if info.get('id'):
-        eprint('updated: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
-        return
-    except Exception:# pylint: disable=bare-except
-      sys.exit('ERROR: Something went wrong while updating pipeline.')
+  def get_workflows(self, filters={}): # pylint: disable=dangerous-default-value
+    '''Get resource list'''
+    return (Pipeline(self.conf.get('api'))).list_all(filters=filters)
 
   ################################################################################################
   ### PROJECT ####################################################################################
   ################################################################################################
   def create_project(self, data):
-    '''Create project'''
+    '''Create resource'''
     info = (Project(self.conf.get('api'))).save(payload=data)
     if self.verbose == 2:
       eprint('Creating project:')
       eprint('Data:', data)
 
     project_id = info.get('id', None)
-    if project_id and self.verbose:  # success
-      eprint('created: project with id', project_id)
+    if project_id:  # success
+      if self.verbose:
+        eprint('created: project with id', project_id)
     else:  # failure
       eprint('failed project creation:', data['name'], info.get('msg'))
     return project_id
 
-  def get_project(self, uid):
-    '''Get project'''
-    return Project(self.conf.get('api')).get(uid)
-
-  def get_projects(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get project list'''
-    return Project(self.conf.get('api')).list_all(filters=filters)
-
   def update_project(self, uid, data, params=None):
-    '''Update project'''
-    info = Project(self.conf.get('api')).save(
-      obj_id=uid,
-      payload=data,
-      params=params
+    '''Update resource'''
+    info = (Project(self.conf.get('api'))).save(
+        obj_id=uid,
+        payload=data,
+        params=params
     )
     if self.verbose and not info.get('error'):
       eprint('project', uid, 'updated')
@@ -685,20 +471,36 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     Parameters
     ----------
-    data   : {dict}  Dictionary of sample information.
-    source : {str}   source of the request
-    upload : {bool}  Whether to upload the sample to the server or not.
+    data : dict
+        Dictionary of sample information.
+
+    source : str
+        TODO
+
+    upload : bool
+        Whether to upload the sample to the server or not.
+
     '''
-    data['meta'] = {'source': source}
+
     # get api version
     prefix = self.conf.get('api', {}).get('prefix', '/api/v2/')
 
     # some input validation
     data['genome'] = self._get_genome_by_name(data.get('genome'))
 
+    if data.get('default_workflow'):
+      if not self._check_workflow(data['default_workflow']):
+        del data['default_workflow']
+        eprint('Provided workflow is not valid.')
+
+    if 'filepaths1' in data and data['filepaths1'] is None:
+      if self.verbose:
+        eprint('filepaths1 is None.')
+      del data['filepaths1']
+
     if 'filepaths2' in data and data['filepaths2'] is None:
       if self.verbose:
-        eprint('file path 2 is None.')
+        eprint('filepaths2 is None.')
       del data['filepaths2']
 
     # if only one sample as str, but into list
@@ -709,41 +511,49 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       data['filepaths2'] = [data['filepaths2']]
 
     if data.get('filepaths2') and not data.get('filepaths1'):
-      sys.exit('ERROR: Parameter filepaths1 cannot be empty if filepaths2 is specified.')
+      eprint('ERROR: Parameter filepaths1 cannot be empty if filepaths2 is specified.')
+      return None
 
     # validate unique file between filepaths1 and filepaths2
-    does_repeat = data.get('filepaths2') \
+    does_repeast = data.get('filepaths2') \
       and any(path in data.get('filepaths2') for path in data.get('filepaths1'))
-    if does_repeat:
-      sys.exit('ERROR: Same file cannot be use in filepaths1 and filepaths2.')
+    if does_repeast:
+      eprint('ERROR: Same file cannot be use in filepaths1 and filepaths2.')
+      return None
 
     if data.get('default_workflow'):
       data['default_workflow'] = '{}pipelines/{}'.format(prefix, data['default_workflow'])
 
     if data.get('projects'):
-      data['projects'] = ['{}projects/{}'.format(prefix, data['projects'])]
+      project = (Project(self.conf.get('api'))).get(data.get('projects'))
+      if project.get('error'):
+        eprint('ERROR: Looking for project. {}'.format(project.get('msg')))
+        return None
+      data['projects'] = [project.get('resource_uri')]
 
-    info = (Sample(self.conf.get('api'))).save(payload=data, datatype='sample')
-    if not info.get('id'):
-      sys.exit('ERROR: Sample creation failed.')
+    info = (Sample(self.conf.get('api'))).save(payload=data)
     sample_id = info.get('id')
 
     if self.verbose == 2:
       eprint('Creating sample:')
       eprint('Data:', data)
 
-    if sample_id and self.verbose:  # success
-      eprint('created: sample with id', sample_id)
+    if sample_id:  # success
+      if self.verbose:
+        eprint('created: sample with id', sample_id)
+    else:  # failure
+      eprint('failed sample creation:', data['name'], info.get('msg'))
+      return None
 
     # do the actual upload, update filepath
     files_to_upload = []
     for path in data.get('filepaths1', []):
       path = os.path.abspath(os.path.expanduser(
-        os.path.expandvars(path)
+          os.path.expandvars(path)
       ))
     for path in data.get('filepaths2', []):
       path = os.path.abspath(os.path.expanduser(
-        os.path.expandvars(path)
+          os.path.expandvars(path)
       ))
 
     # if a sample id exists, then upload the files
@@ -757,11 +567,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint('Creating upload {}'.format(filepath))
 
       upload_id, filepath, key = self.create_upload(
-        sample_id,
-        filepath,
-        order,
-        is_paired_end=filepath in data.get('filepaths2', []),
-        source=source
+          sample_id,
+          filepath,
+          order,
+          is_paired_end=filepath in data.get('filepaths2', []),
+          source=source
       )
       files_to_upload.append([upload_id, filepath, key])
       order += 1
@@ -770,27 +580,30 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       for upload_id, filepath, key in files_to_upload:
         if self.verbose:
           eprint('Uploading. upload_id: {}, filepath: {}, key: {}'.format(
-            upload_id,
-            filepath,
-            key
+              upload_id,
+              filepath,
+              key
           ))
         self.upload_file(upload_id, filepath, key)
     return sample_id
 
   def delete_sample(self, uid):
-    '''Delete sample'''
-    info = Sample(self.conf.get('api')).delete(uid)
+    '''Delete method'''
+    info = (Sample(self.conf.get('api'))).delete(uid)
     if info.get('error'):
-      return False
+      eprint('error: deleting {}, msg: {}'.format(uid, info.get('msg')))
+      return None
 
     if self.verbose:
       eprint('deleted sample', uid)
     return info
 
   def get_sample(self, uid, add_analysis=True):
-    '''Get sample'''
-    cache = '{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False
-    info = Sample(self.conf.get('api')).get(uid, cache=cache)
+    '''Get resource'''
+    info = (Sample(self.conf.get('api'))).get(
+        uid,
+        cache='{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+    )
     if info and add_analysis:
       info = self._add_full_analysis(info)
     return info
@@ -801,15 +614,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return self.get_user(user_id) if user_id else None
 
   def get_samples(self, filters={}): # pylint: disable=dangerous-default-value
-    '''Get samples list'''
-    return Sample(self.conf.get('api')).list_all(filters=filters)
+    '''Get resource list'''
+    return (Sample(self.conf.get('api'))).list_all(filters=filters)
 
   def samples_by_name(self, name, project_id=None):
     '''Get sample id from name'''
-    return Sample(self.conf.get('api')).by_name(name, project_id)
+    return (Sample(self.conf.get('api'))).by_name(name, project_id)
 
   def update_sample(self, uid, data):
-    '''Update sample'''
+    '''Update resource'''
     genome = data.get('genome')
     if genome:
       data['genome'] = self._get_genome_by_name(genome)
@@ -840,15 +653,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # update record with location of uploaded file
     info = (Upload(self.conf.get('api'))).save(payload={
-      'filesize': filesize,
-      'is_paired_end': is_paired_end,
-      'key': key,
-      'order': order,
-      'sample': '{}samples/{}'.format(prefix, sample_id),
-      'source': source,
-      'status': status,
-      'uri': uri,
-      # 'timetaken': seconds_to_upload,
+        'filesize': filesize,
+        'is_paired_end': is_paired_end,
+        'key': key,
+        'order': order,
+        'sample': '{}samples/{}'.format(prefix, sample_id),
+        'source': source,
+        'status': status,
+        'uri': uri,
+        # 'timetaken': seconds_to_upload,
     })
     upload_id = info.get('id')
     if upload_id:
@@ -871,7 +684,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def get_uploads(self, params={'limit': 0}): # pylint: disable=dangerous-default-value
     '''Get resource list'''
     info = (Upload(self.conf.get('api'))).list(
-      params=params
+        params=params
     )
     return info.get('objects', [])
 
@@ -885,10 +698,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     response = self.copy_file(filepath, key, action='to')
     seconds_to_upload = int(time.time() - starttime)
     (Upload(self.conf.get('api'))).save(obj_id=upload_id, payload={
-      'filesize': os.stat(filepath).st_size,
-      'seq_length': 0,
-      'status': 'completed' if response else 'failed',
-      'timetaken': seconds_to_upload,
+        'filesize': os.stat(filepath).st_size,
+        'seq_length': 0,
+        'status': 'completed' if response else 'failed',
+        'timetaken': seconds_to_upload,
     })
 
   def upload_uri_to_id(self, uri):
@@ -906,10 +719,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ### USER #######################################################################################
   ################################################################################################
   def get_user(self, uid):
-    '''Get user'''
+    '''Get resource'''
     return (User(self.conf.get('api'))).get(
-      uid,
-      cache='{}/json/user.{}.json'.format(self.scratch, uid) if self.use_cache else False,
+        uid,
+        cache='{}/json/user.{}.json'.format(self.scratch, uid) if self.use_cache else False,
     )
 
   ################################################################################################
@@ -925,15 +738,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     Low level function to copy a file from cloud to disk
     Parameters
     ----------
-    dest: {str} Directory or file path where file will be downloaded to [Required]
     src:  {str} File path on AWS S3, not including the bucket           [Required]
+    dest: {str} Directory or file path where file will be downloaded to [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
     if not src.startswith('s3://'):
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
-      eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
+      eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd, retry=3)
 
   def copy_file_to_s3(self, src, dest, params=None):
@@ -945,7 +758,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd)
 
-  def download_file(self, filekey, uid=None, filename=None, file_type=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments,too-many-branches
+  def download_file(self, filekey, filename=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -954,74 +767,64 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     filekey:  {str}   The full file path on AWS S3               [Required]
     dirname:  {str}   Directory to download the file to
     filename: {str}   Give the download file a new name
-    filetype: {str}   datatype to be downloaded
     isjson:   {bool}  Whether the downloaded file is JSON format
     load:     {bool}  Load the file after downloading
-    uid:      {int}   Unique id of the datatype
     Returns
     -------
     Absolute filepath to downloaded file
     '''
-    try:
+
+    if not filename:
+      # don't renaming the file
       # get the download directory
       prefix = self.scratch
-      if file_type == 'analyses':
-        analyses_type_path = os.path.dirname(filekey)
-        analyses_type = os.path.basename(analyses_type_path)
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
-      suffix = 'basepair/'
-      if file_type == 'analyses' and uid:
-        suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
-      elif file_type and uid:
-        suffix = 'basepair/{}/{}'.format(file_type, uid)
-      elif file_type:
-        suffix = 'basepair/{}'.format(file_type)
-      elif uid:
-        suffix = 'basepair/{}'.format(uid)
-      added_path = os.path.join(prefix, suffix)
-      if not os.path.isdir(added_path):
-        os.makedirs(added_path)
-      # rename the file if filename present otherwise use filekey
-      filepath = os.path.join(added_path, os.path.basename(filename if filename else filekey))
-      filepath = os.path.expanduser(filepath)
-      # if file not already there, download it
-      if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-        if self.verbose:
-          eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
-        if not os.path.exists(os.path.dirname(filepath)):
-          os.makedirs(os.path.dirname(filepath))
-        self.copy_file(filekey, filepath, action='from')
-      elif self.verbose:
-        eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
+      filepath = os.path.join(prefix, os.path.basename(filekey))
+    else:
+      # rename the download file
+      filepath = self.get_filepath(filename, dirname=dirname)
+    filepath = os.path.expanduser(filepath)
 
-      if load:
-        data = open(filepath, 'r').read().strip()
-        return json.loads(data) if is_json else data
-      return filepath
-    except Exception:# pylint: disable=bare-except
-      return False
+    # if file not already there, download it
+    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+      if self.verbose:
+        eprint('downloading', filepath)
+      if not os.path.exists(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
+      self.copy_file(filekey, filepath, action='from')
+    elif self.verbose:
+      eprint('exists', filepath)
 
-  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None,):
+    if load:
+      data = open(filepath, 'r').read().strip()
+      return json.loads(data) if is_json else data
+    return filepath
+
+  def download_raw_files(self, sample, outdir=None):
     '''
     Download raw data associated with a sample
     Parameters
     ----------
-    file_type: {str}  Datatype to be downloaded
-    outdir:    {str}  Output directory to save files to
-    sample:    {dict} From calling bp.get_sample()       [Required]
-    uid:       {int}  unique id for the datatype
+    sample: {dict} From calling bp.get_sample()       [Required]
+    outdir: {str}  Output directory to save files to
     '''
-    try:
-      uploads = sample['uploads']
-      files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
-      if not files:
-        eprint('Warning: No files present for sample with id {}'.format(uid))
-        return False
-      for file_i in files:
-        return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
-    except Exception:# pylint: disable=broad-except
-      return False
+    uploads = sample['uploads']
+    files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
+    files_downloaded = []
+    for file_i in files:
+      outdir = outdir if outdir else self.scratch
+      fileout = os.path.join(outdir, os.path.split(file_i)[1])
+      if os.path.exists(fileout):
+        eprint('Not downloading. File exists: {}'.format(fileout))
+        output = True
+      else:
+        output = self.copy_file_from_s3(file_i, outdir)
+
+      if output:
+        eprint('Downloaded {} to {}.'.format(os.path.split(file_i)[1], outdir))
+        files_downloaded.append(fileout)
+    return files_downloaded
 
   @classmethod
   def filter_files_by_tags(cls, files, tags, exclude=None, kind='exact', multiple=False): # pylint: disable=too-many-arguments
@@ -1072,7 +875,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return files[0:1]
     return files
 
-  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', tags=None):  # pylint: disable=too-many-arguments
+  def get_analysis_files(self, analysis, dirname=None, kind='exact', tags=None):  # pylint: disable=too-many-arguments
     '''
     For a analysis, go through files and get that match the tags
     Parameters
@@ -1081,14 +884,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname:  {str}   Directory to download files to
     kind:     {str}   Type of tag filtering. Options: exact, subset
     tags:     {list}  List of lists of tags to filter by
-    uid:      {int}   Unique analysis id
     '''
     # some input checking
     if tags:
       is_not_valid = not (isinstance(tags, list) and all((isinstance(item, list) for item in tags)))
       if is_not_valid:
         eprint('Invalid tags argument. Provide a list of list of tags.')
-        return False
+        return None
     else:
       tags = [None]
 
@@ -1107,8 +909,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return [self.download_file(
       matching_file['path'],
       dirname=dirname,
-      uid=uid,
-      file_type='analyses'
     ) for matching_file in matching_files] if matching_files else None
 
   def get_bam_file(self, sample, tags=None, multiple=False):
@@ -1137,8 +937,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     ----------
     src:    {str}     Path to file on AWS S3                                          [Required]
     dest:   {str}     Destination directory or path where file will be downloaded to  [Required]
-    params: {dict}    Other download paramters
     sse:    {bool}    Whether to use sever side encryption
+    params: {dict}    Other download paramters
     '''
     _params = ''
     if sse:
@@ -1184,7 +984,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if should_continue:
         continue
 
-      matching_file = self._filter_files_by_node(analysis['files'], node, multiple=multiple)
+      matching_file = self._filter_files_by_node(
+          analysis['files'], node, multiple=multiple)
 
       if matching_file:
         if multiple:
@@ -1230,123 +1031,118 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname=None,
     download=True,
     exclude=None,
-    file_type=None,
     kind='exact',
     multiple=False,
     tags=None,
-    uid=None
     #workflow_id=None,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
     '''
     For a sample, go through analysis and get files that match the tags.
     Parameters
-    ----------                              
+    ----------
+    sample:        {dict} Sample information                                       [Required]
     analysis_tags: {list} Analysis tags to filter analyses when looking for files
     dest:          {str}  File name to save the file to
     dirname:       {str}  Ouput directory to save the file to
     download:      {bool} Whether to download the file(s)
     exclude:       {list} List of tags to exclude
-    file_type:     {str}  Datatype to download ex - analyses, file, sample
     kind:          {str}  Type of tag filtering to do. Options: exact, diff, or subset
     multiple:      {bool} Whether to return multiple files or just the first one
-    sample:        {dict} Sample information   [Required]
     tags:          {list} List of list of tags for file filtering. If just list of tags, will convert to list of lists.
-    uid:           {int}  Workflow id to look for files in.
+    workflow_id:   {int}  Workflow id to look for files in. NOT IMPLEMENTED YE
     '''
-    try:
-      # some error checking
-      if tags is None:
-        eprint("Tags is None")
-        return False
+    # some error checking
+    if tags is None:
+      eprint("Tags is None")
+      return None
 
-      # make sure tags is a list of lists
-      if isinstance(tags, list):
-        if not isinstance(tags[0], list):
-          tags = [tags]
+    # make sure tags is a list of lists
+    if isinstance(tags, list):
+      if not isinstance(tags[0], list):
+        tags = [tags]
 
-      matches = []
-      matching_file = []
-      for analysis in sample['analyses_full']:
-        if analysis['status'] == 'error':
-          eprint('analysis ended in error, skipping.')
+    matches = []
+    matching_file = []
+    for analysis in sample['analyses_full']:
+      if analysis['status'] == 'error':
+        eprint('analysis ended in error, skipping.')
+        continue
+
+      # dont even look if not the right type of analysis
+      should_continue = analysis_tags and not(
+        analysis['tags'] and set(analysis_tags) <= set(analysis['tags'])
+      )
+      if should_continue:
+        continue
+
+      if analysis['params'] and 'info' in analysis['params']:
+        if not analysis['params']['info'].get('genome_id'):
+          eprint('Could not find genome for analysis {}'.format(analysis['id']))
           continue
-
-        # dont even look if not the right type of analysis
-        should_continue = analysis_tags and not(
-          analysis['tags'] and set(analysis_tags) <= set(analysis['tags'])
-        )
-        if should_continue:
+        sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
+        if not sample_genome_id:
+          eprint('Could not find genome for analysis {}'.format(analysis['id']))
           continue
-
-        if analysis['params'] and 'info' in analysis['params']:
-          if not analysis['params']['info'].get('genome_id'):
-            eprint('Could not find genome for analysis {}'.format(analysis['id']))
-            continue
-          sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
-          if not sample_genome_id:
-            eprint('Could not find genome for analysis {}'.format(analysis['id']))
-            continue
-          if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
-            eprint(
-              'analysis genome {}'.format(analysis['params']['info']['genome_id']),
-              'different from sample genome {}.'.format(sample_genome_id),
-            )
-            continue
-
-        if self.verbose:
-          eprint('looking at', analysis['id'], 'status', analysis['status'])
-        for tags_sub in tags:
-          filtered_files = self.filter_files_by_tags(
-            analysis['files'],
-            tags_sub,
-            exclude=exclude,
-            kind=kind,
-            multiple=multiple,
+        if int(analysis['params']['info']['genome_id']) != int(sample_genome_id):
+          eprint(
+            'analysis genome {}'.format(analysis['params']['info']['genome_id']),
+            'different from sample genome {}.'.format(sample_genome_id),
           )
+          continue
 
-          if filtered_files:
-            matching_file += filtered_files
-
-        if matching_file:
-          if multiple:
-            for file in matching_file:
-              matches.append([analysis['id'], file])
-          else:
-            matches.append([analysis['id'], matching_file[0]])
-
-      if not matches:
-        eprint('WARNING: no matching file for', tags)
-        eprint('in analyses with ids', [analysis['id'] for analysis in sample['analyses_full']])
-        eprint('for sample', sample['id'])
-        return False
-
-      if len(matches) > 1:
-        matches.sort(
-          key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
-          reverse=True,
+      if self.verbose:
+        eprint('looking at', analysis['id'], 'status', analysis['status'])
+      for tags_sub in tags:
+        filtered_files = self.filter_files_by_tags(
+          analysis['files'],
+          tags_sub,
+          exclude=exclude,
+          kind=kind,
+          multiple=multiple,
         )
-        if not multiple:
-          eprint('WARNING: multiple matching file for', tags)
-        for match in matches:
-          eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-      filepath = []
-      for match in matches:
-        if download:
-          path = self.download_file(match[1]['path'], dirname=dest, filename=dest, file_type=file_type, uid=uid) if dest \
-            else self.download_file(match[1]['path'], dirname=dirname, file_type=file_type, uid=uid)
+        if filtered_files:
+          matching_file += filtered_files
 
-          # if did download it then we added to the filepath else continue
-          if os.path.isfile(path):
-            filepath.append(path)
-            if not multiple:
-              break
+      if matching_file:
+        if multiple:
+          for file in matching_file:
+            matches.append([analysis['id'], file])
         else:
-          filepath.append(match[1]['path'])
+          matches.append([analysis['id'], matching_file[0]])
 
-      return filepath if multiple else filepath[0]
-    except Exception:# pylint: disable=broad-except
-      return False
+    if not matches:
+      eprint('WARNING: no matching file for', tags)
+      eprint('in analyses with ids', [analysis['id'] for analysis in sample['analyses_full']])
+      eprint('for sample', sample['id'])
+      return None
+
+    if len(matches) > 1:
+      matches.sort(
+        key=lambda match: datetime.datetime.strptime(match[1]['last_updated'], '%Y-%m-%dT%H:%M:%S.%f'),
+        reverse=True,
+      )
+      if not multiple:
+        eprint('WARNING: multiple matching file for', tags)
+      for match in matches:
+        eprint('\t', match[1]['last_updated'], match[1]['path'])
+
+
+    filepath = []
+    for match in matches:
+      if download:
+        path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
+          else self.download_file(match[1]['path'], dirname=dirname)
+
+         # if did download it then we added to the filepath else continue
+        if os.path.isfile(path):
+          filepath.append(path)
+          if not multiple:
+            break
+      else:
+        filepath.append(match[1]['path'])
+
+    return filepath if multiple else filepath[0]
 
   def get_filepath(self, filename, dirname=None):
     '''Use scratch and [dirname] to construct a full filepath'''
@@ -1390,9 +1186,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     user_id = self._get_analysis_owner_id(analysis_id)
     filekey = 'log/analyses/{}/{}/worker.log'.format(user_id, analysis_id)
-    # filename not needed since download refactor based on id and file_type
-    # filename = '{}/logs/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
-    return self.download_file(filekey, uid=analysis_id, dirname=outdir, filename=None, file_type='logs', load=False, is_json=False)
+    filename = '{}/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
+    return self.download_file(filekey, filename, load=False, is_json=False)
 
   def get_window_score_filename(self, sample, kind=None, flanking=None):
     '''Get window score filename'''
@@ -1411,15 +1206,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     parts = url.rsplit('/', 1)
     return {'id': parts[1]}
 
-  def print_data(self, data_type='', is_json=False, uid=None, project=None): # pylint: disable=too-many-branches
+  def print_data(self, data_type='', is_json=False, uid=None, project=None):
     '''
-    Print data associated with genomes, samples, etc.
+    Print data associated with genomes, samples, etc..
     Parameters
     ----------
     data_type: {str}   Type of data to print (e.g. workflows)
-    is_json:   {bool}  By default, data is printed in a human-readable format
-    project:   {int}   Project id to filter data
+    is_json:      {bool}  By default, data is printed in a human-readable format
     uid:       {list}  One or more ids of the objects you want
+    project: {int} project id to filter data
     '''
 
     if not isinstance(uid, list):
@@ -1429,17 +1224,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'analysis': 'get_analysis',
       'genome': 'get_genome',
       'sample': 'get_sample',
-      'module': 'get_module',
-      'pipeline': 'get_pipeline'
     }
 
     list_methods = {
       'analyses': 'get_analyses',
       'genomes': 'get_genomes',
-      'pipeline_modules': 'get_pipeline_modules',
-      'pipelines': 'get_pipelines',
-      'projects': 'get_projects',
       'samples': 'get_samples',
+      'workflows': 'get_workflows',
     }
 
     # get the appropriate data
@@ -1447,10 +1238,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # if it is a detail
     if data_type in detail_methods:
+      if uid is None:
+        eprint('Your uid is invalid: {}'.format(uid))
+        return
+
       for item_id in uid:
         data_tmp = getattr(self, detail_methods.get(data_type))(item_id)
         if data_tmp.get('id'):
           data.append(data_tmp)
+        else:
+          eprint('{} with uid {} invalid.'.format(data_type.capitalize(), item_id))
 
     filters = {}
     if project:
@@ -1458,35 +1255,31 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     # if it is a list
     if data_type in list_methods:
-      method = list_methods.get(data_type)
-      if data_type == 'pipeline_modules':
-        data = getattr(self, method)(uid[0])
-      else:
-        data = getattr(self, method)(filters=filters)
+      data = getattr(self, list_methods.get(data_type))(filters=filters)
 
     if not data:
       eprint('No data found for the parameters you gave.')
-      return False
+      return
 
     if isinstance(data, dict) and data.get('error'):
       eprint(data.get('msg', 'Error retrieving data.'))
-      return True
+      return
 
     # print the data as json
     if is_json:
       for item in data:
         eprint(item)
         eprint()
-      return True
+      return
 
     # print the data human readable
     getattr(NicePrint, data_type)(data)
-    return True
 
   ### Private methods ###
   def _add_full_analysis(self, sample):
     '''Add full analysis info to the sample'''
-    analysis_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
+    analysis_ids = [self.parse_url(uri)['id']
+        for uri in sample.get('analyses', [])]
     analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
@@ -1498,17 +1291,35 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample['analyses_full'] = analyses
     return sample
 
+  def _check_sample(self, uid):
+    '''Check if the sample is in the Basepair database'''
+    info = self.get_sample(uid, add_analysis=False)
+    if info.get('id'):
+      return True
+    eprint('The provided sample id: {id}, does not exist in Basepair.'.format(id=uid))
+    return False
+
+  def _check_workflow(self, uid):
+    '''Check if the workflow is in the Basepair database'''
+    info = self.get_workflow(uid)
+    if info.get('id'):
+      return True
+    eprint('The provided workflow id: {id}, does not exist in Basepair.'.format(id=uid))
+    return False
+
   def _execute_command(self, cmd=None, retry=5, current_try=0):
     '''Execute s3 commands'''
     sleep_time = 3
     try:
+      if self.verbose:
+        eprint('Executing command:  {}\n'.format(cmd))
       return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     except CalledProcessError as error:
       eprint('Error: {}'.format(error.output))
       eprint('Return code: {}'.format(error.returncode))
       if current_try >= retry:
         return None
-      eprint('retrying in {} seconds.'.format(sleep_time))
+      eprint('retrying in {} seconds...'.format(sleep_time))
       time.sleep(sleep_time)
       return self._execute_command(cmd=cmd, current_try=current_try + 1)
 
@@ -1558,32 +1369,3 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def _parsed_sample_list(cls, items, prefix):
     '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
-
-  @staticmethod
-  def yes_or_no(question):
-    '''
-    Ask a yes/no question via raw_input() and return their answer.
-
-    Parameters
-    ----------
-    question: {str}   Is a string that is presented to the user.
-
-    '''
-    valid = {
-      'yes': True,
-      'y': True,
-      'no': False,
-      'n': False
-    }
-
-    prompt = ' [y/n] '
-
-    while True:
-      # get input from user
-      sys.stdout.write('{}{}'.format(question, prompt))
-      choice = input().lower()
-
-      # check answer
-      if choice in valid:
-        return valid[choice]
-      sys.stdout.write('Please respond with \'yes\' or \'no\' (or \'y\' or \'n\').\n')
