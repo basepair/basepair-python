@@ -965,13 +965,17 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     try:
       # get the download directory
       prefix = self.scratch
+      suffix = 'basepair/'      
       if file_type == 'analyses':
         analyses_type_path = os.path.dirname(filekey)
         analyses_type = os.path.basename(analyses_type_path)
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
-      suffix = 'basepair/'
-      if file_type == 'analyses' and uid:
+        suffix = ''
+
+      if file_type == 'analyses' and uid and dirname:
+        suffix = ''
+      elif file_type == 'analyses' and uid:
         suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
       elif file_type and uid:
         suffix = 'basepair/{}/{}'.format(file_type, uid)
