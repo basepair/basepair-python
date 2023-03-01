@@ -972,9 +972,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if dirname:
         prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
         suffix = ''
-
-      if file_type == 'analyses' and uid and dirname:
-        suffix = ''
       elif file_type == 'analyses' and uid:
         suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
       elif file_type and uid:
