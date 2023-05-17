@@ -32,8 +32,13 @@ import yaml
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, FileInColdStorageError, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
+# Constants
+TIME_TAKEN = {
+  'DEEP_ARCHIVE': '10-12 hrs',
+  'GLACIER': '2-5 minutes',
+}
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
 
@@ -69,6 +74,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def __init__(self, conf=None, scratch='.', use_cache=False, user_cache_for_host_conf=False, verbose=None): # pylint: disable=too-many-arguments
     self.verbose = verbose
+    print('>>>>' * 80)
+    print('We are inside the custom basepair app')
+    print('>>>>' * 80)
 
     if conf:
       self.conf = conf
@@ -931,6 +939,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     storage_cfg = self.configuration.get_user_storage()
     if not src.startswith('s3://'):
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+    key = self._get_key(src)
+    storage_status = (File(self.conf.get('api'))).storage_status(key)
+    if storage_status in ['restore_not_started']:
+      raise FileInColdStorageError(src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
@@ -1000,8 +1012,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         data = open(filepath, 'r').read().strip()
         return json.loads(data) if is_json else data
       return filepath
-    except Exception:# pylint: disable=bare-except
-      return False
+    except FileInColdStorageError:
+      restore_status, storage_class = (File(self.conf.get('api'))).start_restore(filekey)
+      eprint('Info: File: {} is present in {} storage, \nRestore status: {}, \n Time Required: {}'.format(
+        filekey, storage_class, restore_status, TIME_TAKEN.get(storage_class)
+      ))
+    except Exception as error:# pylint: disable=bare-except
+      eprint('An unexpected error occurred:', str(error))
+    return False
 
   def download_raw_files(self, sample, file_type=None, outdir=None, uid=None,):
     '''
