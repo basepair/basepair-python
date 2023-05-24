@@ -1,6 +1,5 @@
 '''File webapp api wrapper'''
 # General imports
-import json
 import requests
 
 # App imports
@@ -12,28 +11,27 @@ class File(Abstract):
     super(File, self).__init__(cfg)
     self.endpoint += 'files/'
 
-  def start_restore(self, key):
+  def start_restore(self, key, bucket=None):
     '''Start the restore of the file'''
-    return self._file_get_request('start_restore', key)
+    return self._file_get_request('restore', key, bucket)
 
-  def storage_status(self, key):
+  def storage_status(self, key, bucket=None):
     '''Get the storage status of the files using its key'''
-    return self._file_get_request('check_restore_status', key)
+    return self._file_get_request('check_restore_status', key, bucket)
 
-  def _file_get_request(self, route, key):
+  def _file_get_request(self, route, key, bucket=None):
     '''Call the appropriate endpoint'''
     params = self.payload
-    params.update({'key': key})
+    endpoint = 'http://amiay.local/api/v2/files/'
     try:
       response = requests.get(
-        '{}{}'.format(self.endpoint, route),
+        f'{endpoint}{route}?key={key}&bucket={bucket or ""}',
         params=params,
         verify=True,
         headers={'content-type': 'application/json'}
       )
       return self._parse_response(response)
     except Exception as error:
-      print(f'ERROR: While getting the storage status of {key} at endpoint: {self.endpoint}storage_status')
       return {'error': True, 'msg': error}
 
 class FileInColdStorageError(Exception):

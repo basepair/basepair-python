@@ -21,6 +21,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import re
 import sys
 import json
 import subprocess
@@ -32,13 +33,16 @@ import yaml
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, FileInColdStorageError, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
 # Constants
 TIME_TAKEN = {
   'DEEP_ARCHIVE': '10-12 hrs',
   'GLACIER': '2-5 minutes',
 }
+
+class FileInColdStorageError(Exception):
+  pass
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
 
@@ -937,16 +941,29 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     src:  {str} File path on AWS S3, not including the bucket           [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
-    if not src.startswith('s3://'):
-      src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     key = self._get_key(src)
-    storage_status = (File(self.conf.get('api'))).storage_status(key)
-    if storage_status in ['restore_not_started']:
+    if not src.startswith('s3://'):
+      key = src
+      src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+    try:
+      response = (File(self.conf.get('api'))).storage_status(key)
+    except Exception:
+      eprint('Either the file does not exist or you do not have permission', key)
+      return
+    restore_status = response.get('status')
+    if restore_status == 'restore_not_started':
       raise FileInColdStorageError(src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
     return self._execute_command(cmd=cmd, retry=3)
+
+  def _get_key(self, string):
+    '''Extract s3 object key from the string'''
+    pattern = re.compile(r's3:\/\/[0-9a-zA-Z_-]+\/(?P<key>.*)')
+    match = pattern.match(string)
+    key = match and match.group('key')
+    return key
 
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
@@ -1013,10 +1030,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return json.loads(data) if is_json else data
       return filepath
     except FileInColdStorageError:
-      restore_status, storage_class = (File(self.conf.get('api'))).start_restore(filekey)
-      eprint('Info: File: {} is present in {} storage, \nRestore status: {}, \n Time Required: {}'.format(
-        filekey, storage_class, restore_status, TIME_TAKEN.get(storage_class)
-      ))
+      restore_status = (File(self.conf.get('api'))).start_restore(filekey)
+      eprint(f'Info: File: {filekey} is present in cold storage, \nRestore status: {restore_status}')
     except Exception as error:# pylint: disable=bare-except
       eprint('An unexpected error occurred:', str(error))
     return False
@@ -1033,12 +1048,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     try:
       uploads = sample['uploads']
-      files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
+      files = [(upload.get('key') or upload.get('uri')) for upload in uploads]
       if not files:
         eprint('Warning: No files present for sample with id {}'.format(uid))
         return False
+      filepaths = []
       for file_i in files:
-        return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
+        response = self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
+        if response:
+          filepaths.append(filepaths)
+      return filepaths
     except Exception:# pylint: disable=broad-except
       return False
 
