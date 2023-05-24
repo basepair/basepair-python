@@ -79,8 +79,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def __init__(self, conf=None, scratch='.', use_cache=False, user_cache_for_host_conf=False, verbose=None): # pylint: disable=too-many-arguments
     self.verbose = verbose
     print('>>>>' * 80)
-    print('We are inside the custom basepair app')
-    print('>>>>' * 80)
+    print("completely differnt")
 
     if conf:
       self.conf = conf
@@ -1187,6 +1186,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
+    print('the credential is: ', credential)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
