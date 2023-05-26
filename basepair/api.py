@@ -37,8 +37,8 @@ from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instan
 
 # Constants
 TIME_TAKEN = {
-  'DEEP_ARCHIVE': '10-12 hrs',
-  'GLACIER': '2-5 minutes',
+  'DEEP_ARCHIVE': 12 * 60 * 60, # 12 hours
+  'GLACIER': 2 * 60, # 2 minutes
 }
 
 class FileInColdStorageError(Exception):
@@ -1035,7 +1035,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('An unexpected error occurred:', str(error))
     return False
 
-  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None,):
+  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None, wait=True):
     '''
     Download raw data associated with a sample
     Parameters
@@ -1052,6 +1052,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint('Warning: No files present for sample with id {}'.format(uid))
         return False
       filepaths = []
+      # if wait is True, then keep waiting while the restore happens
+      # then proceed to download
+      if wait:
+        self._wait_for_restore(files)
       for file_i in files:
         response = self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
         if response:
@@ -1109,7 +1113,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return files[0:1]
     return files
 
-  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', tags=None):  # pylint: disable=too-many-arguments
+  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', tags=None, wait=True):  # pylint: disable=too-many-arguments
     '''
     For a analysis, go through files and get that match the tags
     Parameters
@@ -1140,7 +1144,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       )
       if files:
         matching_files += files
-
+    # if wait is True, then keep waiting while the restore happens
+    # then proceed to download
+    if wait:
+      self.__wait_for_restore(files)
     return [self.download_file(
       matching_file['path'],
       dirname=dirname,
@@ -1186,7 +1193,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
     storage_cfg = self.configuration.get_user_storage()
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
-    print('the credential is: ', credential)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
@@ -1212,6 +1218,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname=None,
     multiple=False,
     node=None,
+    wait=True,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
     '''For a sample, go through analysis and get files that match the tags'''
     matches = []
@@ -1246,6 +1253,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         eprint('\t', match[1]['last_updated'], match[1]['path'])
 
     filepath = []
+    # if wait is True, then keep waiting while the restore happens
+    # then proceed to download
+    if wait:
+      self._wait_for_restore([match[1]['path'] for match in matches])
     for match in matches:
       path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
         else self.download_file(match[1]['path'], dirname=dirname)
@@ -1272,7 +1283,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     kind='exact',
     multiple=False,
     tags=None,
-    uid=None
+    uid=None,
+    wait=True,
     #workflow_id=None,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
     '''
@@ -1369,6 +1381,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           eprint('\t', match[1]['last_updated'], match[1]['path'])
 
       filepath = []
+      # if wait is True, then keep waiting while the restore happens
+      # then proceed to download
+      if wait:
+        self._wait_for_restore([match[1]['path'] for match in matches])
       for match in matches:
         if download:
           path = self.download_file(match[1]['path'], dirname=dest, filename=dest, file_type=file_type, uid=uid) if dest \
@@ -1522,6 +1538,28 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return True
 
   ### Private methods ###
+  def _wait_for_restore(self, filekeys, storage_class='GLACIER'):
+    '''
+    Wait until the files are restored from AWS S3 Glacier or Deep Archive.
+
+    Parameters:
+    ----------
+    filekeys: {list} List of s3 keys of files to be restored. [Required]
+    storage_class: {str} The storage class of the files. Expected to be 'GLACIER' or 'DEEP_ARCHIVE'. [Required]
+    
+    This function will keep checking the restore status of files in an interval defined by the estimated 
+    restore time of the specific storage class. The function will only return once all the files are ready 
+    for download (i.e., they have been restored from Glacier or Deep Archive storage).
+    ''' 
+    wait_time = TIME_TAKEN.get(storage_class, 'DEFAULT')
+    overall_status = self._check_statuses(filekeys)
+    print('overall status is : ', overall_status, overall_status in ['restore_not_started', 'restore_in_progress'], wait_time)
+    while overall_status in ['restore_not_started', 'restore_in_progress']:
+      print(f'Info: Files are being restored from {storage_class} storage. This could take up to {wait_time / (60 * 60)} hours.')
+      time.sleep(wait_time)  # wait for 2 minutes
+      overall_status = self._check_statuses(filekeys)
+    # log time taken to monitor the future modifications
+
   def _add_full_analysis(self, sample):
     '''Add full analysis info to the sample'''
     analysis_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
@@ -1535,6 +1573,24 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     sample['analyses_full'] = analyses
     return sample
+
+  def _check_statuses(self, filekeys):
+    '''
+    Check the storage statuses of list of s3 object
+    Parameters:
+    ----------
+    filekeys: {list} s3 keys of files                                      [Required]
+    '''
+    statuses = []
+    for filekey in filekeys:
+      storage_status = (File(self.conf.get('api'))).storage_status(filekey)
+      statuses.append(storage_status.get('status'))
+    overall_status = 'restore_not_required'
+    if 'restore_in_progress' in statuses:
+      overall_status = 'restore_in_progress'
+    elif 'restore_not_started' in statuses:
+      overall_status = 'restore_not_started'
+    return overall_status
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
     '''Execute s3 commands'''
