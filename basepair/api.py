@@ -19,7 +19,7 @@ from Basepair INC.
 
 from __future__ import division
 from __future__ import print_function
-
+from concurrent.futures import ThreadPoolExecutor
 import os
 import re
 import sys
@@ -37,8 +37,8 @@ from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instan
 
 # Constants
 TIME_TAKEN = {
-  'DEEP_ARCHIVE': 12 * 60 * 60, # 12 hours
-  'GLACIER': 2 * 60, # 2 minutes
+  'DEEP_ARCHIVE': '12 hours', # 12 hours
+  'GLACIER': '2-5 minutes', # 2 minutes
 }
 
 class FileInColdStorageError(Exception):
@@ -926,12 +926,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### GENERAL HELPERS AND METHODS ################################################################
   ################################################################################################
-  def copy_file(self, src, dest, action='to'):
+  def copy_file(self, src, dest, action='to', notification=True, wait=False):
     '''Copy file'''
     return self.copy_file_to_s3(src, dest) if action == 'to' \
-        else self.copy_file_from_s3(src, dest)
+        else self.copy_file_from_s3(src, dest, notification, wait=wait)
 
-  def copy_file_from_s3(self, src, dest):
+  def copy_file_from_s3(self, src, dest, notification, wait=False):
     '''
     Low level function to copy a file from cloud to disk
     Parameters
@@ -948,10 +948,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       response = (File(self.conf.get('api'))).storage_status(key)
     except Exception:
       eprint('Either the file does not exist or you do not have permission', key)
+      # raise FileDoesNotExist(key)
       return
     restore_status = response.get('status')
-    if restore_status == 'restore_not_started':
-      raise FileInColdStorageError(src)
+    if restore_status in ['restore_not_started', 'restore_in_progress']:
+      # this should also take care of the notification being sent to the user
+      # may be we can pass it as an argument
+      response = self._start_restore(key, notification)
+      #storage_status = response.get('status')
+      if wait:
+        self._wait_for_restore(key)
+      else:
+        raise FileInColdStorageError(key) # also pass the storage status
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
@@ -973,7 +981,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd)
 
-  def download_file(self, filekey, uid=None, filename=None, file_type=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments,too-many-branches
+  def download_file(self, filekey, uid=None, filename=None, file_type=None, dirname=None, is_json=False, load=False, notification=True, wait=False): # pylint: disable=too-many-arguments,too-many-branches
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -1020,7 +1028,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
         if not os.path.exists(os.path.dirname(filepath)):
           os.makedirs(os.path.dirname(filepath))
-        self.copy_file(filekey, filepath, action='from')
+        print('copy_file method is run')
+        self.copy_file(filekey, filepath, action='from', notification=notification, wait=wait)
       elif self.verbose:
         eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
 
@@ -1029,13 +1038,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         return json.loads(data) if is_json else data
       return filepath
     except FileInColdStorageError:
-      restore_status = (File(self.conf.get('api'))).start_restore(filekey)
-      eprint(f'Info: File: {filekey} is present in cold storage, \nRestore status: {restore_status}')
+      #self._start_restore(filekey)
+      eprint(f'Info: File: {filekey} is present in cold storage, \nRestore status: ')
     except Exception as error:# pylint: disable=bare-except
       eprint('An unexpected error occurred:', str(error))
     return False
 
-  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None, wait=True):
+  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None, notification=True, wait=False):
     '''
     Download raw data associated with a sample
     Parameters
@@ -1113,7 +1122,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return files[0:1]
     return files
 
-  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', tags=None, wait=True):  # pylint: disable=too-many-arguments
+  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', notification=True, tags=None, wait=True):  # pylint: disable=too-many-arguments
     '''
     For a analysis, go through files and get that match the tags
     Parameters
@@ -1144,16 +1153,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       )
       if files:
         matching_files += files
-    # if wait is True, then keep waiting while the restore happens
-    # then proceed to download
-    if wait:
-      self.__wait_for_restore(files)
-    return [self.download_file(
-      matching_file['path'],
-      dirname=dirname,
-      uid=uid,
-      file_type='analyses'
-    ) for matching_file in matching_files] if matching_files else None
+    common_args = {
+      'dirname': dirname,
+      'file_type': 'analyses',
+      'notification': notification,
+      'uid': uid,
+      'wait': wait,
+    }
+    arg_dicts = [{'filekey': key, **common_args} for key in files]
+    paths = self._download_wrapper(arg_dicts)
+    return paths if matching_files else None
 
   def get_bam_file(self, sample, tags=None, multiple=False):
     '''Get bam file. If you want deduped bam file, call with tags = ['bam', 'dedup']'''
@@ -1218,6 +1227,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname=None,
     multiple=False,
     node=None,
+    notification=True,
     wait=True,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
     '''For a sample, go through analysis and get files that match the tags'''
@@ -1252,24 +1262,15 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       for match in matches:
         eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-    filepath = []
-    # if wait is True, then keep waiting while the restore happens
-    # then proceed to download
-    if wait:
-      self._wait_for_restore([match[1]['path'] for match in matches])
-    for match in matches:
-      path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
-        else self.download_file(match[1]['path'], dirname=dirname)
-
-      # if did download it then we added to the filepath else continue
-      if os.path.isfile(path):
-        filepath.append(path)
-        if not multiple:
-          break
-    else:
-      filepath.append(match[1]['path'])
-
-    return filepath if multiple else filepath[0]
+    filekeys = []
+    common_args = {
+      'dirname': dest if dest else dirname,
+      'filename': dest,
+      'notification': notification,
+      'wait': wait,
+    }
+    arg_dicts = [{**common_args, 'filekey': match[1]['path']} for match in filekeys]
+    return self._download_wrapper(arg_dicts, multiple)
 
   def get_file_by_tags(
     self,
@@ -1282,6 +1283,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     file_type=None,
     kind='exact',
     multiple=False,
+    notification=True,
     tags=None,
     uid=None,
     wait=True,
@@ -1380,25 +1382,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         for match in matches:
           eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-      filepath = []
-      # if wait is True, then keep waiting while the restore happens
-      # then proceed to download
-      if wait:
-        self._wait_for_restore([match[1]['path'] for match in matches])
-      for match in matches:
-        if download:
-          path = self.download_file(match[1]['path'], dirname=dest, filename=dest, file_type=file_type, uid=uid) if dest \
-            else self.download_file(match[1]['path'], dirname=dirname, file_type=file_type, uid=uid)
-
-          # if did download it then we added to the filepath else continue
-          if os.path.isfile(path):
-            filepath.append(path)
-            if not multiple:
-              break
-        else:
-          filepath.append(match[1]['path'])
-
-      return filepath if multiple else filepath[0]
+      common_args = {
+        'dirname': dest if dest else dirname,
+        'filename': dest,
+        'file_type': file_type,
+        'notification': notification,
+        'uid': uid,
+        'wait': wait,
+      }
+      filepaths = [match[1]['path'] for match in matches]
+      if download:
+        filepaths = self._download_wrapper(common_args, filepaths, multiple)
+      return filepaths if multiple else filepaths[0]
     except Exception:# pylint: disable=broad-except
       return False
 
@@ -1428,7 +1423,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       outdir if outdir else self.scratch,
       analysis_id
     )
-    return self.download_file(filekey, filename, load=True, is_json=True)
+    args = {
+      'filekey': filekey,
+      'filename': filename,
+      'load': True,
+      'is_json': True,
+    }
+    return self._download_wrapper(args, file_keys=[filekey])
 
   def get_id_from_url(self, url):
     '''Parse URL to get the id'''
@@ -1446,7 +1447,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     filekey = 'log/analyses/{}/{}/worker.log'.format(user_id, analysis_id)
     # filename not needed since download refactor based on id and file_type
     # filename = '{}/logs/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
-    return self.download_file(filekey, uid=analysis_id, dirname=outdir, filename=None, file_type='logs', load=False, is_json=False)
+    args = {
+      'dirname': outdir,
+      'filekey': filekey,
+      'filename': None,
+      'file_type': 'logs',
+      'is_json': False,
+      'load': False,
+      'uid': analysis_id,
+    }
+    return self._download_wrapper(args, file_keys=[filekey])
 
   def get_window_score_filename(self, sample, kind=None, flanking=None):
     '''Get window score filename'''
@@ -1538,7 +1548,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return True
 
   ### Private methods ###
-  def _wait_for_restore(self, filekeys, storage_class='GLACIER'):
+  def _wait_for_restore(self, key, storage_class='DEEP_ARCHIVE'):
     '''
     Wait until the files are restored from AWS S3 Glacier or Deep Archive.
 
@@ -1552,12 +1562,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     for download (i.e., they have been restored from Glacier or Deep Archive storage).
     ''' 
     wait_time = TIME_TAKEN.get(storage_class, 'DEFAULT')
-    overall_status = self._check_statuses(filekeys)
-    print('overall status is : ', overall_status, overall_status in ['restore_not_started', 'restore_in_progress'], wait_time)
-    while overall_status in ['restore_not_started', 'restore_in_progress']:
-      print(f'Info: Files are being restored from {storage_class} storage. This could take up to {wait_time / (60 * 60)} hours.')
-      time.sleep(wait_time)  # wait for 2 minutes
-      overall_status = self._check_statuses(filekeys)
+    restore_status = self._check_status(key)
+    print('overall status is : ', restore_status, restore_status in ['restore_not_started', 'restore_in_progress'], wait_time)
+    print('will try to wait if required')
+    while restore_status in ['restore_not_started', 'restore_in_progress']:
+      print(f'Info: Files are being restored from {storage_class} storage. This could take up to {wait_time}.')
+      time.sleep({'2 minutes': 2 * 5, '12 hours': 1 * 5 * 1 }.get(wait_time, 5 * 1))  # wait for 2 minutes
     # log time taken to monitor the future modifications
 
   def _add_full_analysis(self, sample):
@@ -1574,23 +1584,31 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     sample['analyses_full'] = analyses
     return sample
 
-  def _check_statuses(self, filekeys):
+  def _check_status(self, key):
     '''
     Check the storage statuses of list of s3 object
     Parameters:
     ----------
-    filekeys: {list} s3 keys of files                                      [Required]
+    key: {list} s3 keys of files                                      [Required]
     '''
-    statuses = []
-    for filekey in filekeys:
-      storage_status = (File(self.conf.get('api'))).storage_status(filekey)
-      statuses.append(storage_status.get('status'))
-    overall_status = 'restore_not_required'
-    if 'restore_in_progress' in statuses:
-      overall_status = 'restore_in_progress'
-    elif 'restore_not_started' in statuses:
-      overall_status = 'restore_not_started'
-    return overall_status
+    return (File(self.conf.get('api'))).storage_status(key).get('status', None)
+
+  def _download_wrapper(self, common_args, file_keys=[], multiple=True):# multiple could be renamed concurrently
+    '''Call download concurrently or one by one'''
+    arg_dicts = [{'filekey': key, **common_args} for key in file_keys]
+    filepaths = []
+    if multiple:
+      with ThreadPoolExecutor() as executor:
+        filepaths = list(executor.map(lambda kwargs: self.download_file(**kwargs), arg_dicts))
+        # TODO: if larger aggregate size files(>100gb) then we can call bulk restore (half cost, 4 times delayed restore: 48hrs)
+    else:
+      for args in arg_dicts:
+        path = self.download_file(**args)
+        if os.path.isfile(path):
+          filepaths.append(path)
+          break
+    print(filepaths)
+    return [path for path in filepaths if path]
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
     '''Execute s3 commands'''
@@ -1652,6 +1670,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def _parsed_sample_list(cls, items, prefix):
     '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
+
+  def _start_restore(self, key, notification=True):
+    '''Method to start restore'''
+    return (File(self.conf.get('api'))).start_restore(key, notification=notification)
 
   @staticmethod
   def yes_or_no(question):
