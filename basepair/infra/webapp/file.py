@@ -22,7 +22,7 @@ class File(Abstract):
   def _file_get_request(self, route, key, bucket=None, notification=False):
     '''Call the appropriate endpoint'''
     params = self.payload
-    endpoint = 'http://amiay.local/api/v2/files/'
+    endpoint = self.endpoint
     try:
       response = requests.get(
         f'{endpoint}{route}?key={key}&bucket={bucket or ""}&notification={notification or ""}',
@@ -35,4 +35,14 @@ class File(Abstract):
       return {'error': True, 'msg': error}
 
 class FileInColdStorageError(Exception):
-    pass
+  '''Exception when file is in cold storage'''
+  def __init__(self, key, restore_status, msg=None):
+    self.restore_status = restore_status
+    prefix = f'Could not download file: {key}.'
+    message = {
+      'restore_error': 'Could not start restore.',
+      'restore_in_progress': 'Restore in progress. You should be able to download the file in a bit.',
+      'restore_not_started': 'Could not start restore',
+    }
+    error = f'{prefix}\tCause: {msg or message.get(restore_status)}'
+    super().__init__(error)

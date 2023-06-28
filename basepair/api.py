@@ -33,18 +33,19 @@ import yaml
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, FileInColdStorageError, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
 # Constants
-RETRIAL_INTERVAL = {'2-5 minutes': 30, '12 hours': 4 * 60 * 60}
+RETRIAL_INTERVAL = {
+  '2-5 minutes': 30,  # retry after for 30 sec
+  '12 hours': 4 * 60 * 60 # retry after 4 hours
+}
 TIME_TAKEN = {
   'DEEP_ARCHIVE': '12 hours', # 12 hours
+  'DEFAULT': 'NA',
   'GLACIER': '2-5 minutes', # 2 minutes
-  'DEFAULT': 'NA'
 }
 
-class FileInColdStorageError(Exception):
-  pass
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
 
@@ -80,8 +81,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def __init__(self, conf=None, scratch='.', use_cache=False, user_cache_for_host_conf=False, verbose=None): # pylint: disable=too-many-arguments
     self.verbose = verbose
-    print('>>>>' * 80)
-    print("completely differnt")
 
     if conf:
       self.conf = conf
@@ -946,24 +945,17 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if not src.startswith('s3://'):
       key = src
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
-    try:
-      response = (File(self.conf.get('api'))).storage_status(key)
-    except Exception:
-      eprint('Either the file does not exist or you do not have permission', key)
-      # raise FileDoesNotExist(key)
-      return
+    response = (File(self.conf.get('api'))).storage_status(key)
     restore_status = response.get('status')
     storage_class = response.get('storage_class')
     if restore_status in ['restore_not_started', 'restore_in_progress']:
-      # this should also take care of the notification being sent to the user
-      # may be we can pass it as an argument
       eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class, "DEFAULT")}')
       if restore_status == 'restore_not_started':
-        self._start_restore(key, notification)
+        restore_status = self._start_restore(key, notification)[0]
       if wait:
         self._wait_for_restore(key, storage_class)
       else:
-        raise FileInColdStorageError(key) # also pass the storage status
+        raise FileInColdStorageError(key, restore_status)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying file: {} from s3 bucket to {}'.format(key, ' ./'+dest.split('/')[-1]))
@@ -1041,9 +1033,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         data = open(filepath, 'r').read().strip()
         return json.loads(data) if is_json else data
       return filepath
-    except FileInColdStorageError:
-      #self._start_restore(filekey)
-      eprint(f'Info: File: {filekey} is present in cold storage, \nRestore status: ')
+    except FileInColdStorageError as error:
+      eprint(error)
     except Exception as error:# pylint: disable=bare-except
       eprint('An unexpected error occurred:', str(error))
     return False
@@ -1571,6 +1562,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       restore_status = self._check_status(key)
     if self.verbose:
       eprint(f'File: {key}\tStatus: {restore_status}')
+    return restore_status
     # log time taken to monitor the future modifications
 
   def _add_full_analysis(self, sample):
@@ -1596,14 +1588,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     return (File(self.conf.get('api'))).storage_status(key).get('status', None)
 
-  def _download_wrapper(self, common_args, file_keys=[], multiple=True):# multiple could be renamed concurrently
+  def _download_wrapper(self, common_args, file_keys=[], multiple=True):
     '''Call download concurrently or one by one'''
     arg_dicts = [{'filekey': key, **common_args} for key in file_keys]
     filepaths = []
     if multiple:
-      # how about
-      # check the restore statuses and then start restore here
-      # and let the threads just wait and only handle the download.
+      # download all the files parallely
       with ThreadPoolExecutor() as executor:
         filepaths = list(executor.map(lambda kwargs: self.download_file(**kwargs), arg_dicts))
         # TODO: if larger aggregate size files(>100gb) then we can call bulk restore (half cost, 4 times delayed restore: 48hrs)
@@ -1613,7 +1603,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if os.path.isfile(path):
           filepaths.append(path)
           break
-    print(filepaths)
     return [path for path in filepaths if path]
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
