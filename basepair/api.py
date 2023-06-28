@@ -949,7 +949,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     restore_status = response.get('status')
     storage_class = response.get('storage_class')
     if restore_status in ['restore_not_started', 'restore_in_progress']:
-      eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class, "DEFAULT")}')
+      eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class) or "NA"}')
       if restore_status == 'restore_not_started':
         restore_status = self._start_restore(key, notification)[0]
       if wait:
@@ -977,7 +977,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd)
 
-  def download_file(self, filekey, uid=None, filename=None, file_type=None, dirname=None, is_json=False, load=False, notification=True, wait=False): # pylint: disable=too-many-arguments,too-many-branches
+  def download_file(
+    self,
+    filekey,
+    uid=None,
+    filename=None,
+    file_type=None,
+    dirname=None,
+    is_json=False,
+    load=False,
+    notification=True,
+    wait=False
+  ): # pylint: disable=too-many-arguments,too-many-branches
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -1024,7 +1035,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
           eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
         if not os.path.exists(os.path.dirname(filepath)):
           os.makedirs(os.path.dirname(filepath))
-        print('copy_file method is run')
         self.copy_file(filekey, filepath, action='from', notification=notification, wait=wait)
       elif self.verbose:
         eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
@@ -1553,12 +1563,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     restore time of the specific storage class. The function will only return once all the files are ready 
     for download (i.e., they have been restored from Glacier or Deep Archive storage).
     ''' 
-    wait_time = TIME_TAKEN.get(storage_class, 'DEFAULT')
+    wait_time = TIME_TAKEN.get(storage_class)
     restore_status = self._check_status(key)
     if self.verbose:
       eprint(f'File: {key}\tRestore Status: {restore_status}')
     while restore_status == 'restore_in_progress':
-      time.sleep(RETRIAL_INTERVAL.get(wait_time, 30))
+      time.sleep(RETRIAL_INTERVAL.get(wait_time, 2 * 60))
       restore_status = self._check_status(key)
     if self.verbose:
       eprint(f'File: {key}\tStatus: {restore_status}')
