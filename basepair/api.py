@@ -36,9 +36,11 @@ from .infra.configuration import Parser
 from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
 # Constants
+RETRIAL_INTERVAL = {'2-5 minutes': 30, '12 hours': 4 * 60 * 60}
 TIME_TAKEN = {
   'DEEP_ARCHIVE': '12 hours', # 12 hours
   'GLACIER': '2-5 minutes', # 2 minutes
+  'DEFAULT': 'NA'
 }
 
 class FileInColdStorageError(Exception):
@@ -955,11 +957,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if restore_status in ['restore_not_started', 'restore_in_progress']:
       # this should also take care of the notification being sent to the user
       # may be we can pass it as an argument
-      eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class, "DEEP_ARCHIVE")}')
+      eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class, "DEFAULT")}')
       if restore_status == 'restore_not_started':
         self._start_restore(key, notification)
       if wait:
-        self._wait_for_restore(key)
+        self._wait_for_restore(key, storage_class)
       else:
         raise FileInColdStorageError(key) # also pass the storage status
     cmd = self.get_copy_cmd(src, dest)
@@ -1562,8 +1564,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     ''' 
     wait_time = TIME_TAKEN.get(storage_class, 'DEFAULT')
     restore_status = self._check_status(key)
+    if self.verbose:
+      eprint(f'File: {key}\tRestore Status: {restore_status}')
     while restore_status == 'restore_in_progress':
-      time.sleep({'2 minutes': 2 * 60, '12 hours': 15 * 60 }.get(wait_time, 5 * 1))  # wait for 2 minutes or 15 minutes and poll again
+      time.sleep(RETRIAL_INTERVAL.get(wait_time, 30))
       restore_status = self._check_status(key)
     if self.verbose:
       eprint(f'File: {key}\tStatus: {restore_status}')
