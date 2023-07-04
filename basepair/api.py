@@ -36,7 +36,7 @@ from .infra.configuration import Parser
 from .infra.webapp import Analysis, File, FileInColdStorageError, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
 
 # Constants
-RETRIAL_INTERVAL = {
+RETRY_INTERVAL = {
   '2-5 minutes': 30,  # retry after for 30 sec
   '12 hours': 4 * 60 * 60 # retry after 4 hours
 }
@@ -1568,7 +1568,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if self.verbose:
       eprint(f'File: {key}\tRestore Status: {restore_status}')
     while restore_status == 'restore_in_progress':
-      time.sleep(RETRIAL_INTERVAL.get(wait_time, 2 * 60))
+      time.sleep(RETRY_INTERVAL.get(wait_time, 2 * 60))
       restore_status = self._check_status(key)
     if self.verbose:
       eprint(f'File: {key}\tStatus: {restore_status}')
