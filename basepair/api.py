@@ -799,12 +799,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('deleted sample', uid)
     return info
 
-  def get_sample(self, uid, add_analysis=True):
+  def get_sample(self, uid, analysis_ids=[], add_analysis=True):
     '''Get sample'''
     cache = '{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False
     info = Sample(self.conf.get('api')).get(uid, cache=cache)
     if info and add_analysis:
-      info = self._add_full_analysis(info)
+      info = self._add_full_analysis(info, analysis_ids)
     return info
 
   def get_sample_owner(self, sample_id):
@@ -1575,10 +1575,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return restore_status
     # log time taken to monitor the future modifications
 
-  def _add_full_analysis(self, sample):
+  def _add_full_analysis(self, sample, analysis_ids=[]):
     '''Add full analysis info to the sample'''
     analysis_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
-    analyses = [self.get_analysis(uid) for uid in analysis_ids]
+    analyses = [self.get_analysis(uid) for uid in analysis_ids if len(analysis_ids) and uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
     # sort them by latest updated
