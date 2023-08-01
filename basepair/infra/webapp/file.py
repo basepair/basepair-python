@@ -1,5 +1,6 @@
 '''File webapp api wrapper'''
 # General imports
+import json
 import requests
 
 # App imports
@@ -11,22 +12,23 @@ class File(Abstract):
     super(File, self).__init__(cfg)
     self.endpoint += 'files/'
 
-  def start_restore(self, key, bucket=None, notification=False):
+  def start_restore(self, key, notification=False):
     '''Start the restore of the file'''
-    return self._file_get_request('restore', key, bucket, notification)
+    payload = {'key': key, 'notification': notification,}
+    return self._file_post_request('restore', payload)
 
-  def storage_status(self, key, bucket=None):
+  def storage_status(self, key):
     '''Get the storage status of the files using its key'''
-    return self._file_get_request('check_restore_status', key, bucket)
+    payload = {'key': key}
+    return self._file_post_request('check_restore_status', payload)
 
-  def _file_get_request(self, route, key, bucket=None, notification=False):
+  def _file_post_request(self, route, payload):
     '''Call the appropriate endpoint'''
-    params = self.payload
-    endpoint = self.endpoint
     try:
-      response = requests.get(
-        f'{endpoint}{route}?key={key}&bucket={bucket or ""}&notification={notification or ""}',
-        params=params,
+      response = requests.post(
+        f'{self.endpoint}{route}',
+        data=json.dumps(payload),
+        params=self.payload,
         verify=True,
         headers={'content-type': 'application/json'}
       )
