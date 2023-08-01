@@ -1577,8 +1577,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def _add_full_analysis(self, sample, analysis_ids=[]):
     '''Add full analysis info to the sample'''
-    analysis_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
-    analyses = [self.get_analysis(uid) for uid in analysis_ids if len(analysis_ids) and uid in analysis_ids]
+    all_analyses_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
+    analysis_ids = [id for id in analysis_ids if id in all_analyses_ids] if analysis_ids \
+      else all_analyses_ids
+    analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
     # sort them by latest updated
