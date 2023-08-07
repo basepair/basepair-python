@@ -23,6 +23,7 @@ from __future__ import print_function
 import os
 import sys
 import json
+import requests
 import subprocess
 from subprocess import CalledProcessError
 import time
@@ -1147,10 +1148,22 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if params:
       for arg, val in params.items():
         _params += ' {} "{}"'.format(arg, val)
-
     storage_cfg = self.configuration.get_user_storage()
+    # check user permission (over log file/sample/analysis) (is this the right place to put the permission)
+    # if has permission
+    # then get the pre_signed_url(src) should we hit the api?
+    # stream_download(url, dest) 
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
+
+  def stream_download(self, url, dest, chunk_size=8192):
+    try: 
+      response = requests.get(url, stream=True)
+      with open(dest, 'wb') as fd:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+          fd.write(chunk)
+    except Exception as error:
+      print(error)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
     '''Get expression count text file - for RNA-Seq'''
