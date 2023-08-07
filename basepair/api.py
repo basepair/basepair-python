@@ -38,7 +38,8 @@ from .infra.webapp import Analysis, File, FileInColdStorageError, Gene, Genome, 
 # Constants
 RETRY_INTERVAL = {
   '2-5 minutes': 30,  # retry after for 30 sec
-  '12 hours': 4 * 60 * 60 # retry after 4 hours
+  '12 hours': 14400, # retry after 4 hours
+  'default': 300, # retry after 5 minutes
 }
 TIME_TAKEN = {
   'DEEP_ARCHIVE': '12 hours', # 12 hours
@@ -1568,7 +1569,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if self.verbose:
       eprint(f'File: {key}\tRestore Status: {restore_status}')
     while restore_status == 'restore_in_progress':
-      time.sleep(RETRY_INTERVAL.get(wait_time, 2 * 60))
+      time.sleep(RETRY_INTERVAL.get(wait_time) or RETRY_INTERVAL.get('default'))
       restore_status = self._check_status(key)
     if self.verbose:
       eprint(f'File: {key}\tStatus: {restore_status}')
