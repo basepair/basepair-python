@@ -957,6 +957,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         self._wait_for_restore(key, storage_class)
       else:
         raise FileInColdStorageError(key, restore_status)
+    elif restore_status == 'restore_error':
+      eprint(f'File: {key} does not exist, or you do not have permission')
+      return False
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying file: {} from s3 bucket to {}'.format(key, ' ./'+dest.split('/')[-1]))
@@ -1157,7 +1160,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         multiple=True,
       )
       if files:
-        matching_files += files
+        matching_files += [file['path'] for file in files]
     common_args = {
       'dirname': dirname,
       'file_type': 'analyses',
@@ -1165,7 +1168,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       'uid': uid,
       'wait': wait,
     }
-    paths = self._download_wrapper(common_args, files)
+    paths = self._download_wrapper(common_args, matching_files)
     return paths if matching_files else None
 
   def get_bam_file(self, sample, tags=None, multiple=False):
