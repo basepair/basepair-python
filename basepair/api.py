@@ -958,7 +958,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       else:
         raise FileInColdStorageError(key, restore_status)
     elif restore_status == 'restore_error':
-      eprint(f'File: {key} does not exist, or you do not have permission')
+      eprint(f'File: {key} is not present or you do not seem to have access to the file')
       return False
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
