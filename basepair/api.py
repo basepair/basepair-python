@@ -957,6 +957,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         self._wait_for_restore(key, storage_class)
       else:
         raise FileInColdStorageError(key, restore_status)
+    elif restore_status == 'restore_error':
+      eprint(f'File: {key} is not present or you do not seem to have access to the file')
+      return False
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying file: {} from s3 bucket to {}'.format(key, ' ./'+dest.split('/')[-1]))
