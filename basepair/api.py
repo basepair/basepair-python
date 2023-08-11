@@ -1009,49 +1009,52 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     -------
     Absolute filepath to downloaded file
     '''
-    try:
-      # get the download directory
-      prefix = self.scratch
-      suffix = 'basepair/'      
-      if file_type == 'analyses':
-        analyses_type_path = os.path.dirname(filekey)
-        analyses_type = os.path.basename(analyses_type_path)
-      if dirname:
-        prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
-        suffix = ''
-      elif file_type == 'analyses' and uid:
-        suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
-      elif file_type and uid:
-        suffix = 'basepair/{}/{}'.format(file_type, uid)
-      elif file_type:
-        suffix = 'basepair/{}'.format(file_type)
-      elif uid:
-        suffix = 'basepair/{}'.format(uid)
-      added_path = os.path.join(prefix, suffix)
-      if not os.path.isdir(added_path):
+    # get the download directory
+    prefix = self.scratch
+    suffix = 'basepair/'
+    if file_type == 'analyses':
+      analyses_type_path = os.path.dirname(filekey)
+      analyses_type = os.path.basename(analyses_type_path)
+    if dirname:
+      prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
+      suffix = ''
+    elif file_type == 'analyses' and uid:
+      suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
+    elif file_type and uid:
+      suffix = 'basepair/{}/{}'.format(file_type, uid)
+    elif file_type:
+      suffix = 'basepair/{}'.format(file_type)
+    elif uid:
+      suffix = 'basepair/{}'.format(uid)
+    added_path = os.path.join(prefix, suffix)
+    if not os.path.isdir(added_path):
+      try:
         os.makedirs(added_path)
-      # rename the file if filename present otherwise use filekey
-      filepath = os.path.join(added_path, os.path.basename(filename if filename else filekey))
-      filepath = os.path.expanduser(filepath)
-      # if file not already there, download it
-      if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-        if self.verbose:
-          eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
-        if not os.path.exists(os.path.dirname(filepath)):
+      except FileExistsError:
+        pass
+    # rename the file if filename present otherwise use filekey
+    filepath = os.path.join(added_path, os.path.basename(filename if filename else filekey))
+    filepath = os.path.expanduser(filepath)
+    # if file not already there, download it
+    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+      if self.verbose:
+        eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
+      if not os.path.exists(os.path.dirname(filepath)):
+        try:
           os.makedirs(os.path.dirname(filepath))
+        except FileExistsError:
+          pass
+      try:
         self.copy_file(filekey, filepath, action='from', notification=notification, wait=wait)
-      elif self.verbose:
-        eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
+      except FileInColdStorageError as error:
+        eprint(error)
+    elif self.verbose:
+      eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
 
-      if load:
-        data = open(filepath, 'r').read().strip()
-        return json.loads(data) if is_json else data
-      return filepath
-    except FileInColdStorageError as error:
-      eprint(error)
-    except Exception as error:# pylint: disable=bare-except
-      eprint('An unexpected error occurred:', str(error))
-    return False
+    if load:
+      data = open(filepath, 'r').read().strip()
+      return json.loads(data) if is_json else data
+    return filepath
 
   def download_raw_files(self, sample, file_type=None, outdir=None, uid=None, notification=True, wait=False):
     '''
