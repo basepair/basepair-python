@@ -14,7 +14,7 @@ class File(Abstract):
 
   def start_restore(self, key, notification=False):
     '''Start the restore of the file'''
-    payload = {'key': key, 'notification': notification,}
+    payload = {'key': key, 'notification': notification}
     return self._file_post_request('restore', payload)
 
   def storage_status(self, key):

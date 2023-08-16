@@ -952,7 +952,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if restore_status in ['restore_not_started', 'restore_in_progress']:
       eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class) or "NA"}')
       if restore_status == 'restore_not_started':
-        restore_status = self._start_restore(key, notification)[0]
+        restore_status = self._start_restore(key, notification).get('status', restore_status)
       if wait:
         self._wait_for_restore(key, storage_class)
       else:
