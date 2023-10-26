@@ -893,7 +893,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
 
   def upload_uri_to_id(self, uri):
     '''Get upload from uri and return upload id'''
-    response = (Upload(self.conf.get('api'))).list({'limit': 2, 'uri': uri})
+    response = (Upload(self.conf.get('api'))).list(params={'limit': 2, 'uri': uri})
     items = response.get('objects')
     if not items:
       eprint('WARNING: no upload by uri', uri)
