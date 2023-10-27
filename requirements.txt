@@ -12,7 +12,7 @@ enum34==1.1.6
 funcsigs==1.0.2
 idna==2.6
 ipdb==0.11
-ipython==7.16.3
+ipython==8.10.0
 ipython-genutils==0.2.0
 jmespath==0.9.3
 mock==2.0.0
