@@ -19,8 +19,9 @@ from Basepair INC.
 
 from __future__ import division
 from __future__ import print_function
-
+from concurrent.futures import ThreadPoolExecutor
 import os
+import re
 import sys
 import json
 import subprocess
@@ -32,7 +33,19 @@ import yaml
 # App imports
 from .helpers import eprint, NicePrint, SetFilter
 from .infra.configuration import Parser
-from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
+from .infra.webapp import Analysis, File, FileInColdStorageError, Gene, Genome, GenomeFile, Host, Instance, Module, Pipeline, Project, Sample, Upload, User
+
+# Constants
+RETRY_INTERVAL = {
+  '2-5 minutes': 30,  # retry after for 30 sec
+  '12 hours': 14400, # retry after 4 hours
+  'default': 300, # retry after 5 minutes
+}
+TIME_TAKEN = {
+  'DEEP_ARCHIVE': '12 hours', # 12 hours
+  'DEFAULT': 'NA',
+  'GLACIER': '2-5 minutes', # 2 minutes
+}
 
 class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-methods
   ''' A wrapper over the REST API for accessing the Basepair system
@@ -787,12 +800,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('deleted sample', uid)
     return info
 
-  def get_sample(self, uid, add_analysis=True):
+  def get_sample(self, uid, analysis_ids=[], add_analysis=True):
     '''Get sample'''
     cache = '{}/json/sample.{}.json'.format(self.scratch, uid) if self.use_cache else False
     info = Sample(self.conf.get('api')).get(uid, cache=cache)
     if info and add_analysis:
-      info = self._add_full_analysis(info)
+      info = self._add_full_analysis(info, analysis_ids)
     return info
 
   def get_sample_owner(self, sample_id):
@@ -915,12 +928,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   ################################################################################################
   ### GENERAL HELPERS AND METHODS ################################################################
   ################################################################################################
-  def copy_file(self, src, dest, action='to'):
+  def copy_file(self, src, dest, action='to', notification=True, wait=False):
     '''Copy file'''
     return self.copy_file_to_s3(src, dest) if action == 'to' \
-        else self.copy_file_from_s3(src, dest)
+        else self.copy_file_from_s3(src, dest, notification, wait=wait)
 
-  def copy_file_from_s3(self, src, dest):
+  def copy_file_from_s3(self, src, dest, notification, wait):
     '''
     Low level function to copy a file from cloud to disk
     Parameters
@@ -929,12 +942,35 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     src:  {str} File path on AWS S3, not including the bucket           [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
+    key = self._get_key(src)
     if not src.startswith('s3://'):
+      key = src
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+    response = (File(self.conf.get('api'))).storage_status(key)
+    restore_status = response.get('status')
+    storage_class = response.get('storage_class')
+    if restore_status in ['restore_not_started', 'restore_in_progress']:
+      eprint(f'File: {key}\tStorage Class: {storage_class}\tStatus: {restore_status}\tTime Required: {TIME_TAKEN.get(storage_class) or "NA"}')
+      if restore_status == 'restore_not_started':
+        restore_status = self._start_restore(key, notification).get('status', restore_status)
+      if wait:
+        self._wait_for_restore(key, storage_class)
+      else:
+        raise FileInColdStorageError(key, restore_status)
+    elif restore_status == 'restore_error':
+      eprint(f'File: {key} is not present or you do not seem to have access to the file')
+      return False
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
-      eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
+      eprint('copying file: {} from s3 bucket to {}'.format(key, ' ./'+dest.split('/')[-1]))
     return self._execute_command(cmd=cmd, retry=3)
+
+  def _get_key(self, string):
+    '''Extract s3 object key from the string'''
+    pattern = re.compile(r's3:\/\/[0-9a-zA-Z_-]+\/(?P<key>.*)')
+    match = pattern.match(string)
+    key = match and match.group('key')
+    return key
 
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
@@ -945,7 +981,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       eprint('copying from {} to {}'.format(src, dest))
     return self._execute_command(cmd=cmd)
 
-  def download_file(self, filekey, uid=None, filename=None, file_type=None, dirname=None, is_json=False, load=False): # pylint: disable=too-many-arguments,too-many-branches
+  def download_file(
+    self,
+    filekey,
+    uid=None,
+    filename=None,
+    file_type=None,
+    dirname=None,
+    is_json=False,
+    load=False,
+    notification=True,
+    wait=False
+  ): # pylint: disable=too-many-arguments,too-many-branches
     '''
     High level function, downloads to scratch dir and opens and
     parses files to JSON if asked. Uses low level copy_file()
@@ -962,48 +1009,54 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     -------
     Absolute filepath to downloaded file
     '''
-    try:
-      # get the download directory
-      prefix = self.scratch
-      suffix = 'basepair/'      
-      if file_type == 'analyses':
-        analyses_type_path = os.path.dirname(filekey)
-        analyses_type = os.path.basename(analyses_type_path)
-      if dirname:
-        prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
-        suffix = ''
-      elif file_type == 'analyses' and uid:
-        suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
-      elif file_type and uid:
-        suffix = 'basepair/{}/{}'.format(file_type, uid)
-      elif file_type:
-        suffix = 'basepair/{}'.format(file_type)
-      elif uid:
-        suffix = 'basepair/{}'.format(uid)
-      added_path = os.path.join(prefix, suffix)
-      if not os.path.isdir(added_path):
+    # get the download directory
+    prefix = self.scratch
+    suffix = 'basepair/'
+    if file_type == 'analyses':
+      analyses_type_path = os.path.dirname(filekey)
+      analyses_type = os.path.basename(analyses_type_path)
+    if dirname:
+      prefix = dirname if dirname.startswith('/') else os.path.join(self.scratch, dirname)
+      suffix = ''
+    elif file_type == 'analyses' and uid:
+      suffix = 'basepair/{}/{}/{}'.format(file_type, uid, analyses_type)
+    elif file_type and uid:
+      suffix = 'basepair/{}/{}'.format(file_type, uid)
+    elif file_type:
+      suffix = 'basepair/{}'.format(file_type)
+    elif uid:
+      suffix = 'basepair/{}'.format(uid)
+    added_path = os.path.join(prefix, suffix)
+    if not os.path.isdir(added_path):
+      try:
         os.makedirs(added_path)
-      # rename the file if filename present otherwise use filekey
-      filepath = os.path.join(added_path, os.path.basename(filename if filename else filekey))
-      filepath = os.path.expanduser(filepath)
-      # if file not already there, download it
-      if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-        if self.verbose:
-          eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
-        if not os.path.exists(os.path.dirname(filepath)):
+      except FileExistsError:
+        pass
+    # rename the file if filename present otherwise use filekey
+    filepath = os.path.join(added_path, os.path.basename(filename if filename else filekey))
+    filepath = os.path.expanduser(filepath)
+    # if file not already there, download it
+    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+      if self.verbose:
+        eprint('downloading'+' ./ {}'.format(filepath.split('/')[-1]))
+      if not os.path.exists(os.path.dirname(filepath)):
+        try:
           os.makedirs(os.path.dirname(filepath))
-        self.copy_file(filekey, filepath, action='from')
-      elif self.verbose:
-        eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
+        except FileExistsError:
+          pass
+      try:
+        self.copy_file(filekey, filepath, action='from', notification=notification, wait=wait)
+      except FileInColdStorageError as error:
+        eprint(error)
+    elif self.verbose:
+      eprint('exists'+' ./ {}'.format(filepath.split('/')[-1]))
 
-      if load:
-        data = open(filepath, 'r').read().strip()
-        return json.loads(data) if is_json else data
-      return filepath
-    except Exception:# pylint: disable=bare-except
-      return False
+    if load:
+      data = open(filepath, 'r').read().strip()
+      return json.loads(data) if is_json else data
+    return filepath
 
-  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None,):
+  def download_raw_files(self, sample, file_type=None, outdir=None, uid=None, notification=True, wait=False):
     '''
     Download raw data associated with a sample
     Parameters
@@ -1015,12 +1068,19 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''
     try:
       uploads = sample['uploads']
-      files = [(upload.get('uri') or upload.get('key')) for upload in uploads]
+      files = [(upload.get('key') or upload.get('uri')) for upload in uploads]
       if not files:
         eprint('Warning: No files present for sample with id {}'.format(uid))
         return False
-      for file_i in files:
-        return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
+      common_args = {
+        'dirname': outdir,
+        'file_type': file_type,
+        'notification': notification,
+        'uid': uid,
+        'wait': wait,
+      }
+      paths = self._download_wrapper(common_args, files)
+      return paths
     except Exception:# pylint: disable=broad-except
       return False
 
@@ -1073,7 +1133,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       return files[0:1]
     return files
 
-  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', tags=None):  # pylint: disable=too-many-arguments
+  def get_analysis_files(self, analysis, uid, dirname=None, kind='exact', notification=True, tags=None, wait=True):  # pylint: disable=too-many-arguments
     '''
     For a analysis, go through files and get that match the tags
     Parameters
@@ -1103,14 +1163,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         multiple=True,
       )
       if files:
-        matching_files += files
-
-    return [self.download_file(
-      matching_file['path'],
-      dirname=dirname,
-      uid=uid,
-      file_type='analyses'
-    ) for matching_file in matching_files] if matching_files else None
+        matching_files += [file['path'] for file in files]
+    common_args = {
+      'dirname': dirname,
+      'file_type': 'analyses',
+      'notification': notification,
+      'uid': uid,
+      'wait': wait,
+    }
+    paths = self._download_wrapper(common_args, matching_files)
+    return paths if matching_files else None
 
   def get_bam_file(self, sample, tags=None, multiple=False):
     '''Get bam file. If you want deduped bam file, call with tags = ['bam', 'dedup']'''
@@ -1175,6 +1237,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     dirname=None,
     multiple=False,
     node=None,
+    notification=True,
+    wait=True,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
     '''For a sample, go through analysis and get files that match the tags'''
     matches = []
@@ -1208,20 +1272,14 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       for match in matches:
         eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-    filepath = []
-    for match in matches:
-      path = self.download_file(match[1]['path'], filename=dest, dirname=dest) if dest \
-        else self.download_file(match[1]['path'], dirname=dirname)
-
-      # if did download it then we added to the filepath else continue
-      if os.path.isfile(path):
-        filepath.append(path)
-        if not multiple:
-          break
-    else:
-      filepath.append(match[1]['path'])
-
-    return filepath if multiple else filepath[0]
+    file_keys = [match[1]['path'] for match in matches]
+    common_args = {
+      'dirname': dest if dest else dirname,
+      'filename': dest,
+      'notification': notification,
+      'wait': wait,
+    }
+    return self._download_wrapper(common_args, file_keys, multiple)
 
   def get_file_by_tags(
     self,
@@ -1234,8 +1292,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     file_type=None,
     kind='exact',
     multiple=False,
+    notification=True,
     tags=None,
-    uid=None
+    uid=None,
+    wait=True,
     #workflow_id=None,
   ): # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
     '''
@@ -1331,21 +1391,18 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         for match in matches:
           eprint('\t', match[1]['last_updated'], match[1]['path'])
 
-      filepath = []
-      for match in matches:
-        if download:
-          path = self.download_file(match[1]['path'], dirname=dest, filename=dest, file_type=file_type, uid=uid) if dest \
-            else self.download_file(match[1]['path'], dirname=dirname, file_type=file_type, uid=uid)
-
-          # if did download it then we added to the filepath else continue
-          if os.path.isfile(path):
-            filepath.append(path)
-            if not multiple:
-              break
-        else:
-          filepath.append(match[1]['path'])
-
-      return filepath if multiple else filepath[0]
+      common_args = {
+        'dirname': dest if dest else dirname,
+        'filename': dest,
+        'file_type': file_type,
+        'notification': notification,
+        'uid': uid,
+        'wait': wait,
+      }
+      filepaths = [match[1]['path'] for match in matches]
+      if download:
+        filepaths = self._download_wrapper(common_args, file_keys=filepaths, multiple=multiple)
+      return filepaths if multiple else filepaths[0]
     except Exception:# pylint: disable=broad-except
       return False
 
@@ -1375,7 +1432,13 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       outdir if outdir else self.scratch,
       analysis_id
     )
-    return self.download_file(filekey, filename, load=True, is_json=True)
+    args = {
+      'filekey': filekey,
+      'filename': filename,
+      'load': True,
+      'is_json': True,
+    }
+    return self._download_wrapper(args, file_keys=[filekey])
 
   def get_id_from_url(self, url):
     '''Parse URL to get the id'''
@@ -1393,7 +1456,16 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     filekey = 'log/analyses/{}/{}/worker.log'.format(user_id, analysis_id)
     # filename not needed since download refactor based on id and file_type
     # filename = '{}/logs/worker.{}.log'.format(outdir if outdir else self.scratch, analysis_id)
-    return self.download_file(filekey, uid=analysis_id, dirname=outdir, filename=None, file_type='logs', load=False, is_json=False)
+    args = {
+      'dirname': outdir,
+      'filekey': filekey,
+      'filename': None,
+      'file_type': 'logs',
+      'is_json': False,
+      'load': False,
+      'uid': analysis_id,
+    }
+    return self._download_wrapper(args, file_keys=[filekey])
 
   def get_window_score_filename(self, sample, kind=None, flanking=None):
     '''Get window score filename'''
@@ -1485,9 +1557,36 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     return True
 
   ### Private methods ###
-  def _add_full_analysis(self, sample):
+  def _wait_for_restore(self, key, storage_class='DEEP_ARCHIVE'):
+    '''
+    Wait until the files are restored from AWS S3 Glacier or Deep Archive.
+
+    Parameters:
+    ----------
+    filekeys: {list} List of s3 keys of files to be restored. [Required]
+    storage_class: {str} The storage class of the files. Expected to be 'GLACIER' or 'DEEP_ARCHIVE'. [Required]
+    
+    This function will keep checking the restore status of files in an interval defined by the estimated 
+    restore time of the specific storage class. The function will only return once all the files are ready 
+    for download (i.e., they have been restored from Glacier or Deep Archive storage).
+    ''' 
+    wait_time = TIME_TAKEN.get(storage_class)
+    restore_status = self._check_status(key)
+    if self.verbose:
+      eprint(f'File: {key}\tRestore Status: {restore_status}')
+    while restore_status == 'restore_in_progress':
+      time.sleep(RETRY_INTERVAL.get(wait_time) or RETRY_INTERVAL.get('default'))
+      restore_status = self._check_status(key)
+    if self.verbose:
+      eprint(f'File: {key}\tStatus: {restore_status}')
+    return restore_status
+    # log time taken to monitor the future modifications
+
+  def _add_full_analysis(self, sample, analysis_ids=[]):
     '''Add full analysis info to the sample'''
-    analysis_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
+    all_analyses_ids = [self.parse_url(uri)['id'] for uri in sample.get('analyses', [])]
+    analysis_ids = [id for id in analysis_ids if id in all_analyses_ids] if analysis_ids \
+      else all_analyses_ids
     analyses = [self.get_analysis(uid) for uid in analysis_ids]
     # remove null analyses, probably deleted or no ownership
     analyses = [analysis for analysis in analyses if not analysis.get('error')]
@@ -1498,6 +1597,32 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     )
     sample['analyses_full'] = analyses
     return sample
+
+  def _check_status(self, key):
+    '''
+    Check the storage statuses of list of s3 object
+    Parameters:
+    ----------
+    key: {list} s3 keys of files                                      [Required]
+    '''
+    return (File(self.conf.get('api'))).storage_status(key).get('status', None)
+
+  def _download_wrapper(self, common_args, file_keys=[], multiple=True):
+    '''Call download concurrently or one by one'''
+    arg_dicts = [{'filekey': key, **common_args} for key in file_keys]
+    filepaths = []
+    if multiple:
+      # download all the files parallely
+      with ThreadPoolExecutor() as executor:
+        filepaths = list(executor.map(lambda kwargs: self.download_file(**kwargs), arg_dicts))
+        # TODO: if larger aggregate size files(>100gb) then we can call bulk restore (half cost, 4 times delayed restore: 48hrs)
+    else:
+      for args in arg_dicts:
+        path = self.download_file(**args)
+        if os.path.isfile(path):
+          filepaths.append(path)
+          break
+    return [path for path in filepaths if path]
 
   def _execute_command(self, cmd=None, retry=5, current_try=0):
     '''Execute s3 commands'''
@@ -1559,6 +1684,10 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def _parsed_sample_list(cls, items, prefix):
     '''Parse sample id list into sample resource uri list'''
     return ['{}samples/{}'.format(prefix, item_id) for item_id in items]
+
+  def _start_restore(self, key, notification=True):
+    '''Method to start restore'''
+    return (File(self.conf.get('api'))).start_restore(key, notification=notification)
 
   @staticmethod
   def yes_or_no(question):

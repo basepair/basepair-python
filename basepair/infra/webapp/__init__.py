@@ -1,5 +1,5 @@
 from .analysis import Analysis
-from .file import File
+from .file import File, FileInColdStorageError
 from .gene import Gene
 from .genome import Genome
 from .genome_file import GenomeFile
