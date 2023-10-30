@@ -2,7 +2,7 @@ appnope==0.1.0
 awscli==1.25.38
 boto3==1.24.38
 backports.shutil-get-terminal-size==1.0.0
-certifi==2018.4.16
+certifi==2022.12.7
 chardet==3.0.4
 colorama==0.3.7
 coverage==4.5.1
@@ -12,7 +12,7 @@ enum34==1.1.6
 funcsigs==1.0.2
 idna==2.6
 ipdb==0.11
-ipython==7.16.3
+ipython==8.10.0
 ipython-genutils==0.2.0
 jmespath==0.9.3
 mock==2.0.0
