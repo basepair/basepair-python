@@ -99,8 +99,7 @@ class Abstract(object):
 
   def resource_uri(self, obj_id):
     '''Generate resource uri from obj id'''
-    path = self.endpoint.replace(self.host, '')
-    return '{}{}'.format(path, obj_id)
+    return '{}{}'.format(self.pathname, obj_id)
 
   def resource_url(self, obj_id):
     '''Generate resource uri from obj id'''
@@ -123,6 +122,10 @@ class Abstract(object):
     except requests.exceptions.RequestException as error:
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
+
+  @property
+  def pathname(self):
+    return self.endpoint.replace(f"{self.protocol}://", '').replace(self.host, '')
 
   @staticmethod
   def _get_from_cache(cache):
