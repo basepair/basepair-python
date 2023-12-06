@@ -1154,8 +1154,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if storage_cfg.get('region'):
       _params += ' {} {}'.format('--region', storage_cfg.get('region'))
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
-    command = '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
-    return command
+    return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 
   def get_expression_count_file(self, sample, features='transcripts', multiple=False):
     '''Get expression count text file - for RNA-Seq'''
