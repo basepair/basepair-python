@@ -1149,8 +1149,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         _params += ' {} "{}"'.format(arg, val)
 
     storage_cfg = self.configuration.get_user_storage()
-    if storage_cfg.get('endpoint_url'):
-      _params += ' {} {}'.format('--endpoint-url', storage_cfg.get('endpoint_url'))
+    if storage_cfg.get('endpoint-url'):
+      _params += ' {} {}'.format('--endpoint-url', storage_cfg.get('endpoint-url'))
     if storage_cfg.get('region'):
       _params += ' {} {}'.format('--region', storage_cfg.get('region'))
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
