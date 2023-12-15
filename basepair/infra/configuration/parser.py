@@ -52,11 +52,14 @@ class Parser(): # pylint: disable=too-few-public-methods
     '''Get storage setting'''
     storage_cfg = self.cfg.get('storage', {}).get('user', {})
     storage_settings = storage_cfg.get('settings', {})
-    return {
+    config = {
       'bucket': bucket or storage_settings.get('bucket'),
       'credentials': storage_cfg.get('credentials'),
       'region': storage_settings.get('region'),
     }
+    if storage_settings.get('endpoint-url'):
+      config['endpoint-url'] = storage_settings['endpoint-url']
+    return config
 
   def get_webapp_api(self):
     '''Get webapp api settings'''
