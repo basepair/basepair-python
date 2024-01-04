@@ -1,2 +1,2 @@
 '''Infra storage modules'''
-from infra.storage.main import Storage
+from modules.storage.main import Storage
