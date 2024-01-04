@@ -18,6 +18,8 @@ packages = [
     'basepair.infra',
     'basepair.infra.configuration',
     'basepair.infra.webapp',
+    'basepair.modules',
+    'basepair.modules.storage',
     'basepair.utils',
     'bin',
     'bin.datatypes'
