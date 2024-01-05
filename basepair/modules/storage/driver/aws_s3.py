@@ -4,11 +4,7 @@
 from modules.aws import S3
 
 # App import
-from infra.logger import Logger
 from .abstract import StorageAbstract
-
-# constants
-LOG = Logger.get_instance()
 
 class Driver(StorageAbstract):
   '''AWS S3 Driver class'''

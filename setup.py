@@ -19,6 +19,8 @@ packages = [
     'basepair.infra.configuration',
     'basepair.infra.webapp',
     'basepair.modules',
+    'basepair.modules.aws',
+    'basepair.modules.logger',
     'basepair.modules.storage',
     'basepair.utils',
     'bin',

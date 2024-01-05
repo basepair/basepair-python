@@ -1,12 +1,10 @@
 '''Driver for AWS S3 compute'''
 
 # App import
-from infra.logger import Logger
 from .aws_s3 import Driver as S3Driver
 from .abstract import raise_no_implemented
 
 # constants
-LOG = Logger.get_instance()
 
 class Driver(S3Driver):
     '''Min IO Driver class'''
