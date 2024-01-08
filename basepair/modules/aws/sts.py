@@ -9,10 +9,10 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 
 # App imports
-from modules.logger import Logger
+from basepair.modules.logger import Logger
 
 # Module imports
-from modules.aws.handler.exception import ExceptionHandler
+from basepair.modules.aws.handler.exception import ExceptionHandler
 
 class STS: # pylint: disable=too-few-public-methods
   '''Abstract wrapper for services'''

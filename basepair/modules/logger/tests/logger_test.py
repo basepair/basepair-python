@@ -8,7 +8,7 @@ import pytest
 from allure import step
 
 # App imports
-from modules.logger import Logger
+from basepair.modules.logger import Logger
 
 LOG_FILE = '/tmp/test_logger_logbook.log'
 

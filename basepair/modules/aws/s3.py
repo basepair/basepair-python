@@ -11,8 +11,8 @@ from botocore.client import Config
 from botocore.exceptions import ClientError, NoCredentialsError
 
 # Module imports
-from modules.aws.handler.exception import ExceptionHandler
-from modules.aws.service import Service
+from basepair.modules.aws.handler.exception import ExceptionHandler
+from basepair.modules.aws.service import Service
 
 # Constants
 DEFAULT_RESTORE_PERIOD = 7 # days

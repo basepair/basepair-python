@@ -1,7 +1,7 @@
 '''Driver for AWS S3 compute'''
 
 # Libs import
-from modules.aws import S3
+from basepair.modules.aws import S3
 
 # App import
 from .abstract import StorageAbstract

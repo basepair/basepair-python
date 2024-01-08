@@ -11,7 +11,7 @@ import boto3
 import requests
 
 # App imports
-from modules.logger import Logger
+from basepair.modules.logger import Logger
 from .sts import STS
 
 class Service: # pylint: disable=too-few-public-methods
