@@ -1,2 +1,2 @@
 '''Infra storage modules'''
-from modules.storage.main import Storage
+from basepair.modules.storage.main import Storage
