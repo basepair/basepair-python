@@ -57,8 +57,8 @@ class Parser(): # pylint: disable=too-few-public-methods
       'credentials': storage_cfg.get('credentials'),
       'region': storage_settings.get('region'),
     }
-    if storage_settings.get('endpoint-url'):
-      config['endpoint-url'] = storage_settings['endpoint-url']
+    if storage_settings.get('endpoint_url'):
+      config['endpoint_url'] = storage_settings['endpoint_url']
     return config
 
   def get_webapp_api(self):
