@@ -65,6 +65,6 @@ class Storage:
     '''Set storage lifecycle'''
     return self.driver.set_lifecycle(kwargs)
 
-  def upload(self, file_name, full_path, force=False):
+  def upload(self, file_name, full_path, **kwargs):
     '''Upload file to storage'''
-    return self.driver.upload(file_name, full_path, force)
+    return self.driver.upload(file_name, full_path, **kwargs)

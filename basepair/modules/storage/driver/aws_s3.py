@@ -85,6 +85,6 @@ class Driver(StorageAbstract):
     '''Set storage lifecycle'''
     return self.s3_service.set_lifecycle(**kwargs)
 
-  def upload(self, file_name, full_path, force=False):
+  def upload(self, file_name, full_path, **kwargs):
     '''Upload file to storage'''
-    return self.s3_service.upload_file(file_name, full_path, force)
+    return self.s3_service.upload_file(file_name, full_path, **kwargs)
