@@ -1149,6 +1149,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         _params += ' {} "{}"'.format(arg, val)
 
     storage_cfg = self.configuration.get_user_storage()
+    # MinIO params
+    minio_params = ['endpoint-url', 'region']
+    for param in minio_params:
+      if storage_cfg.get(param):
+        _params += ' {} {}'.format('--' + param, storage_cfg.get(param))
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 
