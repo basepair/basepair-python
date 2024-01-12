@@ -21,6 +21,8 @@ packages = [
     'basepair.modules',
     'basepair.modules.aws',
     'basepair.modules.aws.handler',
+    'basepair.modules.identity',
+    'basepair.modules.identity.driver',
     'basepair.modules.logger',
     'basepair.modules.logger.drivers',
     'basepair.modules.storage',
