@@ -25,6 +25,8 @@ packages = [
     'basepair.modules.identity.driver',
     'basepair.modules.logger',
     'basepair.modules.logger.drivers',
+    'basepair.modules.secrets',
+    'basepair.modules.secrets.driver',
     'basepair.modules.storage',
     'basepair.modules.storage.driver',
     'basepair.utils',
