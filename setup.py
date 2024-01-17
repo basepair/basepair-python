@@ -59,6 +59,7 @@ setup(
         'future',
         'requests',
         'awscli',
+        'logbook',
         'tabulate',
     ],
     scripts=['bin/basepair'],
