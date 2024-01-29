@@ -14,7 +14,7 @@ class Driver(SecretsAbstract):
     '''Get the secrets using secret_id'''
     secret_file_path = os.path.join('/home/ec2-user', secret_id)
     if os.path.isfile(secret_file_path):
-      secrets = {}
+      secrets = ""
       with open(secret_file_path, 'r', encoding='utf-8') as file:
-        secrets = json.load(file) # load the content as a json
-      return secrets.get('SecretString', {})
+        secrets = file.read()  # load the content as a json
+      return secrets
