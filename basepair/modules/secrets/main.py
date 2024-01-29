@@ -15,10 +15,8 @@ class Secrets:
   def __init__(self):
     '''Secrets Manager constructor'''
     driver =  os.environ.get('SECRETS_DRIVER', 'aws_sm')
-
-    cfg = { 'region': os.environ.get('SECRETS_MANAGER_REGION', 'us-east-1')}
     module = importlib.import_module(f'basepair.modules.secrets.driver.{driver}')
-    self.driver = module.Driver(cfg)
+    self.driver = module.Driver()
 
   def get(self, secret_id, use_cache=True):
     '''Get the secrets using the ids'''

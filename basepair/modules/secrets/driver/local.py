@@ -7,7 +7,7 @@ from basepair.modules.secrets.driver import SecretsAbstract
 class Driver(SecretsAbstract):
   '''Local Driver for managing Secrets'''
 
-  def __init__(self, cfg=None):
+  def __init__(self):
     pass
 
   def get(self, secret_id, use_cache=True):

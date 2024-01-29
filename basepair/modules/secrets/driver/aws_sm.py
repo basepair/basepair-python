@@ -1,3 +1,5 @@
+import os
+
 from basepair.modules.aws import SM
 
 from basepair.modules.secrets.driver import SecretsAbstract
@@ -6,10 +8,9 @@ from basepair.modules.secrets.driver import SecretsAbstract
 class Driver(SecretsAbstract):
   '''AWS Driver for secrets manager'''
 
-  def __init__(self, cfg=None):
+  def __init__(self):
     self.sm_service = SM({
-      'credentials': cfg.get('credentials', None), # is this required?
-      'region': cfg.get('region'),
+      'region': os.environ.get('SECRETS_MANAGER_REGION', 'us-east-1')
     })
 
   def get(self, secret_id, use_cache=True):
