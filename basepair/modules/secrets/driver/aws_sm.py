@@ -9,6 +9,7 @@ class Driver(SecretsAbstract):
   '''AWS Driver for secrets manager'''
 
   def __init__(self):
+    '''AWS secrets constructor'''
     self.sm_service = SM({
       'region': os.environ.get('SECRETS_MANAGER_REGION', 'us-east-1')
     })

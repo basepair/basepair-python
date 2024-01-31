@@ -10,10 +10,10 @@ import os
 # for instance the status for the restore from cold feature
 
 class Secrets:
-  '''Storage class'''
+  '''Secrets class'''
 
   def __init__(self):
-    '''Secrets Manager constructor'''
+    '''Secrets constructor'''
     driver =  os.environ.get('SECRETS_DRIVER', 'aws_sm')
     module = importlib.import_module(f'basepair.modules.secrets.driver.{driver}')
     self.driver = module.Driver()

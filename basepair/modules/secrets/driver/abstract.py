@@ -6,7 +6,9 @@ class SecretsAbstract:
   '''Abstract Driver class'''
 
   def __init__(self, cfg=None):
+    '''Abstract secret constructor'''
     raise Exception('Abstract class cannot be instantiated.')
 
   def get(self, secret_id, use_cache):
+    '''Method to get the secrets'''
     raise_no_implemented()
