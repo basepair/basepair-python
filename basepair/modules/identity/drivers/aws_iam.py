@@ -1,6 +1,6 @@
 from basepair.modules.aws import IAM
 
-from basepair.modules.identity.driver import IdentityAbstract
+from basepair.modules.identity.drivers import IdentityAbstract
 
 
 class Driver(IdentityAbstract):

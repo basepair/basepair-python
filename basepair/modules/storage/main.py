@@ -14,7 +14,7 @@ class Storage:
   def __init__(self, cfg):
     '''Storage constructor'''
     driver = cfg.get('driver') or 'aws_s3'
-    module = importlib.import_module(f'basepair.modules.storage.driver.{driver}')
+    module = importlib.import_module(f'basepair.modules.storage.drivers.{driver}')
     self.driver = module.Driver(cfg)
 
   def bulk_delete(self, uris):

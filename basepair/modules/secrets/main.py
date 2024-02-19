@@ -15,7 +15,7 @@ class Secrets:
   def __init__(self):
     '''Secrets constructor'''
     driver =  os.environ.get('SECRETS_DRIVER', 'aws_sm')
-    module = importlib.import_module(f'basepair.modules.secrets.driver.{driver}')
+    module = importlib.import_module(f'basepair.modules.secrets.drivers.{driver}')
     self.driver = module.Driver()
 
   def get(self, secret_id, use_cache=True):
