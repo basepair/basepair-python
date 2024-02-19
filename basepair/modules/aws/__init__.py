@@ -1,5 +1,6 @@
 '''AWS module'''
 from .cw import CW
+from .ec2 import EC2
 from .handler.exception import ExceptionHandler
 from .hos import HOS
 from .how import HOW
