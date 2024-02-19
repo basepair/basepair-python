@@ -36,6 +36,10 @@ class StorageAbstract:
     '''Get storage lifecycle'''
     raise_no_implemented()
 
+  def get_overall_status(self, uris):
+    '''Get overall sample files status'''
+    raise_no_implemented()
+
   def get_public_url(self, uri):
     '''Get a public accessible url'''
     raise_no_implemented()
@@ -46,6 +50,10 @@ class StorageAbstract:
 
   def get_uri(self, key):
     '''Get uri using key and storage settings'''
+    raise_no_implemented()
+
+  def restore_files_from_cold(self, uris, days):
+    '''Restore files from cold storage'''
     raise_no_implemented()
 
   def restore_from_cold(self, uri, days):

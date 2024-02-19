@@ -41,6 +41,10 @@ class Storage:
     '''Get storage lifecycle'''
     return self.driver.get_lifecycle(bucket)
 
+  def get_overall_status(self, uris):
+    '''Get overall sample files status'''
+    return self.driver.get_overall_status(uris)
+
   def get_public_url(self, uri):
     '''Get a public accessible url'''
     return self.driver.get_public_url(uri)
@@ -52,6 +56,10 @@ class Storage:
   def get_uri(self, key):
     '''Get uri using key and storage settings'''
     return self.driver.get_uri(key)
+
+  def restore_files_from_cold(self, uris, days):
+    '''Restore files from cold storage'''
+    return self.driver.restore_files_from_cold(uris, days)
 
   def restore_from_cold(self, uri, days):
     '''Restore file from cold storage'''

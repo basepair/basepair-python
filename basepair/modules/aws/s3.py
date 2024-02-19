@@ -172,7 +172,6 @@ class S3(Service):
   def get_object_head(self, key, bucket=None):
     '''Check if key exists in S3 bucket'''
     bucket = bucket or self.bucket
-    response = None
     try:
       response = self.client.head_object(Bucket=bucket, Key=key)
     except ClientError as error:
@@ -182,7 +181,7 @@ class S3(Service):
       })
       if ExceptionHandler.is_throttled_error(exception=error):
         raise error
-      return int(error.response['Error']['Code']) != 404
+      response = int(error.response['Error']['Code']) != 404
     return response
 
   def get_self_signed(self, key, expires_in=28800):
@@ -217,6 +216,8 @@ class S3(Service):
         status = 'restore_in_progress'
       elif restore_status and 'false' in restore_status:
         status = 'restore_complete'
+    elif head_response is False:  # 404 not found
+      status = 'file_not_found'
     return status, storage_class
 
   def get_storage_class(self, key, bucket=None):
@@ -238,6 +239,41 @@ class S3(Service):
       if ExceptionHandler.is_throttled_error(exception=error):
         raise error
     return {}
+
+  def list_s3_files(self, base_prefix):
+    '''Get a list of files in the base_prefix including files in nested path'''
+    try:
+      response = self.client.list_objects_v2(Bucket=self.bucket, Prefix=base_prefix)
+      # Filter only files and not directories
+      files = [obj for obj in response.get('Contents', []) if not obj['Key'].endswith('/')]
+      return files
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to list object from {base_prefix}.',
+      })
+      if ExceptionHandler.is_throttled_error(exception=error):
+        raise error
+
+  def flatten_s3_directory(self, base_prefix):
+    '''Move files from sub-folders to base prefix'''
+    try:
+      response = self.client.list_objects_v2(Bucket=self.bucket, Prefix=base_prefix)
+      if 'Contents' in response:
+        for obj in response['Contents']:
+          file_key = obj['Key']
+          if '/' in file_key[len(base_prefix):]:
+            new_key = base_prefix + file_key.split('/')[-1]
+            copy_source = {'bucket': self.bucket, 'key': file_key}
+            self.replicate(copy_source, new_key, storage_class='STANDARD')
+            self.delete(file_key, self.bucket)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to move object from {base_prefix}.',
+      })
+      if ExceptionHandler.is_throttled_error(exception=error):
+        raise error
 
   def replicate(self, source, new_file, storage_class='STANDARD_IA'):
     '''Replicate a file from S3 to S3'''
