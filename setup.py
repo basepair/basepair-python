@@ -19,6 +19,8 @@ packages = [
     'basepair.infra.configuration',
     'basepair.infra.webapp',
     'basepair.modules',
+    'basepair.modules.alert',
+    'basepair.modules.alert.driver',
     'basepair.modules.aws',
     'basepair.modules.aws.handler',
     'basepair.modules.identity',
