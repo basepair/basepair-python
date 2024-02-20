@@ -7,7 +7,7 @@ class Identity:
   def __init__(self, cfg):
     '''Identity constructor'''
     driver = cfg.get('driver')
-    module = importlib.import_module(f'basepair.modules.identity.driver.{driver}')
+    module = importlib.import_module(f'basepair.modules.identity.drivers.{driver}')
     self.driver = module.Driver(cfg)
 
   def delete_access_keys(self, username):

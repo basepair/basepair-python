@@ -172,7 +172,6 @@ class S3(Service):
   def get_object_head(self, key, bucket=None):
     '''Check if key exists in S3 bucket'''
     bucket = bucket or self.bucket
-    response = None
     try:
       response = self.client.head_object(Bucket=bucket, Key=key)
     except ClientError as error:
@@ -182,7 +181,7 @@ class S3(Service):
       })
       if ExceptionHandler.is_throttled_error(exception=error):
         raise error
-      return int(error.response['Error']['Code']) != 404
+      response = int(error.response['Error']['Code']) != 404
     return response
 
   def get_self_signed(self, key, expires_in=28800):
@@ -217,6 +216,8 @@ class S3(Service):
         status = 'restore_in_progress'
       elif restore_status and 'false' in restore_status:
         status = 'restore_complete'
+    elif head_response is False:  # 404 not found
+      status = 'file_not_found'
     return status, storage_class
 
   def get_storage_class(self, key, bucket=None):
@@ -228,8 +229,19 @@ class S3(Service):
     '''List objects with prefix'''
     bucket = bucket or self.bucket
     try:
-      response = self.client.list_objects(Bucket=bucket, Prefix=prefix)
-      return response.get('Contents')
+      all_files = []
+      continuation_token = None
+      while True:
+        params = {'Bucket': bucket, 'Prefix': prefix}
+        if continuation_token:
+          params['ContinuationToken'] = continuation_token
+
+        response = self.client.list_objects_v2(**params)
+        all_files.extend(response.get('Contents', []))
+        if not response.get('IsTruncated'):  # At the end of the list?
+          break
+        continuation_token = response.get('NextContinuationToken')
+      return all_files
     except ClientError as error:
       self.get_log_msg({
         'exception': error,

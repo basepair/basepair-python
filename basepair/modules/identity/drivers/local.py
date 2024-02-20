@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from basepair.modules.identity.driver import IdentityAbstract
+from basepair.modules.identity.drivers import IdentityAbstract
 
 
 class Driver(IdentityAbstract):

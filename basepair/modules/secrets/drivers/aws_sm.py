@@ -2,7 +2,7 @@ import os
 
 from basepair.modules.aws import SM
 
-from basepair.modules.secrets.driver import SecretsAbstract
+from basepair.modules.secrets.drivers import SecretsAbstract
 
 
 class Driver(SecretsAbstract):

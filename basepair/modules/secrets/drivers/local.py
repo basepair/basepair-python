@@ -1,7 +1,7 @@
 import os
 import json
 
-from basepair.modules.secrets.driver import SecretsAbstract
+from basepair.modules.secrets.drivers import SecretsAbstract
 
 
 class Driver(SecretsAbstract):

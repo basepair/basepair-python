@@ -6,6 +6,13 @@ from basepair.modules.aws import S3
 # App import
 from .abstract import StorageAbstract
 
+FILE_NOT_FOUND = 'file_not_found'
+RESTORE_COMPLETE = 'restore_complete'
+RESTORE_ERROR = 'restore_error'
+RESTORE_IN_PROGRESS = 'restore_in_progress'
+RESTORE_NOT_REQUIRED = 'restore_not_required'
+RESTORE_NOT_STARTED = 'restore_not_started'
+
 class Driver(StorageAbstract):
   '''AWS S3 Driver class'''
 
@@ -56,10 +63,27 @@ class Driver(StorageAbstract):
     '''Get storage lifecycle'''
     return self.s3_service.get_lifecycle(bucket)
 
+  def get_overall_status(self, uris):
+    '''Get overall sample files status'''
+    restore_statuses = [self.get_status(uri) for uri in uris]
+
+    # Check if all statuses are RESTORE_COMPLETE
+    if all(status == RESTORE_COMPLETE for status in restore_statuses):
+      return RESTORE_COMPLETE
+    # Find the first status
+    for state in [FILE_NOT_FOUND, RESTORE_IN_PROGRESS, RESTORE_ERROR, RESTORE_NOT_STARTED]:
+      if any(status == state for status in restore_statuses):
+        return state
+    # If no status found, return RESTORE_NOT_REQUIRED
+    return RESTORE_NOT_REQUIRED
+
   def get_public_url(self, uri):
     '''Get a public accessible url'''
     key = S3.get_key_from_uri(uri)
     return self.s3_service.get_self_signed(key)
+
+  def get_service(self):
+    return self.s3_service
 
   def get_status(self, uri):
     '''Get the file status'''
@@ -70,6 +94,16 @@ class Driver(StorageAbstract):
   def get_uri(self, key):
     '''Get uri using key and storage settings'''
     return f's3://{self.s3_service.bucket}/{key}'
+
+  def list(self, prefix, bucket=None):
+    return self.s3_service.list(prefix, bucket)
+
+  def restore_files_from_cold(self, uris, days):
+    '''Restore files from cold storage'''
+    for uri in uris:
+      status = self.get_status(uri)
+      if status == 'restore_not_started':
+        self.restore_from_cold(uri, days=days)
 
   def restore_from_cold(self, uri, days):
     '''Restore file from cold storage'''

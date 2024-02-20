@@ -14,7 +14,7 @@ class Storage:
   def __init__(self, cfg):
     '''Storage constructor'''
     driver = cfg.get('driver') or 'aws_s3'
-    module = importlib.import_module(f'basepair.modules.storage.driver.{driver}')
+    module = importlib.import_module(f'basepair.modules.storage.drivers.{driver}')
     self.driver = module.Driver(cfg)
 
   def bulk_delete(self, uris):
@@ -41,9 +41,17 @@ class Storage:
     '''Get storage lifecycle'''
     return self.driver.get_lifecycle(bucket)
 
+  def get_overall_status(self, uris):
+    '''Get overall sample files status'''
+    return self.driver.get_overall_status(uris)
+
   def get_public_url(self, uri):
     '''Get a public accessible url'''
     return self.driver.get_public_url(uri)
+
+  def get_service(self):
+    '''Get storage service object'''
+    return self.driver.get_service()
 
   def get_status(self, uri):
     '''Get the file status'''
@@ -52,6 +60,14 @@ class Storage:
   def get_uri(self, key):
     '''Get uri using key and storage settings'''
     return self.driver.get_uri(key)
+
+  def list(self, prefix, bucket=None):
+    '''List files in prefix'''
+    return self.driver.list(prefix, bucket)
+
+  def restore_files_from_cold(self, uris, days):
+    '''Restore files from cold storage'''
+    return self.driver.restore_files_from_cold(uris, days)
 
   def restore_from_cold(self, uri, days):
     '''Restore file from cold storage'''
