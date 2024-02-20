@@ -17,8 +17,8 @@ class Driver(S3Driver):
     self.hos_service = HOS({
       'sequence_store_id': storage_settings.get('ho_sequence_store_id'),
       'region': storage_settings.get('ho_region'),
+      'role_arn': storage_settings.get('ho_import_export_role_arn'),
     })
-    self.role_arn = storage_settings.get('ho_import_export_role_arn')
 
   def get_import_job(self, job_id):
     '''Get import job details for a given import job id'''
@@ -37,8 +37,8 @@ class Driver(S3Driver):
 
   def start_import_job(self, sources):
     '''Start a read set import job with given source files'''
-    return self.hos_service.start_import_job(role_arn=self.role_arn, sources=sources)
+    return self.hos_service.start_import_job(sources=sources)
 
   def start_export_job(self, destination, sources):
     '''Start a read set export job with given source files'''
-    return self.hos_service.start_export_job(destination=destination, role_arn=self.role_arn, sources=sources)
+    return self.hos_service.start_export_job(destination=destination, sources=sources)
