@@ -49,6 +49,10 @@ class Storage:
     '''Get a public accessible url'''
     return self.driver.get_public_url(uri)
 
+  def get_service(self):
+    '''Get storage service object'''
+    return self.driver.get_service()
+
   def get_status(self, uri):
     '''Get the file status'''
     return self.driver.get_status(uri)

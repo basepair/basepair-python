@@ -82,6 +82,9 @@ class Driver(StorageAbstract):
     key = S3.get_key_from_uri(uri)
     return self.s3_service.get_self_signed(key)
 
+  def get_service(self):
+    return self.s3_service
+
   def get_status(self, uri):
     '''Get the file status'''
     bucket = S3.get_bucket_from_uri(uri)

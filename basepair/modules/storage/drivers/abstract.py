@@ -44,6 +44,10 @@ class StorageAbstract:
     '''Get a public accessible url'''
     raise_no_implemented()
 
+  def get_service(self):
+    '''Get storage service object'''
+    raise_no_implemented()
+
   def get_status(self, uri):
     '''Get the file status'''
     raise_no_implemented()

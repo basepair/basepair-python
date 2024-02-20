@@ -32,6 +32,9 @@ class Driver(S3Driver):
     '''Get read set list for a given filters'''
     return self.hos_service.get_read_sets(filters)
 
+  def get_service(self):
+    return self.hos_service
+
   def start_import_job(self, sources):
     '''Start a read set import job with given source files'''
     return self.hos_service.start_import_job(role_arn=self.role_arn, sources=sources)
