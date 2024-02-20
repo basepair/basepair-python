@@ -251,26 +251,6 @@ class S3(Service):
         raise error
     return {}
 
-  def flatten_s3_directory(self, base_prefix):
-    '''Move files from sub-folders to base prefix'''
-    try:
-      response = self.client.list_objects_v2(Bucket=self.bucket, Prefix=base_prefix)
-      if 'Contents' in response:
-        for obj in response['Contents']:
-          file_key = obj['Key']
-          if '/' in file_key[len(base_prefix):]:
-            new_key = base_prefix + file_key.split('/')[-1]
-            copy_source = {'bucket': self.bucket, 'key': file_key}
-            self.replicate(copy_source, new_key, storage_class='STANDARD')
-            self.delete(file_key, self.bucket)
-    except ClientError as error:
-      self.get_log_msg({
-        'exception': error,
-        'msg': f'Not able to move object from {base_prefix}.',
-      })
-      if ExceptionHandler.is_throttled_error(exception=error):
-        raise error
-
   def replicate(self, source, new_file, storage_class='STANDARD_IA'):
     '''Replicate a file from S3 to S3'''
     try:
