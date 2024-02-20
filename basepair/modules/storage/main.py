@@ -57,6 +57,10 @@ class Storage:
     '''Get uri using key and storage settings'''
     return self.driver.get_uri(key)
 
+  def list(self, prefix, bucket=None):
+    '''List files in prefix'''
+    return self.driver.list(prefix, bucket)
+
   def restore_files_from_cold(self, uris, days):
     '''Restore files from cold storage'''
     return self.driver.restore_files_from_cold(uris, days)

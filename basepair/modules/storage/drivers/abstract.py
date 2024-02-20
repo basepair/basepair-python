@@ -52,6 +52,10 @@ class StorageAbstract:
     '''Get uri using key and storage settings'''
     raise_no_implemented()
 
+  def list(self, prefix, bucket=None):
+    '''List files in prefix'''
+    raise_no_implemented()
+
   def restore_files_from_cold(self, uris, days):
     '''Restore files from cold storage'''
     raise_no_implemented()

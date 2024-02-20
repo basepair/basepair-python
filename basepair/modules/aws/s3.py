@@ -229,8 +229,19 @@ class S3(Service):
     '''List objects with prefix'''
     bucket = bucket or self.bucket
     try:
-      response = self.client.list_objects(Bucket=bucket, Prefix=prefix)
-      return response.get('Contents')
+      all_files = []
+      continuation_token = None
+      while True:
+        params = {'Bucket': bucket, 'Prefix': prefix}
+        if continuation_token:
+          params['ContinuationToken'] = continuation_token
+
+        response = self.client.list_objects_v2(**params)
+        all_files.extend(response.get('Contents', []))
+        if not response.get('IsTruncated'):  # At the end of the list?
+          break
+        continuation_token = response.get('NextContinuationToken')
+      return all_files
     except ClientError as error:
       self.get_log_msg({
         'exception': error,
@@ -239,21 +250,6 @@ class S3(Service):
       if ExceptionHandler.is_throttled_error(exception=error):
         raise error
     return {}
-
-  def list_s3_files(self, base_prefix):
-    '''Get a list of files in the base_prefix including files in nested path'''
-    try:
-      response = self.client.list_objects_v2(Bucket=self.bucket, Prefix=base_prefix)
-      # Filter only files and not directories
-      files = [obj for obj in response.get('Contents', []) if not obj['Key'].endswith('/')]
-      return files
-    except ClientError as error:
-      self.get_log_msg({
-        'exception': error,
-        'msg': f'Not able to list object from {base_prefix}.',
-      })
-      if ExceptionHandler.is_throttled_error(exception=error):
-        raise error
 
   def flatten_s3_directory(self, base_prefix):
     '''Move files from sub-folders to base prefix'''

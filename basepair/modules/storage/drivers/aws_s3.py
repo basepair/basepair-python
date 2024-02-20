@@ -92,6 +92,9 @@ class Driver(StorageAbstract):
     '''Get uri using key and storage settings'''
     return f's3://{self.s3_service.bucket}/{key}'
 
+  def list(self, prefix, bucket=None):
+    return self.s3_service.list(prefix, bucket)
+
   def restore_files_from_cold(self, uris, days):
     '''Restore files from cold storage'''
     for uri in uris:
