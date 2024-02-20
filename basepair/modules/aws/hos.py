@@ -20,6 +20,7 @@ class HOS(Service):
       'service_name': 'omics',
     })
     self.sequence_store_id = cfg.get('sequence_store_id')
+    self.role_arn = cfg.get('role_arn')
 
   def get_export_job(self, job_id):
     '''Get export job'''
@@ -66,14 +67,14 @@ class HOS(Service):
       raise error
     return response
 
-  def start_export_job(self, destination, role_arn, sources):
+  def start_export_job(self, destination, sources):
     '''Start export job'''
     try:
       client_token = str(uuid.uuid4())
       response = self.client.start_read_set_export_job(
         sequenceStoreId=self.sequence_store_id,
         destination=destination,
-        roleArn=role_arn,
+        roleArn=self.role_arn,
         clientToken=client_token,
         sources=sources
       )
@@ -85,12 +86,12 @@ class HOS(Service):
       raise error
     return response
 
-  def start_import_job(self, role_arn, sources):
+  def start_import_job(self, sources):
     '''Start import job'''
     try:
       return self.client.start_read_set_import_job(
         sequenceStoreId=self.sequence_store_id,
-        roleArn=role_arn,
+        roleArn=self.role_arn,
         sources=sources
       )
     except ClientError as error:
