@@ -20,25 +20,5 @@ class Driver(S3Driver):
       'role_arn': storage_settings.get('ho_import_export_role_arn'),
     })
 
-  def get_import_job(self, job_id):
-    '''Get import job details for a given import job id'''
-    return self.hos_service.get_import_job(job_id)
-
-  def get_export_job(self, job_id):
-    '''Get import job details for a given export job id'''
-    return self.hos_service.get_export_job(job_id)
-
-  def get_read_sets(self, filters):
-    '''Get read set list for a given filters'''
-    return self.hos_service.get_read_sets(filters)
-
   def get_service(self):
     return self.hos_service
-
-  def start_import_job(self, sources):
-    '''Start a read set import job with given source files'''
-    return self.hos_service.start_import_job(sources=sources)
-
-  def start_export_job(self, destination, sources):
-    '''Start a read set export job with given source files'''
-    return self.hos_service.start_export_job(destination=destination, sources=sources)
