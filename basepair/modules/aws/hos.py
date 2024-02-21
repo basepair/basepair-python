@@ -37,7 +37,7 @@ class HOS(Service):
       raise error
     return response
 
-  def get_import_job(self, job_id):
+  def get_read_set_import_job(self, job_id):
     '''Get import job'''
     try:
       response = self.client.get_read_set_import_job(
