@@ -57,6 +57,10 @@ class Storage:
     '''Get the file status'''
     return self.driver.get_status(uri)
 
+  def get_storage_context(self):
+    '''Get the storage context'''
+    return self.driver.get_storage_context()
+
   def get_uri(self, key):
     '''Get uri using key and storage settings'''
     return self.driver.get_uri(key)

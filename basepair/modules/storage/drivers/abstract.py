@@ -79,3 +79,7 @@ class StorageAbstract:
   def upload(self, file_name, full_path, force=False):
     '''Upload file to storage'''
     raise_no_implemented()
+
+  def get_storage_context(self):
+    '''Get the storage context according to driver'''
+    raise_no_implemented()
