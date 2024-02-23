@@ -202,6 +202,16 @@ class S3(Service):
         raise error
     return None
 
+  def get_storage_context(self):
+    '''Method to return context for S3'''
+    return {
+      'storage_archival_enabled' : bool(self.cfg.get('restore_period', False)),
+      'storage_bucket' : self.cfg.get('bucket'),
+      'storage_region' : self.cfg.get('region'),
+      'storage_sse_enabled' : 'True',
+      'storage_url': f"https://s3.{self.cfg.get('region')}.amazonaws.com",
+    }
+
   def get_status(self, key, bucket=None):
     '''Method to check the status of file restore process'''
     status = 'restore_error'
@@ -423,13 +433,3 @@ class S3(Service):
     '''Helper to get key from uri'''
     bucket = bucket or S3.get_bucket_from_uri(uri)
     return uri.replace(f's3://{bucket}/', '')
-
-  def get_storage_context(self):
-    '''Method to return context for S3'''
-    return {
-      'storage_archival_enabled' : bool(self.cfg.get('restore_period', False)),
-      'storage_bucket' : self.cfg.get('bucket'),
-      'storage_region' : self.cfg.get('region'),
-      'storage_sse_enabled' : 'True',
-      'storage_url': f"https://s3.{self.cfg.get('region')}.amazonaws.com",
-    }
