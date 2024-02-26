@@ -29,6 +29,18 @@ class HOW(Service):
       raise error
     return response
 
+  def delete_workflow(self, params):
+    '''Delete workflow'''
+    try:
+      response = self.client.create_workflow(**params)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to delete HealthOmics workflow: {str(error)}.',
+      })
+      raise error
+    return response
+
   def get_run(self, params):
     '''Get omics run'''
     try:
