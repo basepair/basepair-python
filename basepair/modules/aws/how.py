@@ -32,7 +32,7 @@ class HOW(Service):
   def delete_workflow(self, params):
     '''Delete workflow'''
     try:
-      response = self.client.create_workflow(**params)
+      response = self.client.delete_workflow(**params)
     except ClientError as error:
       self.get_log_msg({
         'exception': error,
