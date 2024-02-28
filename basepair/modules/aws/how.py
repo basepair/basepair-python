@@ -63,6 +63,17 @@ class HOW(Service):
       })
       raise error
 
+  def list_run_tasks(self, params):
+    '''Get omics run list'''
+    try:
+      return self.client.list_run_tasks(**params)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception':error,
+        'msg': f'Not able to Get HealthOmics run task list id {params.get("id")}: {str(error)}'
+      })
+      raise error
+
   def list_workflows(self, params):
     '''List omics workflows'''
     try:
