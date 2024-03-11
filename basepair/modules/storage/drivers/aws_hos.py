@@ -15,6 +15,7 @@ class Driver(S3Driver):
 
     storage_settings = cfg.get('settings', {})
     self.hos_service = HOS({
+      'credentials': cfg.get('credentials'),
       'sequence_store_id': storage_settings.get('ho_sequence_store_id'),
       'region': storage_settings.get('ho_region'),
       'role_arn': storage_settings.get('ho_import_export_role_arn'),
