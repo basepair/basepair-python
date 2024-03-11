@@ -29,6 +29,18 @@ class HOW(Service):
       raise error
     return response
 
+  def delete_workflow(self, params):
+    '''Delete workflow'''
+    try:
+      response = self.client.delete_workflow(**params)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to delete HealthOmics workflow: {str(error)}.',
+      })
+      raise error
+    return response
+
   def get_run(self, params):
     '''Get omics run'''
     try:
@@ -37,6 +49,17 @@ class HOW(Service):
       self.get_log_msg({
         'exception': str(error),
         'msg': f'Not able to Get HealthOmics run id {params.get("id")}: {str(error)}.',
+      })
+      raise error
+  
+  def get_run_task(self, params):
+    '''Get omics run task'''
+    try:
+      return self.client.get_run_task(**params)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': str(error),
+        'msg': f'Not able to Get HealthOmics run task id {params.get("id")}: {str(error)}.',
       })
       raise error
 
@@ -48,6 +71,17 @@ class HOW(Service):
       self.get_log_msg({
         'exception': str(error),
         'msg': f'Not able to get HealthOmics workflow: {str(error)}.',
+      })
+      raise error
+
+  def list_run_tasks(self, params):
+    '''Get omics run list'''
+    try:
+      return self.client.list_run_tasks(**params)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception':error,
+        'msg': f'Not able to Get HealthOmics run task list id {params.get("id")}: {str(error)}'
       })
       raise error
 

@@ -18,13 +18,13 @@ class Driver(StorageAbstract):
 
   def __init__(self, cfg=None): # pylint: disable=super-init-not-called
     '''Instance constructor'''
-    storage_settings = cfg.get('settings', {})
+    self.storage_settings = cfg.get('settings', {})
     self.s3_service = S3({
-      'bucket': storage_settings.get('bucket'),
+      'bucket': self.storage_settings.get('bucket'),
       'credentials': cfg.get('credentials'),
-      'region': storage_settings.get('region'),
-      'endpoint_url': storage_settings.get('endpoint_url'),
-      'disable_sts': storage_settings.get('disable_sts', False),
+      'region': self.storage_settings.get('region'),
+      'endpoint_url': self.storage_settings.get('endpoint_url'),
+      'disable_sts': self.storage_settings.get('disable_sts', False),
     })
 
   def bulk_delete(self, uris):
@@ -84,6 +84,10 @@ class Driver(StorageAbstract):
 
   def get_service(self):
     return self.s3_service
+
+  def get_storage_context(self):
+    '''Get the storage context'''
+    return self.s3_service.get_storage_context()
 
   def get_status(self, uri):
     '''Get the file status'''
