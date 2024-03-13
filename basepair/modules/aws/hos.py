@@ -68,7 +68,7 @@ class HOS(Service):
       raise error
     return response
 
-  def get_read_sets(self, filters):
+  def list_read_sets(self, filters):
     '''Get read sets list'''
     try:
       response = self.client.list_read_sets(
@@ -78,7 +78,22 @@ class HOS(Service):
     except ClientError as error:
       self.get_log_msg({
         'exception': error,
-        'msg': f'Not able to get HealthOmics read sets: {str(error)}.',
+        'msg': f'Not able to list HealthOmics read sets: {str(error)}.',
+      })
+      raise error
+    return response
+
+  def delete_read_sets(self, read_set_ids):
+    '''Delete read sets'''
+    try:
+      response = self.client.batch_delete_read_set(
+        sequenceStoreId=self.sequence_store_id,
+        ids=read_set_ids
+      )
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to delete HealthOmics read sets: {str(error)}.',
       })
       raise error
     return response
