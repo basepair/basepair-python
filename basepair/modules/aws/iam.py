@@ -2,7 +2,14 @@
 
 # General imports
 import json
-from time import time_ns
+try:
+  from time import time_ns
+except ImportError:
+  from datetime import datetime
+  # For compatibility with Python 3.6
+  def time_ns():
+    now = datetime.now()
+    return int(now.timestamp() * 1e9)
 
 # Libs imports
 from botocore.client import Config
