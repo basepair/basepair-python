@@ -170,7 +170,7 @@ class S3(Service):
         raise error
     return response
 
-  def get_object_head(self, key, bucket=None):
+  def get_object_head(self, key, bucket=None, show_log=True):
     '''Check if key exists in S3 bucket'''
     bucket = bucket or self.bucket
     try:
@@ -179,6 +179,7 @@ class S3(Service):
       self.get_log_msg({
         'exception': error,
         'msg': f'Not able to get object header for key {key} in bucket {bucket}.',
+        'std_print': show_log,
       })
       if ExceptionHandler.is_throttled_error(exception=error):
         raise error
@@ -385,7 +386,7 @@ class S3(Service):
         restore_status = 'restore_error'
     return restore_status, storage_class
 
-  def upload_file(self, file_name, full_path, extra_args=None, force=False):
+  def upload_file(self, file_name, full_path, extra_args=None, force=False, show_log=True):
     '''Upload a file to an S3 bucket'''
     extra_args = extra_args or {}
     mimetype, _ = mimetypes.guess_type(file_name)
@@ -394,7 +395,7 @@ class S3(Service):
 
     # Upload the file
     try:
-      if force or not self.get_object_head(full_path):
+      if force or not self.get_object_head(full_path, show_log=show_log):
         self.client.upload_file(file_name, self.bucket, full_path, ExtraArgs=extra_args)
       else:
         print(f'Skipping file {full_path} because already exist in S3.')
