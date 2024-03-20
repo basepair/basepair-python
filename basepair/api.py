@@ -1149,6 +1149,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         _params += ' {} "{}"'.format(arg, val)
 
     storage_cfg = self.configuration.get_user_storage()
+    # Check for local storage params present in storage_cfg
+    local_storage_params = {'endpoint_url': '--endpoint-url', 'region': '--region'}
+    for param, flag in local_storage_params.items():
+      if storage_cfg.get(param):
+        _params += ' {} {}'.format(flag, storage_cfg.get(param))
+
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
 

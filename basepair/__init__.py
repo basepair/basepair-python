@@ -9,8 +9,10 @@ from .utils import colors
 # Exposing infra webapp library
 from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module, Pipeline, Project, Sample, Upload, User
 
+# Exposing the storage wrapper
+
 __title__ = 'basepair'
-__version__ = '2.0.8'
+__version__ = '2.0.14a'
 __copyright__ = 'Copyright [2017] - [2022] Basepair INC'
 
 

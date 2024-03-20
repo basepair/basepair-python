@@ -17,6 +17,7 @@ ipython-genutils==0.2.0
 jmespath==0.9.3
 mock==2.0.0
 nose2==0.7.4
+opsgenie_sdk==2.1.5
 pathlib2==2.3.2
 pbr==4.0.2
 pexpect==4.5.0
@@ -34,6 +35,6 @@ s3transfer==0.6.0
 scandir==1.10.0
 simplegeneric==0.8.1
 six==1.12
-traitlets==5.13.2
+traitlets==5.14.0
 wcwidth==0.1.7
 tabulate==0.8.2
