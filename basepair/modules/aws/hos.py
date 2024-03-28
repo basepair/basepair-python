@@ -68,6 +68,18 @@ class HOS(Service):
       raise error
     return response
 
+  def get_read_set_metadata(self, read_set_id):
+    '''Get read set metadata'''
+    try:
+      response = self.client.get_read_set_metadata(id=read_set_id, sequenceStoreId=self.sequence_store_id)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to get HealthOmics read set metadata: {str(error)}.',
+      })
+      raise error
+    return response
+
   def list_read_sets(self, filters):
     '''Get read sets list'''
     try:
