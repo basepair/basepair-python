@@ -186,12 +186,13 @@ class S3(Service):
       response = int(error.response['Error']['Code']) != 404
     return response
 
-  def get_self_signed(self, key, expires_in=28800):
+  def get_self_signed(self, key, bucket=None, expires_in=28800):
     '''Generate self signed url for key'''
     try:
+      bucket = bucket or self.bucket
       return self.client.generate_presigned_url(
         'get_object',
-        Params={'Bucket': self.bucket, 'Key': key},
+        Params={'Bucket': bucket, 'Key': key},
         ExpiresIn=expires_in, # a week
       )
     except (ClientError, NoCredentialsError, Exception) as error: # pylint: disable=broad-except

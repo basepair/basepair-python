@@ -2,6 +2,7 @@
 
 # Libs import
 from basepair.modules.aws import HOS
+from basepair.modules.aws import S3
 
 # App import
 from .aws_s3 import Driver as S3Driver
@@ -24,3 +25,12 @@ class Driver(S3Driver):
 
   def get_service(self):
     return self.hos_service
+
+  def get_public_url(self, uri):
+    # Omics S3 URIs are generated via S3 access points
+    if '-s3-alias' in uri:
+      bucket = S3.get_bucket_from_uri(uri)
+      key = S3.get_key_from_uri(uri, bucket=bucket)
+      return self.s3_service.get_self_signed(key, bucket=bucket)
+    else:
+      super().get_public_url(uri)
