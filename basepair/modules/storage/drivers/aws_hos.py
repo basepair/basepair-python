@@ -8,13 +8,6 @@ from basepair.modules.aws import S3
 from .aws_s3 import Driver as S3Driver
 
 
-FILE_NOT_FOUND = 'file_not_found'
-RESTORE_COMPLETE = 'restore_complete'
-RESTORE_ERROR = 'restore_error'
-RESTORE_IN_PROGRESS = 'restore_in_progress'
-RESTORE_NOT_REQUIRED = 'restore_not_required'
-RESTORE_NOT_STARTED = 'restore_not_started'
-
 class Driver(S3Driver):
   '''AWS Health Omics Driver class'''
 
