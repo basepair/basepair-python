@@ -53,6 +53,22 @@ class HOS(Service):
       raise error
     return response
 
+  def get_read_set_metadata(self, read_set_id):
+    '''Get read set metadata'''
+    try:
+      response = self.client.get_read_set_metadata(
+        id=read_set_id,
+        sequenceStoreId=self.sequence_store_id,
+      )
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to get HealthOmics read_set metadata information: {str(error)}.',
+      })
+      raise error
+    return response
+
+
   def get_reference_import_job(self, job_id):
     '''Get reference import job'''
     try:
@@ -143,6 +159,22 @@ class HOS(Service):
       self.get_log_msg({
         'exception': str(error),
         'msg': f'Not able to start HealthOmics import job: {str(error)}.',
+      })
+      raise error
+
+  def start_read_set_activation_job(self, sources):
+    '''Start read set activation job'''
+    try:
+      client_token = str(uuid.uuid4())
+      return self.client.start_read_set_import_job(
+        sequenceStoreId=self.sequence_store_id,
+        clientToken=client_token,
+        sources=sources
+      )
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': str(error),
+        'msg': f'Not able to start HealthOmics read set activation job: {str(error)}.',
       })
       raise error
 
