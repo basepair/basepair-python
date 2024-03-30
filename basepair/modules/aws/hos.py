@@ -95,6 +95,21 @@ class HOS(Service):
       raise error
     return response
 
+  def list_references(self, filters):
+    '''Get references list'''
+    try:
+      response = self.client.list_references(
+        referenceStoreId=self.reference_store_id,
+        filter=filters
+      )
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to list HealthOmics references: {str(error)}.',
+      })
+      raise error
+    return response
+
   def batch_delete_read_set(self, read_set_ids):
     '''Delete read sets'''
     try:
