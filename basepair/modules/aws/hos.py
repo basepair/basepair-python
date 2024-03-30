@@ -125,6 +125,21 @@ class HOS(Service):
       raise error
     return response
 
+  def get_reference_metadata(self , reference_id):
+    '''Get reference metadata'''
+    try:
+      response = self.client.get_reference_metadata(
+        id=reference_id,
+        referenceStoreId=self.reference_store_id,
+      )
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to get HealthOmics reference metadata: {str(error)}.',
+      })
+      raise error
+    return response
+
   def batch_delete_read_set(self, read_set_ids):
     '''Delete read sets'''
     try:
