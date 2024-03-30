@@ -95,6 +95,21 @@ class HOS(Service):
       raise error
     return response
 
+  def delete_reference(self, reference_id):
+    '''Delete reference'''
+    try:
+      response = self.client.delete_reference(
+        id=reference_id,
+        referenceStoreId=self.reference_store_id,
+      )
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to delete HealthOmics reference: {str(error)}.',
+      })
+      raise error
+    return response
+
   def list_references(self, filters):
     '''Get references list'''
     try:
