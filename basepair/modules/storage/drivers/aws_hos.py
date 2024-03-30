@@ -7,6 +7,7 @@ from basepair.modules.aws import S3
 # App import
 from .aws_s3 import Driver as S3Driver
 
+
 class Driver(S3Driver):
   '''AWS Health Omics Driver class'''
 
@@ -34,3 +35,31 @@ class Driver(S3Driver):
       return self.s3_service.get_self_signed(key, bucket=bucket)
     else:
       super().get_public_url(uri)
+
+  def get_status(self, uri):
+    '''Get the file status'''
+    if '-s3alias' in uri:
+      read_set_id = uri.split('/')[-2]
+      status = 'restore_error'
+      try:
+        metadata = self.hos_service.get_read_set_metadata(read_set_id)
+        storage_status = metadata.get('status')
+        if storage_status == 'ARCHIVED':
+          status = 'restore_not_started'
+        elif storage_status == 'ACTIVE':
+          status = 'restore_complete'
+        elif storage_status == 'ACTIVATING':
+          status = 'restore_in_progress'
+      except Exception:
+        status = 'restore_error'
+      return status
+    else:
+      return super().get_status(uri)
+
+  def restore_from_cold(self, uri, days):
+    '''Restore file from cold storage'''
+    if '-s3alias' in uri:
+      read_set_id = uri.split('/')[-2]
+      return self.hos_service.start_read_set_activation_job(sources=[{'readSetId': read_set_id}])
+    else:
+      super().restore_from_cold(uri, days)
