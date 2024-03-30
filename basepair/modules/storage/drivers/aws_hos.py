@@ -56,13 +56,6 @@ class Driver(S3Driver):
     else:
       return super().get_status(uri)
 
-  def restore_files_from_cold(self, uris, days):
-    '''Restore files from cold storage'''
-    for uri in uris:
-      status = self.get_status(uri)
-      if status == 'restore_not_started':
-        self.restore_from_cold(uri, days=days)
-
   def restore_from_cold(self, uri, days):
     '''Restore file from cold storage'''
     if '-s3alias' in uri:

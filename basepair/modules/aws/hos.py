@@ -23,7 +23,7 @@ class HOS(Service):
     self.reference_store_id = cfg.get('reference_store_id')
     self.role_arn = cfg.get('role_arn')
 
-  def get_export_job(self, job_id):
+  def get_read_set_export_job(self, job_id):
     '''Get export job'''
     try:
       response = self.client.get_read_set_export_job(
@@ -95,7 +95,7 @@ class HOS(Service):
       raise error
     return response
 
-  def delete_read_sets(self, read_set_ids):
+  def batch_delete_read_set(self, read_set_ids):
     '''Delete read sets'''
     try:
       response = self.client.batch_delete_read_set(
@@ -110,7 +110,7 @@ class HOS(Service):
       raise error
     return response
 
-  def start_export_job(self, destination, sources):
+  def start_read_set_export_job(self, destination, sources):
     '''Start export job'''
     try:
       client_token = str(uuid.uuid4())
@@ -129,7 +129,7 @@ class HOS(Service):
       raise error
     return response
 
-  def start_import_job(self, sources):
+  def start_read_set_import_job(self, sources):
     '''Start import job'''
     try:
       client_token = str(uuid.uuid4())
