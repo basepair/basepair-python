@@ -1,2 +1,2 @@
-'''Drivers for storage'''
+"""Drivers for storage"""
 from .abstract import StorageAbstract
