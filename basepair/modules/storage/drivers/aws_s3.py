@@ -64,20 +64,6 @@ class Driver(StorageAbstract):
         """Get storage lifecycle"""
         return self.s3_service.get_lifecycle(bucket)
 
-    def get_overall_status(self, uris):
-        """Get overall sample files status"""
-        restore_statuses = [self.get_status(uri) for uri in uris]
-
-        # Check if all statuses are RESTORE_COMPLETE
-        if all(status == RESTORE_COMPLETE for status in restore_statuses):
-            return RESTORE_COMPLETE
-        # Find the first status
-        for state in [FILE_NOT_FOUND, RESTORE_IN_PROGRESS, RESTORE_ERROR, RESTORE_NOT_STARTED]:
-            if any(status == state for status in restore_statuses):
-                return state
-        # If no status found, return RESTORE_NOT_REQUIRED
-        return RESTORE_NOT_REQUIRED
-
     def get_public_url(self, uri):
         """Get a public accessible url"""
         key = S3.get_key_from_uri(uri)
