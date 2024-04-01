@@ -57,13 +57,13 @@ class Driver(S3Driver):
         storage_status = metadata.get('status')
 
         if storage_status == 'ARCHIVED':
-            return RESTORE_NOT_STARTED
+            return RESTORE_NOT_STARTED, storage_status
         elif storage_status == 'ACTIVE':
-            return RESTORE_NOT_REQUIRED
+            return RESTORE_NOT_REQUIRED, storage_status
         elif storage_status == 'ACTIVATING':
-            return RESTORE_IN_PROGRESS
+            return RESTORE_IN_PROGRESS, storage_status
         else:
-            return RESTORE_ERROR
+            return RESTORE_ERROR, storage_status
 
     def restore_from_cold(self, uri, days):
         """Restore file from cold storage"""
