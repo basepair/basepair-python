@@ -44,7 +44,7 @@ class HOW(Service):
   def delete_run(self, run_id):
     '''Delete run'''
     try:
-      response = self.client.delete_run(run_id)
+      response = self.client.delete_run(id=run_id)
     except ClientError as error:
       self.get_log_msg({
         'exception': error,
