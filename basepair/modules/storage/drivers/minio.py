@@ -18,6 +18,7 @@ class Driver(S3Driver):
         """Get the context for Minio"""
         return {
             **super().get_storage_context(),
+            'storage_driver': 'minio',
             'storage_url': self.storage_settings.get('endpoint_url'),
             'storage_sse_enabled': 'False'
         }

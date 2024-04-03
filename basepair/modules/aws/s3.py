@@ -209,6 +209,7 @@ class S3(Service):
     return {
       'storage_archival_enabled' : bool(self.cfg.get('restore_period', False)),
       'storage_bucket' : self.cfg.get('bucket'),
+      'storage_driver': 'aws_s3',
       'storage_region' : self.cfg.get('region'),
       'storage_sse_enabled' : 'True',
       'storage_url': f"https://s3.{self.cfg.get('region')}.amazonaws.com",
