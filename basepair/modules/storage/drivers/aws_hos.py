@@ -1,5 +1,8 @@
 """Driver for AWS Health Omics"""
 
+# General imports
+import time
+
 # Libs import
 from basepair.modules.aws import HOS
 from basepair.modules.aws import S3
@@ -80,7 +83,16 @@ class Driver(S3Driver):
 
         # If the URI is a Health Omics URI, then start the read set activation job
         read_set_id = uri.split('/')[-2]
-        return self.hos_service.start_read_set_activation_job([read_set_id])
+        max_attempts = 100
+        attempt = 0
+        while attempt < max_attempts:
+            attempt += 1
+            try:
+                return self.hos_service.start_read_set_activation_job([read_set_id])
+            except Exception:
+                time.sleep(60)
+        raise Exception("Failed to start read set activation job.")
+
 
     @staticmethod
     def _is_health_omics_uri(uri):
