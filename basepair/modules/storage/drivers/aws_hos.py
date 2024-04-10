@@ -45,6 +45,13 @@ class Driver(S3Driver):
     def get_service(self):
         return self.hos_service
 
+    def get_storage_context(self):
+        """Get the context for AWS HOS"""
+        return {
+            **super().get_storage_context(),
+            'storage_driver': 'aws_hos'
+        }
+
     def get_status(self, uri):
         """Get the file status"""
         if not self._is_health_omics_uri(uri):
