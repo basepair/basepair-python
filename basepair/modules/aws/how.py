@@ -101,7 +101,16 @@ class HOW(Service):
   def list_run_tasks(self, params):
     '''Get omics run list'''
     try:
-      return self.client.list_run_tasks(**params)
+      tasks = []
+      while True:
+        response = self.client.list_run_tasks(**params)
+        next_token = response.get("nextToken")
+        tasks += response.get('items')
+        if next_token:
+          params["startingToken"] = next_token
+        else:
+          break
+      return tasks
     except ClientError as error:
       self.get_log_msg({
         'exception':error,
