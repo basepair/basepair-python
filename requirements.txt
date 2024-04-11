@@ -10,7 +10,7 @@ decorator==4.3.0
 docutils==0.14
 enum34==1.1.6
 funcsigs==1.0.2
-idna==2.6
+idna==3.7
 ipdb==0.13.13
 ipython==8.10.0
 ipython-genutils==0.2.0
