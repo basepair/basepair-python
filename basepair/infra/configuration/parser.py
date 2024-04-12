@@ -35,6 +35,12 @@ class Parser(): # pylint: disable=too-few-public-methods
       )
     return credentials
 
+  def get_parameters(self, field=None, field_default=None):
+    '''Get all or specific parameter'''
+    if field:
+      return self.cfg.get('parameters', {}).get(field, field_default)
+    return self.cfg.get('parameters', {})
+
   def get_reflib_storage(self, bucket=None):
     '''Get storage setting for reflibs'''
     storages_cfg = self.cfg.get('storage', {}).get('reflib', {})
@@ -64,6 +70,17 @@ class Parser(): # pylint: disable=too-few-public-methods
   def get_webapp_api(self):
     '''Get webapp api settings'''
     return self.cfg.get('api', {})
+
+  def get_workflow(self):
+    '''Get workflow setting'''
+    workflow_cfg = self.cfg.get('workflow', {})
+    workflow_settings = workflow_cfg.get('settings', {})
+    domain = workflow_settings.get('domain')
+    return {
+      'credentials': workflow_cfg.get('credentials'),
+      'domain': domain,
+      'region': workflow_settings.get('region'),
+    }
 
   def is_empty(self):
     '''Check if cfg is empty'''
