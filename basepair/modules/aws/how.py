@@ -29,10 +29,22 @@ class HOW(Service):
       raise error
     return response
 
-  def delete_run(self, params):
+  def cancel_run(self, run_id):
+    '''Cancel run'''
+    try:
+      response = self.client.cancel_run(id=run_id)
+    except ClientError as error:
+      self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to cancel HealthOmics run: {str(error)}.',
+      })
+      raise error
+    return response
+
+  def delete_run(self, run_id):
     '''Delete run'''
     try:
-      response = self.client.delete_run(**params)
+      response = self.client.delete_run(id=run_id)
     except ClientError as error:
       self.get_log_msg({
         'exception': error,
@@ -89,7 +101,16 @@ class HOW(Service):
   def list_run_tasks(self, params):
     '''Get omics run list'''
     try:
-      return self.client.list_run_tasks(**params)
+      tasks = []
+      while True:
+        response = self.client.list_run_tasks(**params)
+        next_token = response.get("nextToken")
+        tasks += response.get('items')
+        if next_token:
+          params["startingToken"] = next_token
+        else:
+          break
+      return tasks
     except ClientError as error:
       self.get_log_msg({
         'exception':error,
