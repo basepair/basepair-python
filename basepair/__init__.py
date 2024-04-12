@@ -13,7 +13,7 @@ from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module
 
 __title__ = 'basepair'
 __version__ = '2.1.0'
-__copyright__ = 'Copyright [2017] - [2022] Basepair INC'
+__copyright__ = 'Copyright [2017] - [2024] Basepair INC'
 
 
 JSON_URL = 'https://pypi.python.org/pypi/{}/json'.format(__title__)
