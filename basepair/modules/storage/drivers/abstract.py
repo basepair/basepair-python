@@ -1,10 +1,8 @@
 """Abstract class for storage drivers"""
 
-
 def raise_no_implemented(msg='Abstract method require to be implemented.'):
     """Helper to raise exception when call no implemented method"""
     raise Exception(msg)
-
 
 class StorageAbstract:
     """Abstract Driver class"""
@@ -35,6 +33,10 @@ class StorageAbstract:
 
     def get_lifecycle(self, bucket=None):
         """Get storage lifecycle"""
+        raise_no_implemented()
+
+    def get_path(self, uri):
+        """Get path using uri and storage settings"""
         raise_no_implemented()
 
     def get_public_url(self, uri):
