@@ -57,11 +57,12 @@ setup(
         'atac-seq'
     ],
     install_requires=[
+        'awscli',
         'boto3',
         'future',
-        'requests',
-        'awscli',
         'logbook',
+        'opsgenie_sdk',
+        'requests',
         'tabulate',
     ],
     scripts=['bin/basepair'],
