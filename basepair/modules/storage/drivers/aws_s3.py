@@ -24,6 +24,7 @@ class Driver(StorageAbstract):
             'bucket': self.storage_settings.get('bucket'),
             'credentials': cfg.get('credentials'),
             'region': self.storage_settings.get('region'),
+            'restore_period': self.storage_settings.get('restore_period'),
             'endpoint_url': self.storage_settings.get('endpoint_url'),
             'disable_sts': self.storage_settings.get('disable_sts', False),
         })
