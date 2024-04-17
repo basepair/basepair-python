@@ -29,6 +29,8 @@ packages = [
     'basepair.modules.logger.drivers',
     'basepair.modules.secrets',
     'basepair.modules.secrets.drivers',
+    'basepair.modules.ssftp',
+    'basepair.modules.ssftp.drivers',
     'basepair.modules.storage',
     'basepair.modules.storage.drivers',
     'basepair.utils',
