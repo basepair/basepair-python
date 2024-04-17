@@ -114,3 +114,9 @@ class Driver(StorageAbstract):
     def upload(self, file_name, full_path, **kwargs):
         """Upload file to storage"""
         return self.s3_service.upload_file(file_name, full_path, **kwargs)
+
+    @staticmethod
+    def get_key_from_uri(uri, bucket=None):
+        """Helper to get key from uri"""
+        bucket = bucket or S3.get_bucket_from_uri(uri)
+        return uri.replace(f's3://{bucket}/', '')

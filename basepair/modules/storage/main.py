@@ -36,6 +36,10 @@ class Storage:
         """Get storage lifecycle"""
         return self.driver.get_lifecycle(bucket)
 
+    def get_path(self, uri):
+        '''Get path using uri and storage settings'''
+        return self.driver.get_key_from_uri(uri)
+
     def get_public_url(self, uri):
         """Get a public accessible url"""
         return self.driver.get_public_url(uri)
