@@ -929,8 +929,9 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     src:  {str} File path on AWS S3, not including the bucket           [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
+    storage_settings = storage_cfg.get('settings', {})
     if not src.startswith('s3://'):
-      src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+      src = 's3://{}/{}'.format(storage_settings.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
@@ -939,7 +940,8 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
   def copy_file_to_s3(self, src, dest, params=None):
     '''Low level function to copy a file to cloud from disk'''
     storage_cfg = self.configuration.get_user_storage()
-    dest = 's3://{}/{}'.format(storage_cfg.get('bucket'), dest)
+    storage_settings = storage_cfg.get('settings', {})
+    dest = 's3://{}/{}'.format(storage_settings.get('bucket'), dest)
     cmd = self.get_copy_cmd(src, dest, sse=True, params=params)
     if self.verbose:
       eprint('copying from {} to {}'.format(src, dest))
@@ -1149,11 +1151,12 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         _params += ' {} "{}"'.format(arg, val)
 
     storage_cfg = self.configuration.get_user_storage()
+    storage_settings = storage_cfg.get('settings', {})
     # Check for local storage params present in storage_cfg
     local_storage_params = {'endpoint_url': '--endpoint-url', 'region': '--region'}
     for param, flag in local_storage_params.items():
-      if storage_cfg.get(param):
-        _params += ' {} {}'.format(flag, storage_cfg.get(param))
+      if storage_settings.get(param):
+        _params += ' {} {}'.format(flag, storage_settings.get(param))
 
     credential = self.configuration.get_cli_credentials_from(storage_cfg)
     return '{}aws s3 cp "{}" "{}" {}'.format(credential, src, dest, _params)
