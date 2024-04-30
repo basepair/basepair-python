@@ -85,7 +85,7 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
-  def hos_general_purpose(self, ho_region, reference_store_id, sequence_store_id):
+  def hos_general_purpose(ho_region, reference_store_id, sequence_store_id):
     '''HOS policy template for general purpose'''
     return {
       'Statement': [
