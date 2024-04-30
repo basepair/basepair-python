@@ -85,42 +85,7 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
-  def ho_run(ho_import_export_role_arn):
-    '''HO workflow policy template for starting and getting run'''
-    return {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "VisualEditor0",
-          "Effect": "Allow",
-          "Action": [
-            "omics:GetRunTask",
-            "omics:GetWorkflow",
-            "omics:GetRun"
-          ],
-          "Resource": [
-            "arn:aws:omics:us-east-1:*:run/*",
-            "arn:aws:omics:us-east-1:*:task/*",
-            "arn:aws:omics:us-east-1:*:workflow/*"
-          ]
-        },
-        {
-          "Sid": "VisualEditor1",
-          "Effect": "Allow",
-          "Action": "omics:StartRun",
-          "Resource": "*"
-        },
-        {
-          "Sid": "VisualEditor2",
-          "Effect": "Allow",
-          "Action": "iam:PassRole",
-          "Resource": ho_import_export_role_arn
-        }
-      ]
-    }
-
-  @staticmethod
-  def hos_general_purpose(self, ho_region, sequence_store_id, reference_store_id):
+  def hos_general_purpose(self, ho_region, reference_store_id, sequence_store_id):
     '''HOS policy template for general purpose'''
     return {
       'Statement': [
