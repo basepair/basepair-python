@@ -120,6 +120,55 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
+  def hos_general_purpose(self, ho_region, sequence_store_id, reference_store_id):
+    '''HOS policy template for general purpose'''
+    return {
+      'Statement': [
+        {
+          'Action': [
+            "omics:BatchDeleteReadSet",
+            "omics:DeleteReference",
+            "omics:GetReadSet",
+            "omics:GetReadSetExportJob",
+            "omics:GetReadSetImportJob",
+            "omics:GetReadSetMetadata",
+            "omics:GetReferenceImportJob",
+            "omics:GetReferenceMetadata",
+            "omics:ListReadSets",
+            "omics:ListReferences",
+            "omics:StartReadSetActivationJob",
+            "omics:StartReadSetExportJob",
+            "omics:StartReadSetImportJob",
+            "omics:StartReferenceImportJob",
+          ],
+          'Effect': 'Allow',
+          'Resource': [
+            f"arn:aws:omics:{ho_region}:*:referenceStore/{reference_store_id}/*",
+            f"arn:aws:omics:{ho_region}:*:referenceStore/{reference_store_id}",
+            f"arn:aws:omics:{ho_region}:*:sequenceStore/{sequence_store_id}/*",
+            f"arn:aws:omics:{ho_region}:*:sequenceStore/{sequence_store_id}",
+          ]
+        }, {
+          'Action': [
+            "s3:GetObject",
+            "s3:ListBucket"
+          ],
+          'Effect': 'Allow',
+          'Resource': ['*'],
+          'Condition': {
+            'StringLike': {
+              "s3:DataAccessPointArn": f"arn:aws:s3:{ho_region}:*"
+            }
+          }
+        }, {
+          'Action': ["kms:Decrypt"],
+          'Effect': 'Allow',
+          'Resource': [f"arn:aws:kms:{ho_region}:*"]
+        }
+      ]
+    }
+
+  @staticmethod
   def s3_general_purpose(bucket, reflib_buckets, user_id):
     '''S3 policy template for general purpose'''
     resource = [
