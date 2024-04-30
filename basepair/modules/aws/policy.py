@@ -128,7 +128,7 @@ class Policy: # pylint: disable=too-few-public-methods
         }, {
           'Action': ["kms:Decrypt"],
           'Effect': 'Allow',
-          'Resource': [f"arn:aws:kms:{ho_region}:*"]
+          'Resource': [f"arn:aws:kms:{ho_region}:*:*"]
         }
       ]
     }
