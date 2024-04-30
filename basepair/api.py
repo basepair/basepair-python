@@ -932,7 +932,6 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     if not src.startswith('s3://'):
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
     cmd = self.get_copy_cmd(src, dest)
-    eprint('command: ' + cmd)
     if self.verbose:
       eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
     return self._execute_command(cmd=cmd, retry=3)
