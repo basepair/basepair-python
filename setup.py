@@ -21,6 +21,7 @@ packages = [
     'basepair.modules',
     'basepair.modules.alert',
     'basepair.modules.alert.drivers',
+    'basepair.modules.analysis_log',
     'basepair.modules.aws',
     'basepair.modules.aws.handler',
     'basepair.modules.identity',
