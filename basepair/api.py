@@ -619,27 +619,34 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get pipelines list'''
     return Pipeline(self.conf.get('api')).list_all(filters=filters)
 
-  def update_pipeline(self,data):
+  def update_pipeline(self, data=None, params=None, pipeline_id=None):
     '''update pipeline from yaml'''
-    try:
-      path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
-      with open(path, 'r') as file:
-        yaml_string = file.read()
-      yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
-      workflow_id = yaml_data.get('id')
-      if not yaml_data.get('name'):
-        sys.exit('Please provide pipeline name in YAML')
-      if not yaml_data.get('id'):
-        sys.exit('Please provide pipeline id in YAML')
-      payload = {'data': yaml_string}
-      info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
+    if data:
+      try:
+        path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
+        with open(path, 'r') as file:
+          yaml_string = file.read()
+        yaml_data = yaml.load(yaml_string, Loader=yaml.FullLoader)
+        workflow_id = yaml_data.get('id')
+        if not yaml_data.get('name'):
+          sys.exit('Please provide pipeline name in YAML')
+        if not yaml_data.get('id'):
+          sys.exit('Please provide pipeline id in YAML')
+        payload = {'data': yaml_string}
+        info = (Pipeline(self.conf.get('api'))).save(obj_id=workflow_id, payload=payload)
+        if info.get('error'):
+          sys.exit('ERROR: failed while updating pipeline')
+        if info.get('id'):
+          eprint('updated: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
+          return
+      except Exception:# pylint: disable=bare-except
+        sys.exit('ERROR: Something went wrong while updating pipeline.')
+    if params:
+      info = (Pipeline(self.conf.get('api'))).save(obj_id=pipeline_id, params=params)
       if info.get('error'):
         sys.exit('ERROR: failed while updating pipeline')
       if info.get('id'):
         eprint('updated: pipeline {} with id {}'.format(info.get('name'), info.get('id')))
-        return
-    except Exception:# pylint: disable=bare-except
-      sys.exit('ERROR: Something went wrong while updating pipeline.')
 
   ################################################################################################
   ### PROJECT ####################################################################################
