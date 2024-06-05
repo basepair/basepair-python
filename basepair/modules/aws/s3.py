@@ -79,7 +79,7 @@ class S3(Service):
     # if there are invalid uris we return a warning
     if uri_list.get('not_valid'):
       response = self.get_log_msg({
-        'exception': error,
+        'exception': 'Not valid URI.',
         'msg': f"Not valid uris provided for deletion.\n{json.dumps(uri_list.get('not_valid'), indent=2)}",
         'msg_type': 'warning',
       })
