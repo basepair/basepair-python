@@ -106,6 +106,12 @@ INSTANCE_INFO = {
     'num_hdd': 0,
     'memory': 59,
   },
+  'c6a.32xlarge': {
+    'max_price': '4.89',
+    'num_core': 128,
+    'memory': 256,
+    'num_hdd': 1
+  },
   'r3.large': {
     'max_price': '0.96',
     'num_core': 2,
