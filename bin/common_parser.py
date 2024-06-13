@@ -118,7 +118,7 @@ def add_yaml_parser(parser):
   parser.add_argument(
     '--file',
     default=None,
-    required=True,
+    required=False,
     help='The filepath of YAML',
     nargs='+'
   )
