@@ -60,10 +60,10 @@ class Pipeline:
           }
         })
       }
-
-    valid = validate_update_yaml(args)
-    if valid:
-      bp_api.update_pipeline({'yamlpath': args.file[0]})
+      bp_api.update_pipeline(params=params, pipeline_id=args.uid[0])
+    else:
+      if validate_update_yaml(args):
+        bp_api.update_pipeline(data={'yamlpath': args.file[0]})
 
   @staticmethod
   def pipeline_action_parser(action_parser):
