@@ -60,7 +60,7 @@ class Pipeline:
           }
         })
       }
-      bp_api.update_pipeline(params=params, pipeline_id=args.uid[0])
+      bp_api.update_pipeline(params=params, pipeline_id=args.uid)
     else:
       if validate_update_yaml(args):
         bp_api.update_pipeline(data={'yamlpath': args.file[0]})
