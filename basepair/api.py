@@ -619,8 +619,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     '''Get pipelines list'''
     return Pipeline(self.conf.get('api')).list_all(filters=filters)
 
-  def update_pipeline(self, data=None, params=None, pipeline_id=None):
+  def update_pipeline(self, data=None, params=None, pipeline_id=None, name=None):
     '''update pipeline from yaml'''
+    payload = {}
+    if name:
+      payload['name'] = name
     if data:
       try:
         path = os.path.abspath(os.path.expanduser(os.path.expandvars(data['yamlpath'])))
@@ -642,7 +645,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       except Exception:# pylint: disable=bare-except
         sys.exit('ERROR: Something went wrong while updating pipeline.')
     if params:
-      info = (Pipeline(self.conf.get('api'))).save(obj_id=pipeline_id, params=params)
+      info = (Pipeline(self.conf.get('api'))).save(obj_id=pipeline_id, params=params, payload=payload)
       if info.get('error'):
         sys.exit('ERROR: failed while updating pipeline')
       if info.get('id'):
