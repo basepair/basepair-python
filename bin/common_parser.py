@@ -137,7 +137,7 @@ def valid_email(value):
     return value
   raise argparse.ArgumentTypeError('ERROR: Invalid email format.')
 
-valid_sample_extensions = ('.ab1', '.bam', '.csfasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz', '.txt')
+valid_sample_extensions = ('.ab1', '.bam', '.csfasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz')
 
 def validate_sample_file(files):
   '''Validates sample file type'''
