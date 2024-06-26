@@ -18,17 +18,21 @@ class Sample:
     data = {
       'datatype': args.type,
       'default_workflow': int(args.pipeline) if args.pipeline else None,
-      'filepaths1': args.file1,
-      'filepaths2': args.file2,
+      'filepaths1': args.file1 or [],
+      'filepaths2': args.file2 or [],
       'genome': args.genome,
       'name': args.name,
       'platform': args.platform,
       'projects': int(args.project) if args.project else None,
     }
-    if not os.path.isfile(args.file1) or args.file2 and not os.path.isfile(args.file2):
-      sys.exit('ERROR: Provided File does not exists.')
+    # check if the files are all present
+    not_found_msg = 'ERROR: Provided File: {} does not exists.'
+    files = data['filepaths2'] + data['filepaths1']
+    for file_name in files:
+        if not os.path.isfile(file_name):
+          sys.exit(not_found_msg.format(file_name))
 
-    validate_sample_file(args)
+    validate_sample_file(files)
 
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
@@ -123,8 +127,8 @@ class Sample:
       ],
       default='rna-seq'
     )
-    create_sample_p.add_argument('--file1', required=True, help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
-    create_sample_p.add_argument('--file2', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
+    create_sample_p.add_argument('--file1', nargs='+', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
+    create_sample_p.add_argument('--file2', nargs='+', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
     create_sample_p.add_argument('--genome')
     create_sample_p.add_argument('--key', action='append')
     create_sample_p.add_argument('--name')

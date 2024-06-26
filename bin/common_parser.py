@@ -137,15 +137,14 @@ def valid_email(value):
     return value
   raise argparse.ArgumentTypeError('ERROR: Invalid email format.')
 
-valid_sample_extensions = ('.ab1', '.bam', '.csfasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz')
+valid_sample_extensions = ('.ab1', '.bam', '.csfasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz', '.txt')
 
-def validate_sample_file(args):
+def validate_sample_file(files):
   '''Validates sample file type'''
-  if args.file1.endswith(valid_sample_extensions) and not args.file2:
-    return True
-  if args.file2 and args.file1.endswith(valid_sample_extensions) and args.file2.endswith(valid_sample_extensions):
-    return True
-  sys.exit('ERROR: Please provide valid sample file. Available File types - {}'.format(' '.join(valid_sample_extensions)))
+  for file in files:
+    if not file.endswith(valid_sample_extensions):
+      sys.exit('ERROR: Please provide valid sample file. Available File types - {}'.format(' '.join(valid_sample_extensions)))
+  return True
 
 def validate_conf(args):
   '''Helper to validate the proper configuration argument is being set'''
