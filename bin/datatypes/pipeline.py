@@ -112,7 +112,6 @@ class Pipeline:
     update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
     update_pipeline_parser = add_force_parser(update_pipeline_parser, 'pipeline')
     update_pipeline_parser.add_argument('--emails', default=[], nargs='+', type=valid_email)
-    update_pipeline_parser.add_argument('--name')
     update_pipeline_parser.add_argument('--perm', choices=['admin', 'edit', 'view'])
     update_project_parser = add_single_uid_parser(update_pipeline_parser, 'pipeline')
 
