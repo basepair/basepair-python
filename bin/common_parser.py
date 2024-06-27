@@ -9,7 +9,7 @@ from basepair.helpers import eprint
 
 def add_common_args(parser):
   '''Add common args'''
-  parser.add_argument('-c', '--config', help='API config info')
+  parser.add_argument('-c', '--config', help='Path to API config file')
   parser.add_argument('--quiet', action='store_true')
   parser.add_argument('--cache-cloud-credential', dest='keep_cloud_service_conf', action='store_true')
   parser.add_argument('--use-cache', action='store_true')
@@ -137,7 +137,7 @@ def valid_email(value):
     return value
   raise argparse.ArgumentTypeError('ERROR: Invalid email format.')
 
-valid_sample_extensions = ('.ab1', '.bam', '.csfasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz')
+valid_sample_extensions = ('.ab1', '.bai', '.bam', '.crai', '.csfasta', '.csv', '.fasta', '.fastq', '.fq', '.gvcf', '.qual', '.vcf', '.sam', '.sra', '.txt', '.bz', '.bz2', '.gz', '.zip')
 
 def validate_sample_file(files):
   '''Validates sample file type'''

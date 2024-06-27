@@ -123,25 +123,28 @@ class Sample:
       '--type',
       choices=[
         'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-        'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+        'panel', 'rna-seq', 'scaleBio_scRNA', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
       default='rna-seq'
     )
+    example_key_usage = '''
+      Example: basepair sample create --file example.bam --key name --val Alice --key age --val 30
+    '''
     create_sample_p.add_argument('--file1', nargs='+', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
     create_sample_p.add_argument('--file2', nargs='+', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
-    create_sample_p.add_argument('--genome')
-    create_sample_p.add_argument('--key', action='append')
-    create_sample_p.add_argument('--name')
-    create_sample_p.add_argument('--platform')
-    create_sample_p.add_argument('--project', help='Project id', type=valid_uid)
-    create_sample_p.add_argument('--val', action='append')
-    create_sample_p.add_argument('--pipeline', help='Pipeline id', type=valid_uid)
+    create_sample_p.add_argument('--genome', help='Name of the Genome')
+    create_sample_p.add_argument('--key', action='append', help='Specify one(or more) key (can be used multiple times).\nShould be used along with --val flag.\nTags the sample with some additional information.')
+    create_sample_p.add_argument('--name', help='Name of the sample')
+    create_sample_p.add_argument('--platform', help='Name of the sequencing platform')
+    create_sample_p.add_argument('--project', help='Project ID', type=valid_uid)
+    create_sample_p.add_argument('--val', action='append', help='Specify one(or more)value corresponding to the key (must match number of --key).\nShould be used along with --key flag.' + example_key_usage)
+    create_sample_p.add_argument('--pipeline', help='Pipeline ID', type=valid_uid)
     create_sample_p = add_common_args(create_sample_p)
 
     # delete sample parser
     delete_sample_p = action_parser.add_parser(
       'delete',
-      help='delete a sample.'
+      help='Delete a sample.'
     )
     delete_sample_p = add_common_args(delete_sample_p)
     delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
@@ -174,7 +177,7 @@ class Sample:
       '--type',
       choices=[
         'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-        'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+        'panel', 'rna-seq', 'scaleBio-scRNA', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
     )
     update_sample_parser.add_argument('--genome')
