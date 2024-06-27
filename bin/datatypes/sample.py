@@ -33,10 +33,10 @@ class Sample:
           sys.exit(not_found_msg.format(file_name))
 
     validate_sample_file(files)
-
+    data['info'] = data.get('info', {})
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
-        data[key] = val
+        data['info'][key] = val
     sample_id = bp_api.create_sample(data, upload=True, source='cli')
     if sample_id:
       eprint('Sample created successfully.')
