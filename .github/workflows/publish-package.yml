@@ -3,10 +3,6 @@ name: Publish Python Package
 # Trigger manually using workflow_dispatch
 on:
   workflow_dispatch:
-    inputs:
-      package_name:
-        description: 'Name of the package'
-        required: true
 
 jobs:
   build-and-publish:
