@@ -57,5 +57,5 @@ docs/_build/
 target/
 .idea
 
-# for pypi publication
+# for local testing of github actions using act
 .secrets
