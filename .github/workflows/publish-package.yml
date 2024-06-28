@@ -1,0 +1,10 @@
+name: Build and Publish Python Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu:latest
+    steps:
+      - run: echo "We did the thing"
