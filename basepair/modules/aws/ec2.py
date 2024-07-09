@@ -50,6 +50,22 @@ class EC2(Service):
         raise error
     return response
 
+  def describe_images(self, owners=None, filters=None):
+    if owners is None:
+      owners = []
+    if filters is None:
+      filters = []
+    try:
+      response = self.client.describe_images(Owners=owners, Filters=filters)
+    except ClientError as error:
+      response = self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to describe images due to error :\n{error}',
+      })
+      if ExceptionHandler.is_throttled_error(exception=error):
+        raise error
+    return response
+
   def get_instances(self, filters=None, ids=[], instance_id=None): # pylint: disable=dangerous-default-value
     '''Look for instances'''
     if instance_id:
