@@ -56,3 +56,6 @@ docs/_build/
 # PyBuilder
 target/
 .idea
+
+# for local testing of github actions using act
+.secrets
