@@ -51,6 +51,7 @@ class EC2(Service):
     return response
 
   def describe_images(self, owners=None, filters=None):
+    '''Look for images'''
     if owners is None:
       owners = []
     if filters is None:
