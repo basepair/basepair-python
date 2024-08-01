@@ -158,10 +158,18 @@ class EC2(Service):
       specification['SubnetId'] = settings.get('subnet_id')
     elif availability_zone:
       specification['Placement'] = {'AvailabilityZone': availability_zone}
-      for subnet_id in settings.get('subnet_ids') or []:
-        subnet = self.resource.Subnet(subnet_id)
-        if subnet.availability_zone == availability_zone:
-          specification['SubnetId'] = subnet_id
+      subnet_ids = settings.get('subnet_ids')
+      if subnet_ids:
+        for subnet_id in subnet_ids:
+          subnet = self.resource.Subnet(subnet_id)
+          if subnet.availability_zone == availability_zone:
+            specification['SubnetId'] = subnet_id
+            break
+        else:
+          return self.get_log_msg({
+            'exception': None,
+            'msg': 'No subnet found in the availability zone.',
+          })
 
     price = settings.get('spot_price') or ''
     try:
