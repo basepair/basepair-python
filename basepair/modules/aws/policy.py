@@ -46,6 +46,24 @@ class Policy: # pylint: disable=too-few-public-methods
         }
       }, {
         'Effect': 'Allow',
+        'Action': [
+          'ecr:BatchCheckLayerAvailability',
+          'ecr:GetDownloadUrlForLayer',
+          'ecr:GetRepositoryPolicy',
+          'ecr:DescribeRepositories',
+          'ecr:ListImages',
+          'ecr:DescribeImages',
+          'ecr:BatchGetImage',
+          'ecr:GetLifecyclePolicy',
+          'ecr:GetLifecyclePolicyPreview',
+          'ecr:ListTagsForResource',
+          'ecr:DescribeImageScanFindings'
+        ],
+        'Resource': [
+          f"arn:aws:ecr:*:{repository_settings.get('account')}:repository/worker*",
+        ]
+      }, {
+        'Effect': 'Allow',
         'Action': 'ecr:GetAuthorizationToken',
         'Resource': '*'
       }, {
