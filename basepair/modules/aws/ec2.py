@@ -20,7 +20,7 @@ class EC2(Service):
   def __init__(self, cfg):
     super().__init__(cfg, 'EC2')
     self.client = self.session.client(**{
-      'config': Config(retries={'max_attempts': 0, 'mode': 'standard'}),
+      'config': Config(retries={'max_attempts': 10, 'mode': 'standard'}),
       'service_name': 'ec2',
     })
     self.default = {

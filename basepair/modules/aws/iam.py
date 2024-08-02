@@ -24,7 +24,7 @@ class IAM(Service):
   def __init__(self, cfg):
     super().__init__(cfg, 'IAM')
     self.client = self.session.client(**{
-      'config': Config(retries={'max_attempts': 0, 'mode': 'standard'}),
+      'config': Config(retries={'max_attempts': 10, 'mode': 'standard'}),
       'service_name': 'iam',
     })
     # Reminder: Update __bp_tmp_user__ will require to update boundary policy for the role
