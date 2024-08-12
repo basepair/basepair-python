@@ -207,3 +207,54 @@ class Policy: # pylint: disable=too-few-public-methods
       }],
       'Version': '2012-10-17'
     }
+
+  @staticmethod
+  def batch_worker():
+    '''Batch policy for worker'''
+    return {
+      'Statement': [
+        {
+        'Effect': 'Allow',
+        'Action': [
+          "batch:DescribeJobQueues",
+          "batch:CancelJob",
+          "batch:SubmitJob",
+          "batch:ListJobs",
+          "batch:DescribeComputeEnvironments",
+          "batch:TerminateJob",
+          "batch:DescribeJobs",
+          "batch:RegisterJobDefinition",
+          "batch:DescribeJobDefinitions",
+        ],
+        'Resource': f"arn:aws:batch:*:*:*"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ecs:DescribeTasks",
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstanceAttribute",
+          "ecs:DescribeContainerInstances",
+          "ec2:DescribeInstanceStatus",
+        ],
+        'Resource': f"arn:aws:ecs:*:*:*"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetRepositoryPolicy",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages",
+          "ecr:DescribeImages",
+          "ecr:BatchGetImage",
+          "ecr:GetLifecyclePolicy",
+          "ecr:GetLifecyclePolicyPreview",
+          "ecr:ListTagsForResource",
+          "ecr:DescribeImageScanFindings",
+        ],
+        'Resource': 'arn:aws:ecr:*:*:repository/*'
+      }],
+      'Version': '2012-10-17'
+    }
