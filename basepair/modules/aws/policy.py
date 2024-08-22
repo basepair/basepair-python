@@ -225,8 +225,9 @@ class Policy: # pylint: disable=too-few-public-methods
           "batch:DescribeJobs",
           "batch:RegisterJobDefinition",
           "batch:DescribeJobDefinitions",
+          "batch:TagResource",
         ],
-        'Resource': f"arn:aws:batch:*:*:*"
+        'Resource': f"*"
       }, {
         'Effect': 'Allow',
         'Action': [
