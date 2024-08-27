@@ -216,45 +216,49 @@ class Policy: # pylint: disable=too-few-public-methods
         {
         'Effect': 'Allow',
         'Action': [
-          "batch:DescribeJobQueues",
           "batch:CancelJob",
-          "batch:SubmitJob",
-          "batch:ListJobs",
           "batch:DescribeComputeEnvironments",
-          "batch:TerminateJob",
-          "batch:DescribeJobs",
-          "batch:RegisterJobDefinition",
           "batch:DescribeJobDefinitions",
+          "batch:DescribeJobQueues",
+          "batch:DescribeJobs",
+          "batch:ListJobs",
+          "batch:RegisterJobDefinition",
+          "batch:SubmitJob",
+          "batch:TagResource",
+          "batch:TerminateJob",
         ],
-        'Resource': f"arn:aws:batch:*:*:*"
+        'Resource': "*",
+        'Sid': "BatchAccess"
       }, {
         'Effect': 'Allow',
         'Action': [
-          "ecs:DescribeTasks",
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceTypes",
           "ec2:DescribeInstanceAttribute",
-          "ecs:DescribeContainerInstances",
           "ec2:DescribeInstanceStatus",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstances",
+          "ecs:DescribeContainerInstances",
+          "ecs:DescribeTasks",
         ],
-        'Resource': f"arn:aws:ecs:*:*:*"
+        'Resource': "arn:aws:ecs:*:*:*",
+        'Sid': "ECSDescribeTasks"
       }, {
         'Effect': 'Allow',
         'Action': [
-          "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:GetRepositoryPolicy",
-          "ecr:DescribeRepositories",
-          "ecr:ListImages",
-          "ecr:DescribeImages",
           "ecr:BatchGetImage",
+          "ecr:DescribeImageScanFindings",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:GetDownloadUrlForLayer",
           "ecr:GetLifecyclePolicy",
           "ecr:GetLifecyclePolicyPreview",
+          "ecr:GetRepositoryPolicy",
+          "ecr:ListImages",
           "ecr:ListTagsForResource",
-          "ecr:DescribeImageScanFindings",
         ],
-        'Resource': 'arn:aws:ecr:*:*:repository/*'
+        'Resource': 'arn:aws:ecr:*:*:repository/*',
+        'Sid': "ECRAccess"
       }],
       'Version': '2012-10-17'
     }
