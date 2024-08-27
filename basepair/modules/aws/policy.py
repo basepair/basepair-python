@@ -207,3 +207,58 @@ class Policy: # pylint: disable=too-few-public-methods
       }],
       'Version': '2012-10-17'
     }
+
+  @staticmethod
+  def batch_worker():
+    '''Batch policy for worker'''
+    return {
+      'Statement': [
+        {
+        'Effect': 'Allow',
+        'Action': [
+          "batch:CancelJob",
+          "batch:DescribeComputeEnvironments",
+          "batch:DescribeJobDefinitions",
+          "batch:DescribeJobQueues",
+          "batch:DescribeJobs",
+          "batch:ListJobs",
+          "batch:RegisterJobDefinition",
+          "batch:SubmitJob",
+          "batch:TagResource",
+          "batch:TerminateJob",
+        ],
+        'Resource': "*",
+        'Sid': "BatchAccess"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ec2:DescribeInstanceAttribute",
+          "ec2:DescribeInstanceStatus",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstances",
+          "ecs:DescribeContainerInstances",
+          "ecs:DescribeTasks",
+        ],
+        'Resource': "arn:aws:ecs:*:*:*",
+        'Sid': "ECSDescribeTasks"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:DescribeImageScanFindings",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetLifecyclePolicy",
+          "ecr:GetLifecyclePolicyPreview",
+          "ecr:GetRepositoryPolicy",
+          "ecr:ListImages",
+          "ecr:ListTagsForResource",
+        ],
+        'Resource': 'arn:aws:ecr:*:*:repository/*',
+        'Sid': "ECRAccess"
+      }],
+      'Version': '2012-10-17'
+    }
