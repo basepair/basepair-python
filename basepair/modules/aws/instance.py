@@ -278,6 +278,7 @@ INSTANCE_INFO = {
       'memory': 64,
       'num_hdd': 1,
       'nvme': True,
+      'nitro_based': True,
   },
   'i4i.4xlarge': {
       'max_price': '0.96',
@@ -285,6 +286,7 @@ INSTANCE_INFO = {
       'memory': 128,
       'num_hdd': 1,
       'nvme': True,
+      'nitro_based': True,
   },
   'i4i.8xlarge': {
       'max_price': '1.96',
@@ -292,6 +294,7 @@ INSTANCE_INFO = {
       'memory': 256,
       'num_hdd': 2,
       'nvme': True,
+      'nitro_based': True,
   },
   'i4i.12xlarge': {
       'max_price': '1.96',
@@ -299,6 +302,7 @@ INSTANCE_INFO = {
       'memory': 384,
       'num_hdd': 3,
       'nvme': True,
+      'nitro_based': True,
   },
   'i4i.16xlarge': {
       'max_price': '2.26',
@@ -306,6 +310,7 @@ INSTANCE_INFO = {
       'memory': 512,
       'num_hdd': 4,
       'nvme': True,
+      'nitro_based': True,
   },
   'r6id.16xlarge': {
     'max_price': '1.96',
@@ -313,6 +318,7 @@ INSTANCE_INFO = {
     'memory': 512,
     'num_hdd': 2,
     'nvme': True,
+    'nitro_based': True,
   },
   'm6gd.medium': {
     'max_price': '0.48',
