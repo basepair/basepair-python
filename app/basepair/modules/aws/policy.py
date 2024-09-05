@@ -16,10 +16,53 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
+  def ec2_compute_modules(compute_settings):
+    '''EC2 policy for worker'''
+    return {
+      'Statement': [{
+        'Effect': 'Allow',
+        'Action': [
+          'ec2:CreateTags',
+          'ec2:RunInstances',
+          'ec2:StartInstances',
+          'ec2:StopInstances',
+          'ec2:TerminateInstances'
+        ],
+        'Resource': 'arn:aws:ec2:*:*:*'
+      }, {
+        'Action': [
+          'ec2:CancelSpotInstanceRequests',
+          'ec2:DescribeInstances',
+          'ec2:DescribeInstanceStatus',
+          'ec2:DescribeInstanceTypes',
+          'ec2:DescribeSecurityGroups',
+          'ec2:DescribeSpotInstanceRequests',
+          'ec2:DescribeSpotPriceHistory',
+          'ec2:DescribeSubnets',
+          'ec2:DescribeTags',
+          'ec2:RequestSpotInstances',
+          'ec2:RunScheduledInstances',
+          'ec2:DescribeSubnets'
+        ],
+        'Effect': 'Allow',
+        'Resource': '*',
+        'Sid': 'AllowEC2General'
+      }],
+      'Version': '2012-10-17'
+    }
+
+  @staticmethod
   def ecr_bio_modules(repository_settings):
     '''ECR policy for worker'''
     return {
       'Statement': [{
+        'Effect': 'Allow',
+        'Action': [
+          'ecr:DescribeImages',
+          'ec2:DescribeImages'
+        ],
+        'Resource': '*'
+      }, {
         'Effect': 'Allow',
         'Action': [
           'ecr:BatchCheckLayerAvailability',
@@ -51,20 +94,51 @@ class Policy: # pylint: disable=too-few-public-methods
       }, {
           'Effect': 'Allow',
           'Action': [
-              'cloudwatch:PutMetricData',
-              'ec2:DescribeVolumes',
-              'ec2:DescribeTags',
-              'logs:PutLogEvents',
-              'logs:DescribeLogStreams',
-              'logs:DescribeLogGroups',
-              'logs:CreateLogStream',
-              'logs:CreateLogGroup'
+            'cloudwatch:PutMetricData',
+            'ec2:DescribeVolumes',
+            'ec2:DescribeTags',
+            'logs:PutLogEvents',
+            'logs:DescribeLogStreams',
+            'logs:DescribeLogGroups',
+            'logs:CreateLogStream',
+            'logs:CreateLogGroup'
           ],
           'Resource': '*'
       }, {
           'Effect': 'Allow',
           'Action': ['ssm:GetParameter'],
           'Resource': 'arn:aws:ssm:*:*:parameter/AmazonCloudWatch-*'
+      }],
+      'Version': '2012-10-17'
+    }
+
+  @staticmethod
+  def iam_compute_module():
+    '''IAM policy for worker'''
+    return {
+      'Statement': [{
+        'Action': [
+          'iam:AttachRolePolicy',
+          'iam:AttachUserPolicy',
+          'iam:DetachRolePolicy',
+          'iam:DetachUserPolicy',
+          'iam:GetPolicy',
+          'iam:GetUser',
+          'iam:ListAccessKeys',
+          'iam:ListAttachedUserPolicies',
+          'iam:ListRoleTags',
+          'iam:ListUserPolicies',
+          'iam:ListUserTags',
+          'iam:PassRole',
+          'iam:ListPolicyTags'
+        ],
+        'Effect': 'Allow',
+        'Resource': [
+          'arn:aws:iam::*:policy/*',
+          'arn:aws:iam::*:role/*',
+          'arn:aws:iam::*:user/*'
+        ],
+        'Sid': 'AllowIAM'
       }],
       'Version': '2012-10-17'
     }
@@ -91,44 +165,44 @@ class Policy: # pylint: disable=too-few-public-methods
       'Statement': [
         {
           'Action': [
-            "omics:BatchDeleteReadSet",
-            "omics:DeleteReference",
-            "omics:GetReadSet",
-            "omics:GetReadSetExportJob",
-            "omics:GetReadSetImportJob",
-            "omics:GetReadSetMetadata",
-            "omics:GetReferenceImportJob",
-            "omics:GetReferenceMetadata",
-            "omics:ListReadSets",
-            "omics:ListReferences",
-            "omics:StartReadSetActivationJob",
-            "omics:StartReadSetExportJob",
-            "omics:StartReadSetImportJob",
-            "omics:StartReferenceImportJob",
+            'omics:BatchDeleteReadSet',
+            'omics:DeleteReference',
+            'omics:GetReadSet',
+            'omics:GetReadSetExportJob',
+            'omics:GetReadSetImportJob',
+            'omics:GetReadSetMetadata',
+            'omics:GetReferenceImportJob',
+            'omics:GetReferenceMetadata',
+            'omics:ListReadSets',
+            'omics:ListReferences',
+            'omics:StartReadSetActivationJob',
+            'omics:StartReadSetExportJob',
+            'omics:StartReadSetImportJob',
+            'omics:StartReferenceImportJob',
           ],
           'Effect': 'Allow',
           'Resource': [
-            f"arn:aws:omics:{ho_region}:*:referenceStore/{reference_store_id}/*",
-            f"arn:aws:omics:{ho_region}:*:referenceStore/{reference_store_id}",
-            f"arn:aws:omics:{ho_region}:*:sequenceStore/{sequence_store_id}/*",
-            f"arn:aws:omics:{ho_region}:*:sequenceStore/{sequence_store_id}",
+            f'arn:aws:omics:{ho_region}:*:referenceStore/{reference_store_id}/*',
+            f'arn:aws:omics:{ho_region}:*:referenceStore/{reference_store_id}',
+            f'arn:aws:omics:{ho_region}:*:sequenceStore/{sequence_store_id}/*',
+            f'arn:aws:omics:{ho_region}:*:sequenceStore/{sequence_store_id}',
           ]
         }, {
           'Action': [
-            "s3:GetObject",
-            "s3:ListBucket"
+            's3:GetObject',
+            's3:ListBucket'
           ],
           'Effect': 'Allow',
           'Resource': ['*'],
           'Condition': {
             'StringLike': {
-              "s3:DataAccessPointArn": f"arn:aws:s3:{ho_region}:*"
+              's3:DataAccessPointArn': f'arn:aws:s3:{ho_region}:*'
             }
           }
         }, {
-          'Action': ["kms:Decrypt"],
+          'Action': ['kms:Decrypt'],
           'Effect': 'Allow',
-          'Resource': [f"arn:aws:kms:{ho_region}:*:*"]
+          'Resource': [f'arn:aws:kms:{ho_region}:*:*']
         }
       ]
     }
@@ -203,7 +277,7 @@ class Policy: # pylint: disable=too-few-public-methods
           'swf:PollForActivityTask',
         ],
         'Effect': 'Allow',
-        'Resource': f"arn:aws:swf:*:*:/domain/{workflow_settings.get('domain')}"
+        'Resource': f"arn:aws:swf:*:*:/domain/{workflow_settings.get('domain')}",
       }],
       'Version': '2012-10-17'
     }
