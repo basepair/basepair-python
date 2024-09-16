@@ -23,6 +23,7 @@ from __future__ import print_function
 import os
 import sys
 import json
+import re
 import subprocess
 from subprocess import CalledProcessError
 import time
@@ -933,8 +934,37 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
     src:  {str} File path on AWS S3, not including the bucket           [Required]
     '''
     storage_cfg = self.configuration.get_user_storage()
+    pattern = re.compile(r's3:\/\/[0-9a-zA-Z_-]+\/(?P<key>.*)')
+    match = pattern.match(src)
+    key = match and match.group('key')
     if not src.startswith('s3://'):
+      key = src
       src = 's3://{}/{}'.format(storage_cfg.get('bucket'), src)
+    response = (File(self.conf.get('api'))).storage_status(key)
+    storage_class = response.get('storage_class')
+    restore_status = response.get('restore_status')
+    message = f'File {key} is present in {storage_class}'
+    file_status_check_interval = 2 * 60 # 2 minutes
+    if restore_status == 'restore_error':
+      message = f'File with key {key} does not exist or you dont have permission'
+    if restore_status != 'restore_complete':
+      message = 'Restore will take about 2-5 minutes'
+      if storage_class == 'DEEP_ARCHIVE':
+        message = 'File with key {key} is archived. Restore will take 10-12 hours.'
+        file_status_check_interval = 4 * 60 * 60  # 4 hours
+    print(message)
+    while storage_class in ['DEEP_ARCHIVE', 'GLACIER']:
+      restore_status = response.get('restore_status')
+      if restore_status == 'restore_in_progress':
+        print(f'INFO: Waiting for restore of file {key}')
+        time.sleep(file_status_check_interval)
+        response = (File(self.conf.get('api'))).storage_status(key)
+        continue
+      if response.get('restore_status') == 'restore_not_started':
+        response = (File(self.conf.get('api'))).start_restore(key)
+        print(f'INFO: Restore of file {key} started...')
+        continue
+      break
     cmd = self.get_copy_cmd(src, dest)
     if self.verbose:
       eprint('copying from s3 bucket to {}'.format(' ./'+dest.split('/')[-1]))
