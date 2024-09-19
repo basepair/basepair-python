@@ -114,3 +114,7 @@ class Driver(StorageAbstract):
     def upload(self, file_name, full_path, **kwargs):
         """Upload file to storage"""
         return self.s3_service.upload_file(file_name, full_path, **kwargs)
+    
+    def upload_file(self, fileobj, key, **kwargs):
+        """Upload file object to storage"""
+        return self.s3_service.upload_file_obj(fileobj, key, **kwargs)
