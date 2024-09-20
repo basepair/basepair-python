@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      ssh:
+        - default
+    command: tail -f /dev/null
+    container_name: basepair-lib
+    volumes:
+      - $HOME/.aws/credentials_dev:/home/www/.aws/credentials:ro
+      - $HOME/.ssh:/home/www/.ssh:ro
+      - ./app:/home/app
