@@ -419,9 +419,6 @@ class S3(Service):
   def upload_file_obj(self, file_obj, full_path, extra_args=None, force=False, show_log=True):
     '''Upload a file to an S3 bucket'''
     extra_args = extra_args or {}
-    mimetype, _ = mimetypes.guess_type(file_obj)
-    if mimetype:
-      extra_args['ContentType'] = mimetype
     
     # Upload the file
     try:
