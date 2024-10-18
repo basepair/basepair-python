@@ -6,6 +6,7 @@ from .hos import HOS
 from .how import HOW
 from .iam import IAM
 from .instance import INSTANCE_INFO
+from .logs import Logs
 from .mrktpl import MMetering
 from .policy import Policy
 from .s3 import S3
