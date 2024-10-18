@@ -23,6 +23,7 @@ class Driver(StorageAbstract):
         self.s3_service = S3({
             'bucket': self.storage_settings.get('bucket'),
             'credentials': cfg.get('credentials'),
+            'log_file': cfg.get('log_file'),
             'region': self.storage_settings.get('region'),
             'restore_period': self.storage_settings.get('restore_period'),
             'endpoint_url': self.storage_settings.get('endpoint_url'),

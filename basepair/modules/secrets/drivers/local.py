@@ -17,5 +17,5 @@ class Driver(SecretsAbstract):
     if os.path.isfile(secret_file_path):
       secrets = ""
       with open(secret_file_path, 'r', encoding='utf-8') as file:
-        secrets = file.read()  # load the content as a json
-      return secrets
+        secrets = json.load(file)
+        return secrets.get('SecretString', '')

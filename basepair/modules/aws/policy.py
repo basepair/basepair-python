@@ -46,6 +46,24 @@ class Policy: # pylint: disable=too-few-public-methods
         }
       }, {
         'Effect': 'Allow',
+        'Action': [
+          'ecr:BatchCheckLayerAvailability',
+          'ecr:GetDownloadUrlForLayer',
+          'ecr:GetRepositoryPolicy',
+          'ecr:DescribeRepositories',
+          'ecr:ListImages',
+          'ecr:DescribeImages',
+          'ecr:BatchGetImage',
+          'ecr:GetLifecyclePolicy',
+          'ecr:GetLifecyclePolicyPreview',
+          'ecr:ListTagsForResource',
+          'ecr:DescribeImageScanFindings'
+        ],
+        'Resource': [
+          f"arn:aws:ecr:*:{repository_settings.get('account')}:repository/worker*",
+        ]
+      }, {
+        'Effect': 'Allow',
         'Action': 'ecr:GetAuthorizationToken',
         'Resource': '*'
       }, {
@@ -204,6 +222,61 @@ class Policy: # pylint: disable=too-few-public-methods
         ],
         'Effect': 'Allow',
         'Resource': f"arn:aws:swf:*:*:/domain/{workflow_settings.get('domain')}"
+      }],
+      'Version': '2012-10-17'
+    }
+
+  @staticmethod
+  def batch_worker():
+    '''Batch policy for worker'''
+    return {
+      'Statement': [
+        {
+        'Effect': 'Allow',
+        'Action': [
+          "batch:CancelJob",
+          "batch:DescribeComputeEnvironments",
+          "batch:DescribeJobDefinitions",
+          "batch:DescribeJobQueues",
+          "batch:DescribeJobs",
+          "batch:ListJobs",
+          "batch:RegisterJobDefinition",
+          "batch:SubmitJob",
+          "batch:TagResource",
+          "batch:TerminateJob",
+        ],
+        'Resource': "*",
+        'Sid': "BatchAccess"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ec2:DescribeInstanceAttribute",
+          "ec2:DescribeInstanceStatus",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstances",
+          "ecs:DescribeContainerInstances",
+          "ecs:DescribeTasks",
+        ],
+        'Resource': "arn:aws:ecs:*:*:*",
+        'Sid': "ECSDescribeTasks"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:DescribeImageScanFindings",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetLifecyclePolicy",
+          "ecr:GetLifecyclePolicyPreview",
+          "ecr:GetRepositoryPolicy",
+          "ecr:ListImages",
+          "ecr:ListTagsForResource",
+        ],
+        'Resource': 'arn:aws:ecr:*:*:repository/*',
+        'Sid': "ECRAccess"
       }],
       'Version': '2012-10-17'
     }

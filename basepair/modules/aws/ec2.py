@@ -20,7 +20,7 @@ class EC2(Service):
   def __init__(self, cfg):
     super().__init__(cfg, 'EC2')
     self.client = self.session.client(**{
-      'config': Config(retries={'max_attempts': 0, 'mode': 'standard'}),
+      'config': Config(retries={'max_attempts': 10, 'mode': 'standard'}),
       'service_name': 'ec2',
     })
     self.default = {
@@ -45,6 +45,23 @@ class EC2(Service):
       response = self.get_log_msg({
         'exception': error,
         'msg': f'Not able to attach role {role_name} to instance {instance_id}.',
+      })
+      if ExceptionHandler.is_throttled_error(exception=error):
+        raise error
+    return response
+
+  def describe_images(self, owners=None, filters=None):
+    '''Look for images'''
+    if owners is None:
+      owners = []
+    if filters is None:
+      filters = []
+    try:
+      response = self.client.describe_images(Owners=owners, Filters=filters)
+    except ClientError as error:
+      response = self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to describe images due to error :\n{error}',
       })
       if ExceptionHandler.is_throttled_error(exception=error):
         raise error
@@ -141,10 +158,18 @@ class EC2(Service):
       specification['SubnetId'] = settings.get('subnet_id')
     elif availability_zone:
       specification['Placement'] = {'AvailabilityZone': availability_zone}
-      for subnet_id in settings.get('subnet_ids') or []:
-        subnet = self.resource.Subnet(subnet_id)
-        if subnet.availability_zone == availability_zone:
-          specification['SubnetId'] = subnet_id
+      subnet_ids = settings.get('subnet_ids')
+      if subnet_ids:
+        for subnet_id in subnet_ids:
+          subnet = self.resource.Subnet(subnet_id)
+          if subnet.availability_zone == availability_zone:
+            specification['SubnetId'] = subnet_id
+            break
+        else:
+          return self.get_log_msg({
+            'exception': None,
+            'msg': 'No subnet found in the availability zone.',
+          })
 
     price = settings.get('spot_price') or ''
     try:
