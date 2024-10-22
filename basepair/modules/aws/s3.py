@@ -423,7 +423,9 @@ class S3(Service):
     # Upload the file
     try:
       if force or not self.get_object_head(full_path, show_log=show_log):
-        self.client.upload_fileobj(file_obj, self.bucket, full_path, ExtraArgs=extra_args)
+        self.client.put_object(Body=file_obj, Bucket=self.bucket, Key=full_path, **extra_args)
+        
+        self.client.put_object_acl(Bucket=self.bucket, Key=full_path, ACL='bucket-owner-full-control')
       else:
         print(f'Skipping file {full_path} because already exist in S3.')
     except ClientError as error:
