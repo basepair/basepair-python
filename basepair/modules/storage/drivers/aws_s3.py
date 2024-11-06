@@ -114,3 +114,7 @@ class Driver(StorageAbstract):
     def upload(self, file_name, full_path, **kwargs):
         """Upload file to storage"""
         return self.s3_service.upload_file(file_name, full_path, **kwargs)
+
+    def list_buckets(self):
+        """List buckets"""
+        return self.s3_service.list_buckets()
