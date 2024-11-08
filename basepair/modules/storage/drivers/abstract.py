@@ -80,3 +80,7 @@ class StorageAbstract:
     def get_storage_context(self):
         """Get the storage context according to driver"""
         raise_no_implemented()
+
+    def list_buckets(self):
+        """List all the buckets"""
+        raise_no_implemented()
