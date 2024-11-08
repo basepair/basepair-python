@@ -26,7 +26,7 @@ class S3(Service):
     self.bucket = cfg.get('bucket')
     client_vars = {
       'config': Config(
-        retries={'max_attempts': 0, 'mode': 'standard'},
+        retries={'max_attempts': 10, 'mode': 'standard'},
         signature_version='s3v4',
       ),
       'service_name': 's3',

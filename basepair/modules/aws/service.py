@@ -18,7 +18,7 @@ class Service: # pylint: disable=too-few-public-methods
   '''Abstract wrapper for services'''
   def __init__(self, cfg, service_name=''):
     self.cfg = cfg
-    self.log = Logger.get_instance()
+    self.log = Logger.get_instance({'log_file': cfg.get('log_file')})
     self.session = None
     self.sts_service = self.connect()
 
