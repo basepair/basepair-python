@@ -79,3 +79,7 @@ class Storage:
     def upload(self, file_name, full_path, **kwargs):
         """Upload file to storage"""
         return self.driver.upload(file_name, full_path, **kwargs)
+    
+    def upload_file_obj(self, file_obj, file_path, **kwargs):
+        """Upload file object to storage"""
+        return self.driver.upload_file_obj(file_obj, file_path, **kwargs)
