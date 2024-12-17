@@ -37,8 +37,9 @@ class SWF(Service):
         raise error
       return response
 
-  def get_all_workflow_execution_history(self, domain, run_id, workflow_id):
+  def get_all_workflow_execution_history(self, run_id, workflow_id, domain=None):
     '''Get all workflow execution history'''
+    domain = domain or self.domain
     try:
       response = self.client.get_workflow_execution_history(
         domain=domain,
@@ -67,8 +68,9 @@ class SWF(Service):
         raise error
     return response
 
-  def poll_activity_task(self, domain, identity, task_list):
+  def poll_activity_task(self, identity, task_list, domain=None):
     '''Poll activity task'''
+    domain = domain or self.domain
     try:
       response = self.client.poll_for_activity_task(
         domain=domain,
