@@ -280,3 +280,30 @@ class Policy: # pylint: disable=too-few-public-methods
       }],
       'Version': '2012-10-17'
     }
+
+  @staticmethod
+  def sts_assume_role(assume_role_arns: list):
+    """
+    Generates an AWS STS policy for assuming roles.
+
+    Args:
+      assume_role_arns (list): A list of Amazon Resource Names (ARNs) for the roles to be assumed.
+
+    Returns:
+      dict: A dictionary representing the STS policy.
+
+    Example:
+      assume_role_arns = [
+        "arn:aws:iam::123456789012:role/example-role-1",
+        "arn:aws:iam::123456789012:role/example-role-2"
+      ]
+      policy = sts_assume_role(assume_role_arns)
+    """
+    return {
+      'Statement': [{
+        'Effect': 'Allow',
+        'Action': 'sts:AssumeRole',
+        'Resource': assume_role_arns
+      }],
+      'Version': '2012-10-17'
+    }
