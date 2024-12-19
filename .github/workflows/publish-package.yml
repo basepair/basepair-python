@@ -24,16 +24,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
+      working-directory: ./app
 
     # Step 4: Build the package
     - name: Build the package
       run: |
         python setup.py sdist bdist_wheel
+      working-directory: ./app
 
     - name: Check the package with twine
+      continue-on-error: false
       run: |
         twine check dist/*
-      continue-on-error: false
+      working-directory: ./app
 
     # Step 5: Upload the package to PyPI
     - name: Upload package to PyPI
@@ -42,6 +45,7 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python -m twine upload dist/*
+      working-directory: ./app
 
     # Step 6: Upload built package as an artifact
     - name: Upload package as artifact
@@ -49,3 +53,4 @@ jobs:
       with:
         name: python-package
         path: dist/*
+      working-directory: ./app
