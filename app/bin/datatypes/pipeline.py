@@ -1,10 +1,12 @@
 '''Pipeline datatype class'''
-
+import json
 # General Import
 import sys
 
 # App imports
-from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser, validate_create_yaml, validate_update_yaml
+from bin.common_parser import add_common_args, add_uid_parser, add_json_parser, add_yaml_parser, add_force_parser, \
+  validate_create_yaml, validate_update_yaml, valid_email, add_single_uid_parser
+
 
 class Pipeline:
   '''Pipeline action methods'''
@@ -45,9 +47,23 @@ class Pipeline:
   @staticmethod
   def update_pipeline(bp_api, args):
     '''Update pipeline'''
-    valid = validate_update_yaml(args)
-    if valid:
-      bp_api.update_pipeline({'yamlpath': args.file[0]})
+
+    if (args.emails and not args.perm) or (args.perm and not args.emails):
+      sys.exit('ERROR: Please provide permission and emails to update.')
+
+    if args.emails and args.perm:
+      params = {
+        'params': json.dumps({
+          'permission_data': {
+            'emails': args.emails,
+            'perm': args.perm,
+          }
+        })
+      }
+      bp_api.update_pipeline(params=params, pipeline_id=args.uid)
+    else:
+      if validate_update_yaml(args):
+        bp_api.update_pipeline(data={'yamlpath': args.file[0]})
 
   @staticmethod
   def pipeline_action_parser(action_parser):
@@ -95,5 +111,8 @@ class Pipeline:
     update_pipeline_parser = add_common_args(update_pipeline_parser)
     update_pipeline_parser = add_yaml_parser(update_pipeline_parser)
     update_pipeline_parser = add_force_parser(update_pipeline_parser, 'pipeline')
+    update_pipeline_parser.add_argument('--emails', default=[], nargs='+', type=valid_email)
+    update_pipeline_parser.add_argument('--perm', choices=['admin', 'edit', 'view'])
+    update_project_parser = add_single_uid_parser(update_pipeline_parser, 'pipeline')
 
     return action_parser

@@ -9,7 +9,7 @@ with open('basepair/__init__.py', 'r') as fd:
 if not version:
     raise RuntimeError('Cannot find version information')
 
-with open('README.md') as file:
+with open('../README.md') as file:
     long_description = file.read()
 
 packages = [

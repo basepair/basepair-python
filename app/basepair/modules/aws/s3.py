@@ -26,7 +26,7 @@ class S3(Service):
     self.bucket = cfg.get('bucket')
     client_vars = {
       'config': Config(
-        retries={'max_attempts': 0, 'mode': 'standard'},
+        retries={'max_attempts': 10, 'mode': 'standard'},
         signature_version='s3v4',
       ),
       'service_name': 's3',
@@ -79,7 +79,7 @@ class S3(Service):
     # if there are invalid uris we return a warning
     if uri_list.get('not_valid'):
       response = self.get_log_msg({
-        'exception': error,
+        'exception': 'Not valid URI.',
         'msg': f"Not valid uris provided for deletion.\n{json.dumps(uri_list.get('not_valid'), indent=2)}",
         'msg_type': 'warning',
       })

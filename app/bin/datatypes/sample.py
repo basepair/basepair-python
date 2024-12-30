@@ -18,21 +18,25 @@ class Sample:
     data = {
       'datatype': args.type,
       'default_workflow': int(args.pipeline) if args.pipeline else None,
-      'filepaths1': args.file1,
-      'filepaths2': args.file2,
+      'filepaths1': args.file1 or [],
+      'filepaths2': args.file2 or [],
       'genome': args.genome,
       'name': args.name,
       'platform': args.platform,
       'projects': int(args.project) if args.project else None,
     }
-    if not os.path.isfile(args.file1) or args.file2 and not os.path.isfile(args.file2):
-      sys.exit('ERROR: Provided File does not exists.')
+    # check if the files are all present
+    not_found_msg = 'ERROR: Provided File: {} does not exists.'
+    files = data['filepaths2'] + data['filepaths1']
+    for file_name in files:
+        if not os.path.isfile(file_name):
+          sys.exit(not_found_msg.format(file_name))
 
-    validate_sample_file(args)
-
+    validate_sample_file(files)
+    data['info'] = data.get('info', {})
     if args.key and args.val:
       for key, val in zip(args.key, args.val):
-        data[key] = val
+        data['info'][key] = val
     sample_id = bp_api.create_sample(data, upload=True, source='cli')
     if sample_id:
       eprint('Sample created successfully.')
@@ -119,25 +123,28 @@ class Sample:
       '--type',
       choices=[
         'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-        'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+        'panel', 'rna-seq', 'scaleBio_scRNA', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
       default='rna-seq'
     )
-    create_sample_p.add_argument('--file1', required=True, help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
-    create_sample_p.add_argument('--file2', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
-    create_sample_p.add_argument('--genome')
-    create_sample_p.add_argument('--key', action='append')
-    create_sample_p.add_argument('--name')
-    create_sample_p.add_argument('--platform')
-    create_sample_p.add_argument('--project', help='Project id', type=valid_uid)
-    create_sample_p.add_argument('--val', action='append')
-    create_sample_p.add_argument('--pipeline', help='Pipeline id', type=valid_uid)
+    example_key_usage = '''
+      Example: basepair sample create --file example.bam --key name --val Alice --key age --val 30
+    '''
+    create_sample_p.add_argument('--file1', nargs='+', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
+    create_sample_p.add_argument('--file2', nargs='+', help='Available file types - {}'.format(' '.join(valid_sample_extensions)))
+    create_sample_p.add_argument('--genome', help='Name of the Genome')
+    create_sample_p.add_argument('--key', action='append', help='Specify one(or more) key (can be used multiple times).\nShould be used along with --val flag.\nTags the sample with some additional information.')
+    create_sample_p.add_argument('--name', help='Name of the sample')
+    create_sample_p.add_argument('--platform', help='Name of the sequencing platform')
+    create_sample_p.add_argument('--project', help='Project ID', type=valid_uid)
+    create_sample_p.add_argument('--val', action='append', help='Specify one(or more)value corresponding to the key (must match number of --key).\nShould be used along with --key flag.' + example_key_usage)
+    create_sample_p.add_argument('--pipeline', help='Pipeline ID', type=valid_uid)
     create_sample_p = add_common_args(create_sample_p)
 
     # delete sample parser
     delete_sample_p = action_parser.add_parser(
       'delete',
-      help='delete a sample.'
+      help='Delete a sample.'
     )
     delete_sample_p = add_common_args(delete_sample_p)
     delete_sample_p = add_uid_parser(delete_sample_p, 'sample')
@@ -170,7 +177,7 @@ class Sample:
       '--type',
       choices=[
         'atac-seq', 'chip-seq', 'crispr', 'cutnrun', 'cutntag', 'dna-seq', 'other',
-        'panel', 'rna-seq', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
+        'panel', 'rna-seq', 'scaleBio-scRNA', 'scrna-seq', 'small-rna-seq', 'snap-chip', 'wes', 'wgs'
       ],
     )
     update_sample_parser.add_argument('--genome')
