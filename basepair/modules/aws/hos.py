@@ -201,3 +201,16 @@ class HOS(Service):
                 'msg': f'Not able to start HealthOmics reference import job: {str(error)}.',
             })
             raise error
+
+    def start_run(self, params):
+        """Start omics workflow"""
+        try:
+          return self.client.start_run(**params)
+        except ClientError as error:
+            response = {
+                'detail': str(error),
+                'error': True,
+                'msg': f'not able to start run: {str(error)}',
+            }
+            self.get_log_msg(response)
+            return response
