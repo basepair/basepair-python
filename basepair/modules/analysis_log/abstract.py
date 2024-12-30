@@ -8,8 +8,8 @@ from datetime import datetime
 # Libs imports
 from basepair.infra.webapp import Analysis
 
-class Log:
-  '''Log class'''
+class Abstract:
+  '''Abstract class'''
   def __init__(self, config=None, analysis_id=None):
     self.analysis_id = analysis_id
     self.config = config

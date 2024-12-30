@@ -8,10 +8,10 @@ import os
 from basepair.infra.webapp import Analysis
 
 # App imports
-from .log import Log
+from .abstract import Abstract
 
 
-class AnalysisLog(Log):
+class AnalysisLog(Abstract):
   '''Analysis log class'''
   def __init__(self, analysis_id=None, config=None, kind=None, node_key=None):
     super().__init__(config, analysis_id)
