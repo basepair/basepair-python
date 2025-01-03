@@ -104,6 +104,7 @@ class Policy: # pylint: disable=too-few-public-methods
         ],
         'Resource': [
           f"arn:aws:ecr:*:{repository_settings.get('account')}:repository/worker*",
+          f"arn:aws:ecr:*:{repository_settings.get('account')}:repository/bio-validations*",
         ]
       }, {
         'Effect': 'Allow',
