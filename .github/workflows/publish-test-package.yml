@@ -1,0 +1,53 @@
+name: Publish Test Python Package
+
+# Trigger manually using workflow_dispatch
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python environment
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    # Step 3: Upgrade pip and install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+
+    # Step 4: Build the package
+    - name: Build the package
+      run: |
+        python setup.py sdist bdist_wheel
+
+    - name: Check the package with twine
+      continue-on-error: false
+      run: |
+        twine check dist/*
+
+    # Step 5: Upload the package to PyPI
+    - name: Upload package to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+      run: |
+        python -m twine upload --repository testpypi dist/*
+
+    # Step 6: Upload built package as an artifact
+    - name: Upload package as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package
+        path: dist/*
