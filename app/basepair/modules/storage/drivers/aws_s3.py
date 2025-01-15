@@ -23,6 +23,7 @@ class Driver(StorageAbstract):
         self.s3_service = S3({
             'bucket': self.storage_settings.get('bucket'),
             'credentials': cfg.get('credentials'),
+            'log_file': cfg.get('log_file'),
             'region': self.storage_settings.get('region'),
             'restore_period': self.storage_settings.get('restore_period'),
             'endpoint_url': self.storage_settings.get('endpoint_url'),
@@ -114,3 +115,7 @@ class Driver(StorageAbstract):
     def upload(self, file_name, full_path, **kwargs):
         """Upload file to storage"""
         return self.s3_service.upload_file(file_name, full_path, **kwargs)
+
+    def list_buckets(self):
+        """List buckets"""
+        return self.s3_service.list_buckets()
