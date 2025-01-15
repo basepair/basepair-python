@@ -9,7 +9,7 @@ with open('basepair/__init__.py', 'r') as fd:
 if not version:
     raise RuntimeError('Cannot find version information')
 
-with open('README.md') as file:
+with open('../README.md') as file:
     long_description = file.read()
 
 packages = [
@@ -21,6 +21,7 @@ packages = [
     'basepair.modules',
     'basepair.modules.alert',
     'basepair.modules.alert.drivers',
+    'basepair.modules.analysis_log',
     'basepair.modules.aws',
     'basepair.modules.aws.handler',
     'basepair.modules.identity',
@@ -37,7 +38,7 @@ packages = [
 ]
 
 setup(
-    name='basepair',
+    name='basepair-test',
     packages=packages,
     version=version,
     description="Python client for Basepair's API",

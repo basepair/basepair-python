@@ -59,3 +59,16 @@ class Analysis(Abstract):
       eprint('ERROR: {}'.format(error))
       return {'error': True, 'msg': error}
 
+  def save_log(self, data):
+    '''Save analysis log in db'''
+    try:
+      response = requests.post(
+        '{}log'.format(self.endpoint),
+        data=json.dumps(data),
+        headers=self.headers,
+        params=self.payload,
+      )
+      return self._parse_response(response)
+    except requests.exceptions.RequestException as error:
+      print(f'ERROR: {error}')
+      return {'error': True, 'msg': error}
