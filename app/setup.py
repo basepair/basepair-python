@@ -38,7 +38,7 @@ packages = [
 ]
 
 setup(
-    name='basepair',
+    name='basepair-test',
     packages=packages,
     version=version,
     description="Python client for Basepair's API",
