@@ -43,7 +43,7 @@ jobs:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run: |
-        python -m twine upload --repository testpypi dist/*
+        python -m twine upload --repository testpypi dist/* --verbose
 
     # Step 6: Upload built package as an artifact
     - name: Upload package as artifact
