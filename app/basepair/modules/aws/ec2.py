@@ -151,7 +151,7 @@ class EC2(Service):
       specification['KeyName'] = key_name
 
     if iam_role:
-      specification['IamInstanceProfile'] = {'Name': iam_role}
+      specification['IamInstanceProfile'] = {'Name': iam_role, 'Arn': 'arn:aws:iam::776562512588:instance-profile/Worker'}
 
     availability_zone = settings.get('availability_zone') or self.default.get('availability_zone')
     if settings.get('subnet_id'):
