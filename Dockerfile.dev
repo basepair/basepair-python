@@ -1,0 +1,49 @@
+FROM python:3.12-slim
+
+# Create a application user and add to user group
+ARG APP_USER=appuser
+RUN groupadd -r ${APP_USER} && useradd --no-log-init -rm -d /home/www -g ${APP_USER} ${APP_USER}
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV CRYPTOGRAPHY_DONT_BUILD_RUST 1
+
+# Install runtime dependencies and clean it
+RUN set -ex \
+    && RUN_DEPS=" \
+    curl \
+    git \
+    openssh-client \
+    procps \
+    vim \
+    " \
+    && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
+    && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy django requirements file
+ADD app/requirements.txt /requirements.txt
+
+# Install build dependencies and clean it
+RUN --mount=type=ssh set -ex \
+    && BUILD_DEPS=" \
+    build-essential \
+    gcc \
+    libpcre3-dev \
+    libpq-dev \
+    " \
+    && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && pip install --upgrade pip \
+    && mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts \
+    && pip install --no-cache-dir -r /requirements.txt \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /home/app
+
+# Setup right permissions for APP_USER
+RUN chown -R ${APP_USER}:${APP_USER} /home/app /mnt /tmp /var/run/ /var/log \
+    && chmod 755 /home/app
+
+USER ${APP_USER}:${APP_USER}
