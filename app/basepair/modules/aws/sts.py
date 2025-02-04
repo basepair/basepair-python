@@ -32,14 +32,14 @@ class STS: # pylint: disable=too-few-public-methods
       'warning': f'{service} Warning:', # Non blocking errors
     }
 
-  def assume_role(self, role):
+  def assume_role(self, role, duration_seconds = 43200):
     '''Assume role'''
     now = datetime.now()
     try:
       # Note: This will only work if in the role definition
       # the session timeout is larger than the requested
       response = self.client.assume_role(
-        DurationSeconds=43200, # max allowed 12hs
+        DurationSeconds=duration_seconds, # max allowed 12hs
         RoleArn=role,
         RoleSessionName=f'AssummingRoleFor{self.service_name}_{now.strftime("%Y%m%d%H%M%S")}',
       )
