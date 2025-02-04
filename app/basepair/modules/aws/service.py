@@ -111,7 +111,7 @@ class Service: # pylint: disable=too-few-public-methods
     credential = cfg.get('credentials') or Service.get_instance_meta_credentials(clean_cache)
     if credential.get('assume_role'):
       sts_service = STS()
-      sts_service.assume_role(credential['assume_role'])
+      sts_service.assume_role(credential['assume_role'], duration_seconds=3600)
       if sts_service.credential:
         credential['id'] = sts_service.credential.get('AccessKeyId')
         credential['secret'] = sts_service.credential.get('SecretAccessKey')

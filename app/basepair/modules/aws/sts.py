@@ -38,9 +38,11 @@ class STS: # pylint: disable=too-few-public-methods
     try:
       # Note: This will only work if in the role definition
       # the session timeout is larger than the requested
+      print(f"Assuming role {role} for {duration_seconds} seconds.")
       response = self.client.assume_role(
         RoleArn=role,
         RoleSessionName=f'AssummingRoleFor{self.service_name}_{now.strftime("%Y%m%d%H%M%S")}',
+        DurationSeconds=duration_seconds
       )
       self.credential = response.get('Credentials')
     except ClientError as error:
