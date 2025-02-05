@@ -43,7 +43,6 @@ class STS: # pylint: disable=too-few-public-methods
       # Note: This will only work if in the role definition
       # the session timeout is larger than the requested
       caller_identity = self.client.get_caller_identity()
-      print(caller_identity)
       if "assumed-role" not in caller_identity.get('Arn'):
         args['DurationSeconds'] = 43200
       response = self.client.assume_role(**args)
