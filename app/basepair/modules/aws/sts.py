@@ -35,13 +35,18 @@ class STS: # pylint: disable=too-few-public-methods
   def assume_role(self, role):
     '''Assume role'''
     now = datetime.now()
+    args = {
+      "RoleArn": role,
+      "RoleSessionName":f'AssummingRoleFor{self.service_name}_{now.strftime("%Y%m%d%H%M%S")}',
+    }
     try:
       # Note: This will only work if in the role definition
       # the session timeout is larger than the requested
-      response = self.client.assume_role(
-        RoleArn=role,
-        RoleSessionName=f'AssummingRoleFor{self.service_name}_{now.strftime("%Y%m%d%H%M%S")}',
-      )
+      caller_identity = self.client.get_caller_identity()
+      print(caller_identity)
+      if "assumed-role" not in caller_identity.get('Arn'):
+        args['DurationSeconds'] = 43200
+      response = self.client.assume_role(**args)
       self.credential = response.get('Credentials')
     except ClientError as error:
       self.get_log_msg({
