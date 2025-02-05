@@ -32,7 +32,7 @@ class STS: # pylint: disable=too-few-public-methods
       'warning': f'{service} Warning:', # Non blocking errors
     }
 
-  def assume_role(self, role, duration_seconds = 43200):
+  def assume_role(self, role):
     '''Assume role'''
     now = datetime.now()
     try:
@@ -41,7 +41,6 @@ class STS: # pylint: disable=too-few-public-methods
       response = self.client.assume_role(
         RoleArn=role,
         RoleSessionName=f'AssummingRoleFor{self.service_name}_{now.strftime("%Y%m%d%H%M%S")}',
-        DurationSeconds=duration_seconds
       )
       self.credential = response.get('Credentials')
     except ClientError as error:
