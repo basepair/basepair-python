@@ -281,7 +281,7 @@ INSTANCE_INFO = {
       'nitro_based': True,
   },
   'i4i.4xlarge': {
-      'max_price': '0.96',
+      'max_price': '0.01', # reduced max price to check if it is picked up
       'num_core': 16,
       'memory': 128,
       'num_hdd': 1,
@@ -289,7 +289,7 @@ INSTANCE_INFO = {
       'nitro_based': True,
   },
   'i4i.8xlarge': {
-      'max_price': '1.96',
+      'max_price': '0.01', # reduced max price to check if it is picked up
       'num_core': 32,
       'memory': 256,
       'num_hdd': 2,
@@ -297,7 +297,7 @@ INSTANCE_INFO = {
       'nitro_based': True,
   },
   'i4i.12xlarge': {
-      'max_price': '1.96',
+      'max_price': '0.01', # reduced max price to check if it is picked up
       'num_core': 48,
       'memory': 384,
       'num_hdd': 3,
