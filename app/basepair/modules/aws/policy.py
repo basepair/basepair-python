@@ -5,14 +5,58 @@ class Policy: # pylint: disable=too-few-public-methods
   '''Policy class'''
 
   @staticmethod
-  def merge(policies):
-    '''Helper to merge policies'''
-    all_statements = []
-    for policy in policies:
-      all_statements += policy.get('Statement')
+  def batch_worker():
+    '''Batch policy for worker'''
     return {
-      'Statement': all_statements,
-      'Version': '2012-10-17',
+      'Statement': [
+        {
+        'Effect': 'Allow',
+        'Action': [
+          "batch:CancelJob",
+          "batch:DescribeComputeEnvironments",
+          "batch:DescribeJobDefinitions",
+          "batch:DescribeJobQueues",
+          "batch:DescribeJobs",
+          "batch:ListJobs",
+          "batch:RegisterJobDefinition",
+          "batch:SubmitJob",
+          "batch:TagResource",
+          "batch:TerminateJob",
+        ],
+        'Resource': "*",
+        'Sid': "BatchAccess"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ec2:DescribeInstanceAttribute",
+          "ec2:DescribeInstanceStatus",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstances",
+          "ecs:DescribeContainerInstances",
+          "ecs:DescribeTasks",
+        ],
+        'Resource': "arn:aws:ecs:*:*:*",
+        'Sid': "ECSDescribeTasks"
+      }, {
+        'Effect': 'Allow',
+        'Action': [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:DescribeImageScanFindings",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetLifecyclePolicy",
+          "ecr:GetLifecyclePolicyPreview",
+          "ecr:GetRepositoryPolicy",
+          "ecr:ListImages",
+          "ecr:ListTagsForResource",
+        ],
+        'Resource': 'arn:aws:ecr:*:*:repository/*',
+        'Sid': "ECRAccess"
+      }],
+      'Version': '2012-10-17'
     }
 
   @staticmethod
@@ -163,21 +207,6 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
-  def s3_delete_purpose(bucket, user_id):
-    '''S3 policy to allow delete permission to their own uploaded samples'''
-    resource = [
-      f'arn:aws:s3:::{bucket}/uploads/{user_id}/*', # add sample_id to further restrict the user
-    ]
-    return {
-      'Statement': [{
-        'Action': ['s3:DeleteObject'],
-        'Effect': 'Allow',
-        'Resource': resource,
-      }],
-      'Version': '2012-10-17'
-    }
-
-  @staticmethod
   def hos_general_purpose(ho_region, reference_store_id, sequence_store_id):
     '''HOS policy template for general purpose'''
     return {
@@ -224,6 +253,32 @@ class Policy: # pylint: disable=too-few-public-methods
           'Resource': [f'arn:aws:kms:{ho_region}:*:*']
         }
       ]
+    }
+
+  @staticmethod
+  def merge(policies):
+    '''Helper to merge policies'''
+    all_statements = []
+    for policy in policies:
+      all_statements += policy.get('Statement')
+    return {
+      'Statement': all_statements,
+      'Version': '2012-10-17',
+    }
+
+  @staticmethod
+  def s3_delete_purpose(bucket, user_id):
+    '''S3 policy to allow delete permission to their own uploaded samples'''
+    resource = [
+      f'arn:aws:s3:::{bucket}/uploads/{user_id}/*', # add sample_id to further restrict the user
+    ]
+    return {
+      'Statement': [{
+        'Action': ['s3:DeleteObject'],
+        'Effect': 'Allow',
+        'Resource': resource,
+      }],
+      'Version': '2012-10-17'
     }
 
   @staticmethod
@@ -287,6 +342,18 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
+  def sts_get_caller_id():
+    '''Get caller ID'''
+    return {
+      'Statement': [{
+        'Effect': 'Allow',
+        'Action': ['sts:GetCallerIdentity'],
+        'Resource': '*'
+      }],
+      'Version': '2012-10-17'
+    }
+
+  @staticmethod
   def swf_worker(workflow_settings):
     '''SWF policy for worker'''
     return {
@@ -302,68 +369,18 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
-  def batch_worker():
-    '''Batch policy for worker'''
-    return {
-      'Statement': [
-        {
-        'Effect': 'Allow',
-        'Action': [
-          "batch:CancelJob",
-          "batch:DescribeComputeEnvironments",
-          "batch:DescribeJobDefinitions",
-          "batch:DescribeJobQueues",
-          "batch:DescribeJobs",
-          "batch:ListJobs",
-          "batch:RegisterJobDefinition",
-          "batch:SubmitJob",
-          "batch:TagResource",
-          "batch:TerminateJob",
-        ],
-        'Resource': "*",
-        'Sid': "BatchAccess"
-      }, {
-        'Effect': 'Allow',
-        'Action': [
-          "ec2:DescribeInstanceAttribute",
-          "ec2:DescribeInstanceStatus",
-          "ec2:DescribeInstanceTypes",
-          "ec2:DescribeInstances",
-          "ecs:DescribeContainerInstances",
-          "ecs:DescribeTasks",
-        ],
-        'Resource': "arn:aws:ecs:*:*:*",
-        'Sid': "ECSDescribeTasks"
-      }, {
-        'Effect': 'Allow',
-        'Action': [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:BatchGetImage",
-          "ecr:DescribeImageScanFindings",
-          "ecr:DescribeImages",
-          "ecr:DescribeRepositories",
-          "ecr:GetAuthorizationToken",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:GetLifecyclePolicy",
-          "ecr:GetLifecyclePolicyPreview",
-          "ecr:GetRepositoryPolicy",
-          "ecr:ListImages",
-          "ecr:ListTagsForResource",
-        ],
-        'Resource': 'arn:aws:ecr:*:*:repository/*',
-        'Sid': "ECRAccess"
-      }],
-      'Version': '2012-10-17'
-    }
-
-  @staticmethod
-  def sts_get_caller_id():
-    '''Get caller ID'''
+  def worker_secret(secret_id):
+    '''SM policy for worker to retrieve bpconfig file content'''
     return {
       'Statement': [{
         'Effect': 'Allow',
-        'Action': ['sts:GetCallerIdentity'],
-        'Resource': '*'
+        'Action': ['secretsmanager:GetSecretValue', 'secretsmanager:DeleteSecret'],
+        'Resource': '*',
+        'Condition': {
+          'StringEquals': {
+            'aws:ResourceTag/ID': secret_id,
+          },
+        },
       }],
       'Version': '2012-10-17'
     }
