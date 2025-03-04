@@ -55,3 +55,23 @@ class SM(Service): # pylint: disable=too-few-public-methods
         json_content = json.dumps({'SecretString': secret})
         file.write(json_content)
     return secret
+
+  def put(self, secret_id, value, tags=None):
+    '''Set value to secret key'''
+    try:
+      args = {
+        "Name": secret_id,
+        "SecretString": value,
+      }
+      if tags:
+        args["Tags"] = tags
+      response = self.client.create_secret(**args)
+    except ClientError as error:
+      response = self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to get secret with id {secret_id}.',
+      })
+      if ExceptionHandler.is_throttled_error(exception=error):
+        raise error
+    return response
+
