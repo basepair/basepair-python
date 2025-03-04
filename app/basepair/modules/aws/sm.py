@@ -22,6 +22,22 @@ class SM(Service): # pylint: disable=too-few-public-methods
       'service_name': 'secretsmanager',
     })
 
+  def delete(self, secret_id, force=False):
+    '''Delete secrets'''
+    try:
+      args = {"SecretId": secret_id}
+      if force:
+        args["ForceDeleteWithoutRecovery"] = force
+      response = self.client.delete_secret(**args)
+    except ClientError as error:
+      response = self.get_log_msg({
+        'exception': error,
+        'msg': f'Not able to delete secret with id {secret_id}.',
+      })
+      if ExceptionHandler.is_throttled_error(exception=error):
+        raise error
+    return response
+
   def get(self, secret_id, use_cache=True):
     '''Get the values for the given secret key'''
     key = f'{secret_id}'
