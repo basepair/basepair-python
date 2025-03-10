@@ -17,7 +17,7 @@ class Instance(LogAbstract):
     if not self.log or cfg != self.cfg:
       self.cfg = cfg
       self.log = logbook.Logger(cfg.get('name', 'Logger'))
-      hand = logbook.FileHandler(cfg.get('log_file', '/tmp/app.log'))
+      hand = logbook.FileHandler(cfg.get('log_file') or '/tmp/app.log')
       hand.push_application()
 
   def debug(self, msg, payload={}): # pylint: disable=dangerous-default-value
