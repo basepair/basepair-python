@@ -416,6 +416,19 @@ class S3(Service):
       'url': self.get_self_signed(full_path),
     }
 
+  def list_buckets(self):
+    """
+    Lists all S3 buckets accessible
+    """
+    try:
+      response = self.client.list_buckets()
+      buckets = response.get('Buckets', [])
+      return [bucket['Name'] for bucket in buckets]
+
+    except ClientError as error:
+      print(f'Error listing buckets: {error}')
+      raise error
+
   @staticmethod
   def convert_to_v2(rules):
     '''Method to convert the version1 lifecycle configuration format to v2'''
