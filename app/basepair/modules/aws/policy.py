@@ -386,6 +386,18 @@ class Policy: # pylint: disable=too-few-public-methods
     }
 
   @staticmethod
+  def sts_get_caller_id():
+    '''Get caller ID'''
+    return {
+      'Statement': [{
+        'Effect': 'Allow',
+        'Action': ['sts:GetCallerIdentity'],
+        'Resource': '*'
+      }],
+      'Version': '2012-10-17'
+    }
+
+  @staticmethod
   def sts_assume_role(assume_role_arns: list):
     """
     Generates an AWS STS policy for assuming roles.
