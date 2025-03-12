@@ -59,3 +59,4 @@ target/
 
 # for local testing of github actions using act
 .secrets
+.qodo
