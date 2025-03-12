@@ -1289,10 +1289,7 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
         if should_continue:
           continue
 
-        if analysis['params'] and 'info' in analysis['params']:
-          if not analysis['params']['info'].get('genome_id'):
-            eprint('Could not find genome for analysis {}'.format(analysis['id']))
-            continue
+        if analysis['params'] and 'info' in analysis['params'] and 'genome_id' in analysis['params']['info']:
           sample_genome_id = self.get_id_from_url(sample.get('genome', ''))
           if not sample_genome_id:
             eprint('Could not find genome for analysis {}'.format(analysis['id']))
