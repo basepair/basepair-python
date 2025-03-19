@@ -186,12 +186,12 @@ class S3(Service):
       response = int(error.response['Error']['Code']) != 404
     return response
 
-  def get_self_signed(self, key, bucket=None, expires_in=28800):
+  def get_self_signed(self, key, bucket=None, expires_in=28800, method="get_object"):
     '''Generate self signed url for key'''
     try:
       bucket = bucket or self.bucket
       return self.client.generate_presigned_url(
-        'get_object',
+        method,
         Params={'Bucket': bucket, 'Key': key},
         ExpiresIn=expires_in, # a week
       )
