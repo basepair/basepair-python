@@ -1023,8 +1023,11 @@ class BpApi(): # pylint: disable=too-many-instance-attributes,too-many-public-me
       if not files:
         eprint('Warning: No files present for sample with id {}'.format(uid))
         return False
+      results = []
       for file_i in files:
-        return self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
+        result = self.download_file(file_i, file_type=file_type, uid=uid, dirname=outdir)
+        results.append(result)
+      return all(results)
     except Exception:# pylint: disable=broad-except
       return False
 
