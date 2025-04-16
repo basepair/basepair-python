@@ -13,7 +13,7 @@ from .infra.webapp import Analysis, File, Gene, Genome, GenomeFile, Host, Module
 # Exposing the storage wrapper
 
 __title__ = 'basepair'
-__version__ = '2.2.9+onprem'
+__version__ = '2.2.10'
 __copyright__ = 'Copyright [2017] - [2024] Basepair INC'
 
 
