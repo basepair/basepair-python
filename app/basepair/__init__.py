@@ -1,5 +1,6 @@
 '''set up basepair package'''
 from __future__ import print_function
+import os
 import sys
 
 import requests
@@ -18,7 +19,7 @@ __copyright__ = 'Copyright [2017] - [2024] Basepair INC'
 
 JSON_URL = 'https://pypi.python.org/pypi/{}/json'.format(__title__)
 
-if 'onprem' not in __version__:
+if not os.environ.get('SECRET_DRIVER') == 'local':
     try:
         resp = requests.get(JSON_URL, timeout=1)
         if resp.status_code == 200:
