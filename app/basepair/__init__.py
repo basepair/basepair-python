@@ -19,7 +19,7 @@ __copyright__ = 'Copyright [2017] - [2024] Basepair INC'
 
 JSON_URL = 'https://pypi.python.org/pypi/{}/json'.format(__title__)
 
-if not os.environ.get('SECRET_DRIVER') == 'local':
+if not os.environ.get('SECRETS_DRIVER') == 'local':
     try:
         resp = requests.get(JSON_URL, timeout=1)
         if resp.status_code == 200:
