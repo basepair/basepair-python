@@ -13,7 +13,8 @@ class Driver(SecretsAbstract):
 
   def get(self, secret_id, use_cache=True):
     '''Get the secrets using secret_id'''
-    secret_file_path = os.path.join('/home/ec2-user', secret_id)
+    path = os.environ.get('SECRETS_PATH', '/home/ec2-user')
+    secret_file_path = os.path.join(path, secret_id)
     if os.path.isfile(secret_file_path):
       secrets = ""
       with open(secret_file_path, 'r', encoding='utf-8') as file:
